@@ -10,8 +10,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   }
 
   Future<void> _initialize() async {
-    // Initialize with null user
-    return null;
+    // Initialize with null user (not logged in)
+    state = const AsyncData(null);
   }
 
   Future<bool> loginWithEmail(String email, String password) async {
