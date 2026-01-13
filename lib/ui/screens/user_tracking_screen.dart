@@ -8,7 +8,7 @@ import '../../core/constants/constants.dart';
 import '../../core/utils/map_helper.dart';
 import '../../core/utils/location_helper.dart';
 import '../widgets/driver_info_card.dart';
-import '../widgets/custom_button.dart';
+import '../../core/widgets/custom_button.dart';
 
 class UserTrackingScreen extends ConsumerStatefulWidget {
   const UserTrackingScreen({super.key});

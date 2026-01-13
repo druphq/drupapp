@@ -10,7 +10,7 @@ import '../../data/models/location_model.dart';
 import '../../theme/app_colors.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/map_helper.dart';
-import '../widgets/custom_button.dart';
+import '../../core/widgets/custom_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});

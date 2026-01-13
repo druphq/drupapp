@@ -10,6 +10,7 @@ class CustomButton extends StatelessWidget {
   final double? width;
   final double? height;
   final IconData? icon;
+  final TextStyle? textStyle;
 
   const CustomButton({
     super.key,
@@ -21,6 +22,7 @@ class CustomButton extends StatelessWidget {
     this.width,
     this.height,
     this.icon,
+    this.textStyle,
   });
 
   @override
@@ -30,10 +32,14 @@ class CustomButton extends StatelessWidget {
       height: height ?? 50,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
+
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
+          elevation: 0.0,
+          backgroundColor: backgroundColor ?? AppColors.accent,
           foregroundColor: textColor ?? Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
         ),
         child: isLoading
             ? const SizedBox(
@@ -53,10 +59,12 @@ class CustomButton extends StatelessWidget {
                   ],
                   Text(
                     text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style:
+                        textStyle ??
+                        const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ],
               ),

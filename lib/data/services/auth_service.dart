@@ -4,22 +4,22 @@ class AuthService {
   User? _currentUser;
 
   /// Login with email and password (Mock implementation)
-  Future<User?> loginWithEmail(String email, String password) async {
+  Future<User?> loginWithPhone(String phone) async {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(seconds: 1));
 
       // Mock validation
-      if (email.isEmpty || password.isEmpty) {
-        throw Exception('Email and password are required');
+      if (phone.isEmpty) {
+        throw Exception('Phone number is required');
       }
 
       // Create mock user
       _currentUser = User(
         id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        name: email.split('@').first.toUpperCase(),
-        email: email,
-        phone: '+1234567890',
+        name: '',
+        phone: phone,
+        email: '',
         userType: 'rider',
         rating: 4.8,
         totalRides: 25,

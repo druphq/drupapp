@@ -6,7 +6,7 @@ import '../../providers/ride_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/location_helper.dart';
-import '../widgets/custom_button.dart';
+import '../../core/widgets/custom_button.dart';
 
 class RideRequestScreen extends ConsumerWidget {
   const RideRequestScreen({super.key});

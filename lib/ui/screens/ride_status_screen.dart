@@ -6,7 +6,7 @@ import '../../providers/ride_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/map_helper.dart';
-import '../widgets/custom_button.dart';
+import '../../core/widgets/custom_button.dart';
 
 class RideStatusScreen extends ConsumerStatefulWidget {
   const RideStatusScreen({super.key});

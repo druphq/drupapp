@@ -36,6 +36,8 @@ dependencies:
   firebase_storage: ^13.0.4
   cloud_functions: ^6.0.4
   firebase_messaging: ^16.0.4
+  gap: ^3.0.1
+  the_validator: ^2.0.0
 
 dev_dependencies:
   flutter_test:

@@ -14,13 +14,13 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     state = const AsyncData(null);
   }
 
-  Future<bool> loginWithEmail(String email, String password) async {
+  Future<bool> loginWithPhone(String phone) async {
     state = const AsyncLoading();
 
     final authService = ref.read(authServiceProvider);
 
     try {
-      final user = await authService.loginWithEmail(email, password);
+      final user = await authService.loginWithPhone(phone);
 
       if (user != null) {
         state = AsyncData(user);

@@ -1,3 +1,8 @@
+import 'package:drup/core/widgets/app_phone_field.dart';
+import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/resources/app_strings.dart';
+import 'package:drup/theme/app_style.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +10,9 @@ import '../../providers/auth_notifier.dart';
 import '../../providers/user_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../core/constants/constants.dart';
-import '../widgets/custom_button.dart';
+import '../../core/widgets/custom_button.dart';
+import 'package:gap/gap.dart';
+import 'package:the_validator/the_validator.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -15,23 +22,26 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
   bool _isDriver = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
-    final email = _emailController.text.trim();
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final email = _phoneController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showError('Please enter email and password');
+    if (_phoneController.text.length < 10) {
+      _showError('Please enter a correct phone number');
       return;
     }
 
@@ -39,11 +49,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_isDriver) {
       success = await ref
           .read(authNotifierProvider.notifier)
-          .loginWithEmail(email, password);
+          .loginWithPhone(email);
     } else {
       success = await ref
           .read(authNotifierProvider.notifier)
-          .loginWithEmail(email, password);
+          .loginWithPhone(email);
     }
 
     if (success && mounted) {
@@ -83,79 +93,103 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 60),
-              const Icon(Icons.local_taxi, size: 80, color: AppColors.primary),
-              const SizedBox(height: 24),
-              const Text(
-                'Welcome Back',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Sign in to continue',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 48),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
+        bottom: false,
+        top: false,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
+          child: Form(
+            key: formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Spacer(flex: 2),
+                Text(
+                  AppStrings.enterYourNumberTxt,
+                  style: TextStyles.t1.copyWith(fontSize: FontSizes.s18),
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: Icon(Icons.lock),
+                Text(
+                  AppStrings.enterPhoneNumberCaptionTxt,
+                  style: TextStyles.body1,
                 ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _isDriver,
-                    onChanged: (value) {
-                      setState(() {
-                        _isDriver = value ?? false;
-                      });
-                    },
+                const Gap(20.0),
+                AppPhoneField(
+                  hint: 'Phone Number',
+                  borderRadius: Corners.mmd,
+                  controller: _phoneController,
+                  style: TextStyles.h3.copyWith(color: Colors.black),
+                  validator: FieldValidator.minLength(
+                    11,
+                    message: AppStrings.phoneErrorMessage,
                   ),
-                  const Text('Login as Driver'),
-                ],
-              ),
-              const SizedBox(height: 24),
-              CustomButton(
-                text: 'Sign In',
-                onPressed: _handleLogin,
-                isLoading: isLoading,
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  // Quick test login
-                  _emailController.text = 'test@example.com';
-                  _passwordController.text = 'password';
-                },
-                child: const Text('Use Test Account'),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Demo App - Any email/password works',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-            ],
+                ),
+                const Gap(40.0),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: Sizes.btnWidthMd,
+                          minHeight: Sizes.btnHeightMd,
+                        ),
+                        child: CustomButton(
+                          text: AppStrings.continueTxt,
+                          onPressed: _handleLogin,
+                          isLoading: isLoading,
+                          textStyle: TextStyles.btnStyle.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(flex: 1),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      text: AppStrings.termConditionMsgTxt,
+                      style: TextStyles.body2.copyWith(
+                        color: Colors.grey.shade800,
+                        fontSize: FontSizes.s12,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: AppStrings.termAndConditionTxt,
+                          style: TextStyles.h2.copyWith(
+                            color: AppColors.accent,
+                            fontSize: FontSizes.s14,
+                          ),
+                          recognizer: TapGestureRecognizer()..onTap = () {},
+                        ),
+                        TextSpan(
+                          text: AppStrings.privacyPolicyTxt,
+                          style: TextStyles.h3.copyWith(
+                            fontSize: FontSizes.s14,
+                            color: AppColors.accent,
+                          ),
+                          recognizer: TapGestureRecognizer()..onTap = () {},
+                        ),
+                        TextSpan(
+                          text: AppStrings.andTxt,
+                          style: TextStyles.body2.copyWith(
+                            fontSize: FontSizes.s12,
+                          ),
+                        ),
+                        TextSpan(
+                          text: AppStrings.over18txt,
+                          style: TextStyles.body2.copyWith(
+                            fontSize: FontSizes.s12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(flex: 2),
+              ],
+            ),
           ),
         ),
       ),

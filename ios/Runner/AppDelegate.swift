@@ -13,9 +13,11 @@ import GoogleMaps
     
     // Load API key from Config.plist
     if let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
-       let config = NSDictionary(contentsOfFile: path),
-       let apiKey = config["GOOGLE_MAPS_API_KEY"] as? String {
+    let config = NSDictionary(contentsOfFile: path),
+    let apiKey = config["GOOGLE_MAPS_API_KEY"] as? String {
       GMSServices.provideAPIKey(apiKey)
+    } else {
+      fatalError("GOOGLE_MAPS_API_KEY missing")
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
