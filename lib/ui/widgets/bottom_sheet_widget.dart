@@ -1,0 +1,79 @@
+import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/resources/app_strings.dart';
+import 'package:drup/theme/app_colors.dart';
+import 'package:drup/theme/app_style.dart';
+import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+
+class BottomSheetWidget extends StatelessWidget {
+  final VoidCallback? onWhereToTap;
+
+  const BottomSheetWidget({super.key, this.onWhereToTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.hMd)),
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Color(0xff253B80),
+            Color(0xff253B80),
+            Color(0xff5490D0),
+            Color(0xff5C9EDC),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Gap(20),
+          Text(
+            AppStrings.scheduleRideTxt,
+            textAlign: TextAlign.center,
+            style: TextStyles.t1.copyWith(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const Gap(20),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Corners.hMd),
+              color: AppColors.surface,
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListTile(
+              minTileHeight: 60,
+              onTap: onWhereToTap,
+              leading: Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.fromBorderSide(
+                    BorderSide(color: AppColors.greyStrong, width: 2),
+                  ),
+                ),
+              ),
+              minLeadingWidth: 2,
+              title: Text(
+                AppStrings.whereToTxt,
+                style: TextStyles.t2.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.onAccent,
+                  fontSize: FontSizes.s17,
+                ),
+              ),
+            ),
+          ),
+          Gap(MediaQuery.of(context).size.height * 0.06),
+        ],
+      ),
+    );
+  }
+}

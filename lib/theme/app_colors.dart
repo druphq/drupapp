@@ -9,6 +9,7 @@ class AppColors {
   // Background
   static const Color background = Color(0xFFF5F5F5);
   static const Color cardBackground = Colors.white;
+  static const Color surface = Color(0xFFF0F0F0);
 
   // Text Colors
   static const Color textPrimary = Color(0xFF212121);
@@ -66,8 +67,9 @@ class AppColors {
   static const Color bgWhite = Color(0xfff3f3f3);
   static const Color bgBlack = Color(0xff000000);
   static const Color splashBg = Color(0xff222D65);
+
   static const Color grey = Colors.grey;
-  static Color greyLight = Colors.grey.shade100;
+  static Color grey50 = Color(0xFFFFFAFA);
   static Color greyStrong = Colors.grey.shade500;
   static Color greyStronger = Colors.grey.shade700;
 }

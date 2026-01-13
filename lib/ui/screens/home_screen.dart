@@ -1,16 +1,17 @@
+import 'package:drup/theme/app_colors.dart';
+import 'package:drup/ui/screens/location_search_screen.dart';
+import 'package:drup/ui/widgets/bottom_sheet_widget.dart';
+import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../providers/auth_notifier.dart';
 import '../../providers/user_notifier.dart';
 import '../../providers/ride_notifier.dart';
 import '../../providers/providers.dart';
 import '../../data/models/location_model.dart';
-import '../../theme/app_colors.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/map_helper.dart';
-import '../../core/widgets/custom_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +22,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
-  final TextEditingController _searchController = TextEditingController();
   bool _selectingPickup = true;
 
   @override
@@ -73,72 +73,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _searchLocation(String query) async {
-    if (query.isEmpty) return;
-
-    final mapsService = ref.read(googleMapsServiceProvider);
-    final places = await mapsService.searchPlaces(query);
-
-    if (places.isEmpty) {
-      _showMessage('No results found');
-      return;
-    }
-
-    if (!mounted) return;
-
-    // Show results dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Location'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: places.length,
-            itemBuilder: (context, index) {
-              final place = places[index];
-              return ListTile(
-                leading: const Icon(Icons.location_on),
-                title: Text(place['name']),
-                subtitle: Text(place['address']),
-                onTap: () {
-                  final location = LocationModel(
-                    latitude: place['latitude'],
-                    longitude: place['longitude'],
-                    address: place['address'],
-                  );
-
-                  if (_selectingPickup) {
-                    ref
-                        .read(rideNotifierProvider.notifier)
-                        .setPickupLocation(location);
-                  } else {
-                    ref
-                        .read(rideNotifierProvider.notifier)
-                        .setDestinationLocation(location);
-                  }
-
-                  _mapController?.animateCamera(
-                    CameraUpdate.newLatLng(location.latLng),
-                  );
-
-                  Navigator.pop(context);
-                },
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
     final userState = ref.watch(userNotifierProvider);
@@ -166,160 +100,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Request Ride'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authNotifierProvider.notifier).logout();
-              if (mounted) {
-                context.go(AppConstants.loginRoute);
-              }
-            },
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        leading: Container(
+          margin: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: IconButton(
+            icon: Icon(Icons.menu, color: AppColors.onAccent, size: 18.0),
+            onPressed: () {},
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Stack(
         children: [
-          // Google Map
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            onTap: _onMapTap,
-            initialCameraPosition: CameraPosition(
-              target:
-                  currentLocation?.latLng ?? const LatLng(37.7749, -122.4194),
-              zoom: AppConstants.defaultCameraZoom,
-            ),
-            markers: markers,
-            polylines: polylines,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            zoomControlsEnabled: false,
-          ),
-
-          // Search bar
+          // Google Map - stops at top of collapsed bottom sheet
           Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: _selectingPickup
-                        ? 'Search pickup location'
-                        : 'Search destination',
-                    border: InputBorder.none,
-                    icon: const Icon(Icons.search),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                      },
-                    ),
-                  ),
-                  onSubmitted: _searchLocation,
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom sheet with controls
-          Positioned(
-            bottom: 0,
+            top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 10,
-                    offset: Offset(0, -2),
-                  ),
-                ],
+            bottom: MediaQuery.of(context).size.height * 0.2,
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              onTap: _onMapTap,
+              initialCameraPosition: CameraPosition(
+                target:
+                    currentLocation?.latLng ?? const LatLng(37.7749, -122.4194),
+                zoom: AppConstants.defaultCameraZoom,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Location selection toggle
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ChoiceChip(
-                          label: const Text('Pickup'),
-                          selected: _selectingPickup,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectingPickup = true;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ChoiceChip(
-                          label: const Text('Destination'),
-                          selected: !_selectingPickup,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectingPickup = false;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+              markers: markers,
+              polylines: polylines,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+            ),
+          ),
+
+          // Bottom sheet with controls - positioned at bottom
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: BottomSheetWidget(
+              onWhereToTap: () {
+                // Navigate to location search screen with slide up transition
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const LocationSearchScreen(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0); // Start from bottom
+                          const end = Offset.zero;
+                          const curve = Curves.easeInOut;
+
+                          var tween = Tween(
+                            begin: begin,
+                            end: end,
+                          ).chain(CurveTween(curve: curve));
+                          var offsetAnimation = animation.drive(tween);
+
+                          return SlideTransition(
+                            position: offsetAnimation,
+                            child: child,
+                          );
+                        },
+                    transitionDuration: const Duration(milliseconds: 500),
+                    reverseTransitionDuration: const Duration(
+                      milliseconds: 500,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Location info
-                  if (pickupLocation != null)
-                    _buildLocationInfo(
-                      Icons.location_on,
-                      'Pickup',
-                      pickupLocation.address ?? 'Selected on map',
-                    ),
-                  if (destinationLocation != null) ...[
-                    const SizedBox(height: 8),
-                    _buildLocationInfo(
-                      Icons.flag,
-                      'Destination',
-                      destinationLocation.address ?? 'Selected on map',
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-
-                  // Action button
-                  if (pickupLocation != null && destinationLocation == null)
-                    CustomButton(
-                      text: 'Select Destination',
-                      onPressed: () {
-                        setState(() {
-                          _selectingPickup = false;
-                        });
-                      },
-                    )
-                  else if (pickupLocation != null &&
-                      destinationLocation != null)
-                    CustomButton(
-                      text: 'Calculate Fare',
-                      onPressed: () async {
-                        // Route is already calculated when locations are set
-                        if (mounted) {
-                          context.push(AppConstants.rideRequestRoute);
-                        }
-                      },
-                      isLoading: rideState.isLoading,
-                    ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -327,48 +193,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLocationInfo(IconData icon, String label, String address) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  address,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
     _mapController?.dispose();
     super.dispose();
   }

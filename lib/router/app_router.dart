@@ -6,8 +6,20 @@ import '../core/constants/constants.dart';
 
 class AppRouter {
   static GoRouter createRouter(WidgetRef ref) {
+    final isLoggedIn = ref.read(isLoggedInProvider);
+    final isDriver = ref.read(isDriverProvider);
+
+    // Determine initial location based on auth state
+    String initialLocation = AppConstants.splashRoute;
+    if (isLoggedIn) {
+      // check if user's last activity was as a driver or rider
+      initialLocation = isDriver
+          ? AppConstants.driverMapRoute
+          : AppConstants.homeRoute;
+    }
+
     return GoRouter(
-      initialLocation: AppConstants.splashRoute,
+      initialLocation: initialLocation,
       redirect: (context, state) {
         final isLoggedIn = ref.read(isLoggedInProvider);
         final isDriver = ref.read(isDriverProvider);

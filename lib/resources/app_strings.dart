@@ -3,7 +3,7 @@ class AppStrings {
   static const appNameTxt = 'drup';
   static const ngCode = '+234';
 
-  //
+  // event states
   static const errorTag = 'Error';
   static const successTag = 'Success';
 
@@ -15,6 +15,14 @@ class AppStrings {
   static const resendCodeTxt = 'Resend code';
   static const inTxt = '\tin\t';
   static const continueTxt = 'Continue';
+
+  // home screen
+
+  // schedule ride screen
+  static const scheduleYourRideTitleTxt = 'Schedule Your Ride';
+  static const currentLocationHintTxt = 'Current Location';
+  static const whereToHintTxt = 'Where to?';
+  static const scheduleRideTitleTxt = 'Schedule Ride';
 
   //terms and condition
   static const termConditionMsgTxt = 'By signing up, you agree to our\n';
