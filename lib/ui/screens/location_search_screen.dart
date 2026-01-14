@@ -3,24 +3,87 @@ import 'package:drup/resources/app_strings.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/providers.dart';
+import '../../providers/ride_notifier.dart';
+import '../../data/models/location_model.dart';
 
-class LocationSearchScreen extends StatefulWidget {
+class LocationSearchScreen extends ConsumerStatefulWidget {
   const LocationSearchScreen({super.key});
 
   @override
-  State<LocationSearchScreen> createState() => _LocationSearchScreenState();
+  ConsumerState<LocationSearchScreen> createState() =>
+      _LocationSearchScreenState();
 }
 
-class _LocationSearchScreenState extends State<LocationSearchScreen> {
+class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   final _currentLocationController = TextEditingController();
   final _destinationController = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = [];
+  bool _isSearching = false;
+  bool _isCurrentLocationField = false;
 
   @override
   void dispose() {
     _currentLocationController.dispose();
     _destinationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _searchAirports(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final mapsService = ref.read(googleMapsServiceProvider);
+      final results = await mapsService.searchNigerianAirports(query);
+
+      setState(() {
+        _searchResults = results;
+        _isSearching = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isSearching = false;
+        _searchResults = [];
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error searching airports: $e')));
+      }
+    }
+  }
+
+  void _selectLocation(Map<String, dynamic> place) {
+    final location = LocationModel(
+      latitude: place['latitude'],
+      longitude: place['longitude'],
+      address: place['address'],
+    );
+
+    // Update the text field with selected airport
+    if (_isCurrentLocationField) {
+      _currentLocationController.text = place['name'];
+      ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
+    } else {
+      _destinationController.text = place['name'];
+      ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+    }
+
+    setState(() {
+      _searchResults = [];
+    });
   }
 
   @override
@@ -50,7 +113,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                     ),
                     Expanded(
                       child: Text(
@@ -63,7 +126,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 48), // Balance the back button
+                    const Gap(48),
                   ],
                 ),
               ),
@@ -77,10 +140,16 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                     color: AppColors.surface,
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  height: 60,
+                  height: Sizes.tfieldHeight,
                   alignment: Alignment.center,
                   child: TextField(
                     controller: _currentLocationController,
+                    onChanged: (value) {
+                      setState(() {
+                        _isCurrentLocationField = true;
+                      });
+                      _searchAirports(value);
+                    },
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       icon: Container(
@@ -116,17 +185,23 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                     borderRadius: BorderRadius.circular(Corners.hMd),
                     color: AppColors.surface,
                   ),
-                  height: 60,
+                  height: Sizes.tfieldHeight,
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _destinationController,
                     autofocus: true,
+                    onChanged: (value) {
+                      setState(() {
+                        _isCurrentLocationField = false;
+                      });
+                      _searchAirports(value);
+                    },
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       icon: Container(
-                        width: 16,
-                        height: 16,
+                        width: 14,
+                        height: 14,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.fromBorderSide(
@@ -151,28 +226,40 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
               const Gap(16),
 
-              // Recent locations section
+              // Search results section
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
+                  child: _isSearching
+                      ? const Padding(
+                          padding: EdgeInsets.only(top: 30.0),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        )
+                      : _searchResults.isEmpty
+                      ? SizedBox.shrink()
+                      : ListView.builder(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16.0,
                           ),
-                          itemCount: 5,
+                          itemCount: _searchResults.length,
                           itemBuilder: (context, index) {
+                            final place = _searchResults[index];
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(Corners.md),
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.black.withOpacity(0.1),
                               ),
                               child: ListTile(
                                 leading: RotatedBox(
@@ -183,30 +270,25 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
                                   ),
                                 ),
                                 title: Text(
-                                  'Recent Location ${index + 1}',
+                                  place['name'] ?? '',
                                   style: TextStyles.t2.copyWith(
                                     color: Colors.white,
                                     fontSize: FontSizes.s15,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  'Address details here',
+                                  place['address'] ?? '',
                                   style: TextStyles.t2.copyWith(
                                     color: Colors.white70,
                                     fontSize: FontSizes.s13,
                                   ),
                                 ),
-                                onTap: () {
-                                  // Handle location selection
-                                  Navigator.pop(context);
-                                },
+                                onTap: () => _selectLocation(place),
                               ),
                             );
                           },
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -114,6 +115,53 @@ class GoogleMapsService {
       return [];
     } catch (e) {
       print('Error searching places: $e');
+      return [];
+    }
+  }
+
+  /// Search for airports in Nigeria only
+  Future<List<Map<String, dynamic>>> searchNigerianAirports(
+    String query,
+  ) async {
+    try {
+      // Add "airport Nigeria" to the query to ensure we get Nigerian airports
+      final searchQuery = query.isEmpty
+          ? 'airport Nigeria'
+          : '$query airport Nigeria';
+
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/textsearch/json?'
+        'query=${Uri.encodeComponent(searchQuery)}&'
+        'type=airport&'
+        'region=ng&'
+        'key=$_apiKey',
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        print(data);
+
+        if (data['status'] == 'OK') {
+          final results = List<Map<String, dynamic>>.from(
+            data['results'].map(
+              (place) => {
+                'name': place['name'],
+                'address': place['formatted_address'],
+                'latitude': place['geometry']['location']['lat'],
+                'longitude': place['geometry']['location']['lng'],
+                'placeId': place['place_id'],
+              },
+            ),
+          );
+          return results;
+        }
+      }
+      return [];
+    } catch (e, stackTrace) {
+      debugPrint('Error searching Nigerian airports: $e\n$stackTrace');
       return [];
     }
   }

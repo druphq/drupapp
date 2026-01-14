@@ -17,6 +17,7 @@ class Sizes {
   static double get md => 20;
   static double get lg => 25;
   static double get vlg => 40;
+  static double get tfieldHeight => 50;
   /////////////////////////////////
   static double get sideBarSm => 150;
   static double get sideBarMd => 200;

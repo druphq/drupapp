@@ -55,8 +55,8 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
         bodyLarge: TextStyle(fontSize: 16, color: AppColors.textPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-        bodySmall: TextStyle(fontSize: 12, color: AppColors.textLight),
+        bodyMedium: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+        bodySmall: TextStyle(fontSize: 12, color: AppColors.textPrimary),
       ),
 
       // Divider Theme

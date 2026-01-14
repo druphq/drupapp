@@ -48,7 +48,7 @@ class BottomSheetWidget extends StatelessWidget {
             ),
             margin: const EdgeInsets.symmetric(horizontal: 16),
             child: ListTile(
-              minTileHeight: 60,
+              minTileHeight: Sizes.tfieldHeight,
               onTap: onWhereToTap,
               leading: Container(
                 width: 16,
@@ -65,7 +65,7 @@ class BottomSheetWidget extends StatelessWidget {
                 AppStrings.whereToTxt,
                 style: TextStyles.t2.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.onAccent,
+                  color: AppColors.textSecondary,
                   fontSize: FontSizes.s17,
                 ),
               ),

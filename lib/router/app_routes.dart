@@ -1,6 +1,8 @@
+import 'package:drup/core/animation/page_route_animation.dart';
 import 'package:drup/core/constants/constants.dart';
 import 'package:drup/ui/screens/driver_map_screen.dart';
 import 'package:drup/ui/screens/home_screen.dart';
+import 'package:drup/ui/screens/location_search_screen.dart';
 import 'package:drup/ui/screens/login_screen.dart';
 import 'package:drup/ui/screens/ride_request_screen.dart';
 import 'package:drup/ui/screens/ride_status_screen.dart';
@@ -16,6 +18,7 @@ class RoutePaths {
   static final driverMapPath = 'driver-map';
   static final userTrackingPath = 'user-tracking';
   static final rideStatusPath = 'ride-status';
+  static final searchLocationsPath = 'pick-locations';
 }
 
 class AppRoutes {
@@ -59,5 +62,14 @@ class AppRoutes {
     path: AppConstants.rideStatusRoute,
     name: RoutePaths.rideStatusPath,
     builder: (context, state) => const RideStatusScreen(),
+  );
+
+  static final searchLocationsRoute = GoRoute(
+    name: RoutePaths.searchLocationsPath,
+    path: AppConstants.searchLocationsRoute,
+    pageBuilder: (context, state) => slideUpTransitionPage(
+      key: state.pageKey,
+      child: const LocationSearchScreen(),
+    ),
   );
 }

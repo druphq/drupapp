@@ -1,10 +1,10 @@
 import 'package:drup/theme/app_colors.dart';
-import 'package:drup/ui/screens/location_search_screen.dart';
 import 'package:drup/ui/widgets/bottom_sheet_widget.dart';
-import 'package:drup/utils/extension.dart';
+import 'package:drup/ui/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../providers/user_notifier.dart';
 import '../../providers/ride_notifier.dart';
@@ -103,24 +103,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       resizeToAvoidBottomInset: false,
       extendBody: true,
       extendBodyBehindAppBar: true,
+      drawer: const AppDrawer(),
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: Container(
-          margin: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: context.colorScheme.surface,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: Icon(Icons.menu, color: AppColors.onAccent, size: 18.0),
-            onPressed: () {},
+        leading: Builder(
+          builder: (context) => Container(
+            margin: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.menu, color: AppColors.onAccent, size: 18.0),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -135,6 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             right: 0,
             bottom: MediaQuery.of(context).size.height * 0.2,
             child: GoogleMap(
+              mapType: MapType.normal,
               onMapCreated: _onMapCreated,
               onTap: _onMapTap,
               initialCameraPosition: CameraPosition(
@@ -158,45 +164,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: BottomSheetWidget(
               onWhereToTap: () {
                 // Navigate to location search screen with slide up transition
-                Navigator.of(context).push(
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const LocationSearchScreen(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(0.0, 1.0); // Start from bottom
-                          const end = Offset.zero;
-                          const curve = Curves.easeInOut;
-
-                          var tween = Tween(
-                            begin: begin,
-                            end: end,
-                          ).chain(CurveTween(curve: curve));
-                          var offsetAnimation = animation.drive(tween);
-
-                          return SlideTransition(
-                            position: offsetAnimation,
-                            child: child,
-                          );
-                        },
-                    transitionDuration: const Duration(milliseconds: 500),
-                    reverseTransitionDuration: const Duration(
-                      milliseconds: 500,
-                    ),
-                  ),
-                );
+                context.push(AppConstants.searchLocationsRoute);
               },
             ),
           ),
         ],
       ),
     );
-  }
-
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

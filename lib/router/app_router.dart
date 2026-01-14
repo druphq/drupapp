@@ -55,6 +55,7 @@ class AppRouter {
         AppRoutes.driverMapScreen,
         AppRoutes.userTrackingRoute,
         AppRoutes.riderStatusRoute,
+        AppRoutes.searchLocationsRoute,
       ],
     );
   }

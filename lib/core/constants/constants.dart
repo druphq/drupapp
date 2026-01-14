@@ -31,6 +31,7 @@ class AppConstants {
   static const String driverMapRoute = '/driver-map';
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
+  static const String searchLocationsRoute = '/pick-locations';
 
   // Storage Keys
   static const String userIdKey = 'userId';

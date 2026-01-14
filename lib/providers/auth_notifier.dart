@@ -113,6 +113,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       state = AsyncError(e, stack);
     }
   }
+
+  void signOut() {
+    state = const AsyncData(null);
+  }
 }
 
 // Provider instance
