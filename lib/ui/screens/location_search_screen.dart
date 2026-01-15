@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -8,6 +10,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/providers.dart';
 import '../../providers/ride_notifier.dart';
+import '../../providers/user_notifier.dart';
 import '../../data/models/location_model.dart';
 
 class LocationSearchScreen extends ConsumerStatefulWidget {
@@ -24,12 +27,56 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
   bool _isCurrentLocationField = false;
+  Timer? _debounceTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setCurrentLocation();
+    });
+  }
+
+  void _setCurrentLocation() {
+    final userState = ref.read(userNotifierProvider);
+    if (userState.currentLocation != null) {
+      final address = userState.currentLocation!.address ?? 'Current Location';
+      _currentLocationController.text = address;
+      ref
+          .read(rideNotifierProvider.notifier)
+          .setPickupLocation(userState.currentLocation!);
+    }
+  }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _currentLocationController.dispose();
     _destinationController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    // Show loading state immediately
+    setState(() {
+      _isSearching = true;
+    });
+
+    // Start new timer - only call API after 500ms of inactivity
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _searchAirports(query);
+    });
   }
 
   Future<void> _searchAirports(String query) async {
@@ -148,7 +195,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                       setState(() {
                         _isCurrentLocationField = true;
                       });
-                      _searchAirports(value);
+                      _onSearchChanged(value);
                     },
                     decoration: InputDecoration(
                       border: InputBorder.none,
@@ -191,11 +238,14 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                   child: TextField(
                     controller: _destinationController,
                     autofocus: true,
+                    keyboardType: TextInputType.streetAddress,
+                    textInputAction: TextInputAction.done,
+                    textCapitalization: TextCapitalization.sentences,
                     onChanged: (value) {
                       setState(() {
                         _isCurrentLocationField = false;
                       });
-                      _searchAirports(value);
+                      _onSearchChanged(value);
                     },
                     decoration: InputDecoration(
                       border: InputBorder.none,
@@ -259,15 +309,13 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(Corners.md),
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.2),
                               ),
                               child: ListTile(
-                                leading: RotatedBox(
-                                  quarterTurns: 1,
-                                  child: const Icon(
-                                    Icons.flight,
-                                    color: Colors.white70,
-                                  ),
+                                leading: ImageIcon(
+                                  AssetImage(AppAssets.flightIcon),
+                                  color: Colors.white70,
+                                  size: 18,
                                 ),
                                 title: Text(
                                   place['name'] ?? '',

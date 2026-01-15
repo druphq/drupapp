@@ -137,6 +137,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           isLoading: isLoading,
                           textStyle: TextStyles.btnStyle.copyWith(
                             color: Colors.white,
+                            fontSize: 16.0
                           ),
                         ),
                       ),

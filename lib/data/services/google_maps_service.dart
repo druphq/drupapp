@@ -142,28 +142,111 @@ class GoogleMapsService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        print(data);
-
         if (data['status'] == 'OK') {
-          final results = List<Map<String, dynamic>>.from(
-            data['results'].map(
-              (place) => {
-                'name': place['name'],
-                'address': place['formatted_address'],
-                'latitude': place['geometry']['location']['lat'],
-                'longitude': place['geometry']['location']['lng'],
-                'placeId': place['place_id'],
-              },
-            ),
+          // Limit to 5 results and extract only place IDs
+          final placeIds = (data['results'] as List)
+              .take(5)
+              .map((place) => place['place_id'] as String)
+              .toList();
+
+          // Fetch all place details concurrently
+          final detailsFutures = placeIds.map(
+            (placeId) => _getPlaceDetails(placeId),
           );
-          return results;
+          final detailsResults = await Future.wait(detailsFutures);
+
+          // Filter out null results and return
+          return detailsResults
+              .where((details) => details != null)
+              .cast<Map<String, dynamic>>()
+              .toList();
         }
       }
+
       return [];
     } catch (e, stackTrace) {
       debugPrint('Error searching Nigerian airports: $e\n$stackTrace');
       return [];
     }
+  }
+
+  /// Get detailed information for a place using Place Details API
+  Future<Map<String, dynamic>?> _getPlaceDetails(String placeId) async {
+    try {
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json?'
+        'place_id=$placeId&'
+        'fields=name,address_components,geometry&'
+        'key=$_apiKey',
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK') {
+          final result = data['result'];
+          final addressComponents = result['address_components'] as List;
+          final normalizedAddress = normalizeAddressComponents(
+            addressComponents,
+          );
+
+          return {
+            'name': result['name'],
+            'address': normalizedAddress,
+            'latitude': result['geometry']['location']['lat'],
+            'longitude': result['geometry']['location']['lng'],
+            'placeId': placeId,
+          };
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error fetching place details for $placeId: $e');
+      return null;
+    }
+  }
+
+  /// Normalize address components to a clean format
+  String normalizeAddressComponents(List components) {
+    String? city;
+    String? state;
+    String? country;
+
+    for (final c in components) {
+      final types = List<String>.from(c['types']);
+
+      if (types.contains('locality')) {
+        city = c['long_name'];
+      } else if (types.contains('administrative_area_level_1')) {
+        state = c['long_name'];
+      } else if (types.contains('country')) {
+        country = c['long_name'];
+      }
+    }
+
+    // Priority order:
+    // City, Country
+    if (city != null && country != null) {
+      return '$city, $country';
+    }
+
+    // State, Country
+    if (state != null && country != null) {
+      return '$state, $country';
+    }
+
+    // City only
+    if (city != null) return city;
+
+    // State only
+    if (state != null) return state;
+
+    // Country only
+    if (country != null) return country;
+
+    return '';
   }
 
   /// Get route polyline points between two locations

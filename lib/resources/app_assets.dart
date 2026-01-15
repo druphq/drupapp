@@ -13,7 +13,8 @@ class AppAssets {
   static const supportIcon = 'assets/icons/support.png';
   static const infoIcon = 'assets/icons/info.png';
   static const messageIcon = 'assets/icons/messages.png';
+  static const flightIcon = 'assets/icons/flight.png';
 
-  ////
+  // others
   static const deliveryPng = AssetImage('assets/others/delivery.png');
 }
