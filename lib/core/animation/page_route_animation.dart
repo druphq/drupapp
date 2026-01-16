@@ -66,7 +66,7 @@ CustomTransitionPage<T> slideRightTransitionPage<T>({
 
       return SlideTransition(position: offsetAnimation, child: child);
     },
-    transitionDuration: transitionDuration ?? const Duration(milliseconds: 500),
-    reverseTransitionDuration: reverseTransitionDuration ?? const Duration(milliseconds: 500),
+    transitionDuration: transitionDuration ?? const Duration(milliseconds: 300),
+    reverseTransitionDuration: reverseTransitionDuration ?? const Duration(milliseconds: 300),
   );
 }

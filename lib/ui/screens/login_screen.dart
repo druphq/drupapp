@@ -1,6 +1,7 @@
 import 'package:drup/core/widgets/app_phone_field.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/resources/app_strings.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -69,9 +70,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Navigate to appropriate screen
       if (mounted) {
         if (_isDriver) {
-          context.go(AppConstants.driverMapRoute);
+          context.go(AppRoutes.driverMapRoute);
         } else {
-          context.go(AppConstants.homeRoute);
+          context.go(AppRoutes.homeRoute);
         }
       }
     } else if (mounted) {
@@ -137,7 +138,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           isLoading: isLoading,
                           textStyle: TextStyles.btnStyle.copyWith(
                             color: Colors.white,
-                            fontSize: 16.0
+                            fontSize: 16.0,
                           ),
                         ),
                       ),

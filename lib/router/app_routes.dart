@@ -1,5 +1,6 @@
 import 'package:drup/core/animation/page_route_animation.dart';
-import 'package:drup/core/constants/constants.dart';
+import 'package:drup/router/app_router.dart';
+import 'package:drup/ui/driver/driver_main_screen.dart';
 import 'package:drup/ui/screens/driver_map_screen.dart';
 import 'package:drup/ui/screens/home_screen.dart';
 import 'package:drup/ui/screens/location_search_screen.dart';
@@ -8,65 +9,106 @@ import 'package:drup/ui/screens/ride_request_screen.dart';
 import 'package:drup/ui/screens/ride_status_screen.dart';
 import 'package:drup/ui/screens/splash_screen.dart';
 import 'package:drup/ui/screens/user_tracking_screen.dart';
+import 'package:drup/ui/user/main_screen.dart';
 import 'package:go_router/go_router.dart';
 
-class RoutePaths {
-  static final splashPath = 'splash';
-  static final loginPath = 'login';
-  static final homePath = 'home';
-  static final rideRequestPath = 'ride-request';
-  static final driverMapPath = 'driver-map';
-  static final userTrackingPath = 'user-tracking';
-  static final rideStatusPath = 'ride-status';
-  static final searchLocationsPath = 'pick-locations';
+class AppRoutes {
+  // Routes
+  static const String splashRoute = '/';
+  static const String loginRoute = '/login';
+  static const String homeRoute = '/home';
+  static const String rideRequestRoute = '/ride-request';
+  static const String driverMapRoute = '/driver-map';
+  static const String userTrackingRoute = '/user-tracking';
+  static const String rideStatusRoute = '/ride-status';
+  static const String searchLocationsRoute = '/pick-locations';
 }
 
-class AppRoutes {
+class AppScreens {
   static final splashRoute = GoRoute(
-    path: AppConstants.splashRoute,
-    name: RoutePaths.splashPath,
-    builder: (context, state) => const SplashScreen(),
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.splashRoute,
+    pageBuilder: (context, state) =>
+        fadeTransitionPage(key: state.pageKey, child: const SplashScreen()),
   );
 
   static final loginRoute = GoRoute(
-    path: AppConstants.loginRoute,
-    name: RoutePaths.loginPath,
-    builder: (context, state) => const LoginScreen(),
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.loginRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const LoginScreen(),
+    ),
   );
 
+  //! User routes
+  static final mainRoute = ShellRoute(
+    navigatorKey: mainShellNavigator,
+    pageBuilder: (context, state, child) {
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: MainScreen(child: child),
+      );
+    },
+    routes: [homeRoute],
+  );
+
+  // user home route
   static final homeRoute = GoRoute(
-    path: AppConstants.homeRoute,
-    name: RoutePaths.homePath,
+    path: AppRoutes.homeRoute,
     builder: (context, state) => const HomeScreen(),
   );
 
-  static final rideRequestRoute = GoRoute(
-    path: AppConstants.rideRequestRoute,
-    name: RoutePaths.rideRequestPath,
-    builder: (context, state) => const RideRequestScreen(),
+  //! Driver routes
+  static final driverMainRoute = ShellRoute(
+    navigatorKey: driverShellNavigator,
+    pageBuilder: (context, state, child) {
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: DriverMainScreen(child: child),
+      );
+    },
+    routes: [driverMapScreen],
   );
 
+  // driver map route
   static final driverMapScreen = GoRoute(
-    path: AppConstants.driverMapRoute,
-    name: RoutePaths.driverMapPath,
+    path: AppRoutes.driverMapRoute,
     builder: (context, state) => const DriverMapScreen(),
   );
 
+  // other user's routes
+  static final rideRequestRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.rideRequestRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const RideRequestScreen(),
+    ),
+  );
+
+  // other driver's routes
   static final userTrackingRoute = GoRoute(
-    path: AppConstants.userTrackingRoute,
-    name: RoutePaths.userTrackingPath,
-    builder: (context, state) => const UserTrackingScreen(),
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.userTrackingRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const UserTrackingScreen(),
+    ),
   );
 
   static final riderStatusRoute = GoRoute(
-    path: AppConstants.rideStatusRoute,
-    name: RoutePaths.rideStatusPath,
-    builder: (context, state) => const RideStatusScreen(),
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.rideStatusRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const RideStatusScreen(),
+    ),
   );
 
   static final searchLocationsRoute = GoRoute(
-    name: RoutePaths.searchLocationsPath,
-    path: AppConstants.searchLocationsRoute,
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.searchLocationsRoute,
     pageBuilder: (context, state) => slideUpTransitionPage(
       key: state.pageKey,
       child: const LocationSearchScreen(),

@@ -40,7 +40,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   void _setCurrentLocation() {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation != null) {
-      final address = userState.currentLocation!.address ?? 'Current Location';
+      final address = userState.currentLocation!.address ?? 'Pickup Location';
       _currentLocationController.text = address;
       ref
           .read(rideNotifierProvider.notifier)
@@ -207,11 +207,27 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                           color: AppColors.primary,
                         ),
                       ),
-                      hintText: 'Current Location',
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      hintText: 'Pickup Location',
                       hintStyle: TextStyles.t2.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: FontSizes.s16,
                       ),
+                      suffixIcon: _currentLocationController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: AppColors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                _currentLocationController.clear();
+                                setState(() {
+                                  _searchResults = [];
+                                });
+                              },
+                            )
+                          : null,
                     ),
                     style: TextStyles.t2.copyWith(
                       color: AppColors.onAccent,
@@ -259,6 +275,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                           ),
                         ),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       hintText: 'Where to?',
                       hintStyle: TextStyles.t2.copyWith(
                         color: AppColors.textSecondary,

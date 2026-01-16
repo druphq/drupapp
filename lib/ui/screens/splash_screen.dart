@@ -1,11 +1,11 @@
 import 'package:drup/core/animation/drup_animation.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_notifier.dart';
 import '../../providers/user_notifier.dart';
 import '../../theme/app_colors.dart';
-import '../../core/constants/constants.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -44,15 +44,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // Navigate to appropriate screen
       if (mounted) {
         if (isDriver) {
-          context.go(AppConstants.driverMapRoute);
+          context.go(AppRoutes.driverMapRoute);
         } else {
-          context.go(AppConstants.homeRoute);
+          context.go(AppRoutes.homeRoute);
         }
       }
     } else {
       // Navigate to login
       if (mounted) {
-        context.go(AppConstants.loginRoute);
+        context.go(AppRoutes.loginRoute);
       }
     }
   }

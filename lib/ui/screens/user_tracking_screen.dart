@@ -1,10 +1,10 @@
+import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../providers/ride_notifier.dart';
 import '../../theme/app_colors.dart';
-import '../../core/constants/constants.dart';
 import '../../core/utils/map_helper.dart';
 import '../../core/utils/location_helper.dart';
 import '../widgets/driver_info_card.dart';
@@ -135,7 +135,7 @@ class _UserTrackingScreenState extends ConsumerState<UserTrackingScreen> {
                           onPressed: () async {
                             // Trip should be started by driver, just navigate to status screen
                             if (mounted) {
-                              context.go(AppConstants.rideStatusRoute);
+                              context.go(AppRoutes.rideStatusRoute);
                             }
                           },
                           backgroundColor: AppColors.success,
@@ -174,7 +174,7 @@ class _UserTrackingScreenState extends ConsumerState<UserTrackingScreen> {
                                     .cancelRide(rideState.currentRide!.id);
                               }
                               if (mounted) {
-                                context.go(AppConstants.homeRoute);
+                                context.go(AppRoutes.homeRoute);
                               }
                             }
                           },

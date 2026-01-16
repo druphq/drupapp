@@ -23,16 +23,6 @@ class AppConstants {
   static const int numberOfMockDrivers = 5;
   static const double driverMovementSpeedKmH = 40.0; // km/h for simulation
 
-  // Routes
-  static const String splashRoute = '/';
-  static const String loginRoute = '/login';
-  static const String homeRoute = '/home';
-  static const String rideRequestRoute = '/ride-request';
-  static const String driverMapRoute = '/driver-map';
-  static const String userTrackingRoute = '/user-tracking';
-  static const String rideStatusRoute = '/ride-status';
-  static const String searchLocationsRoute = '/pick-locations';
-
   // Storage Keys
   static const String userIdKey = 'userId';
   static const String userTypeKey = 'userType';

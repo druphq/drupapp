@@ -1,3 +1,4 @@
+import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -170,7 +171,7 @@ class RideRequestScreen extends ConsumerWidget {
                     );
 
                 if (success && context.mounted) {
-                  context.go(AppConstants.userTrackingRoute);
+                  context.go(AppRoutes.userTrackingRoute);
                 }
               },
               icon: Icons.check_circle,

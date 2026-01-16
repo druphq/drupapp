@@ -22,7 +22,7 @@ class MyApp extends ConsumerWidget {
     final router = AppRouter.createRouter(ref);
 
     return MaterialApp.router(
-      title: 'Drup - Ride Hailing App',
+      title: 'Drup',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,

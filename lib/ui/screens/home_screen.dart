@@ -1,3 +1,4 @@
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/ui/widgets/bottom_sheet_widget.dart';
 import 'package:drup/ui/widgets/app_drawer.dart';
@@ -164,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: BottomSheetWidget(
               onWhereToTap: () {
                 // Navigate to location search screen with slide up transition
-                context.push(AppConstants.searchLocationsRoute);
+                context.push(AppRoutes.searchLocationsRoute);
               },
             ),
           ),
