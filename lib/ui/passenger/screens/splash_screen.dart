@@ -19,7 +19,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // _initialize();
+    _initialize();
   }
 
   Future<void> _initialize() async {
