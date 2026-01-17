@@ -7,11 +7,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/auth_notifier.dart';
-import '../../providers/user_notifier.dart';
-import '../../theme/app_colors.dart';
-import '../../core/constants/constants.dart';
-import '../../core/widgets/custom_button.dart';
+import '../../../providers/auth_notifier.dart';
+import '../../../providers/user_notifier.dart';
+import '../../../theme/app_colors.dart';
+import '../../../core/constants/constants.dart';
+import '../../../core/widgets/custom_button.dart';
 import 'package:gap/gap.dart';
 import 'package:the_validator/the_validator.dart';
 

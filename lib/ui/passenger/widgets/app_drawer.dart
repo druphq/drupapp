@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/user_notifier.dart';
-import '../../providers/auth_notifier.dart';
+import '../../../providers/user_notifier.dart';
+import '../../../providers/auth_notifier.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -177,7 +177,7 @@ class AppDrawer extends ConsumerWidget {
                         child: CustomButton(
                           text: 'Driver Mode',
                           onPressed: () {
-                            context.push(AppRoutes.driverHomeRoute);
+                            context.push(AppRoutes.driverSplashRoute);
                           },
                         ),
                       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../data/models/driver.dart';
-import '../../theme/app_colors.dart';
+import '../../../data/models/driver.dart';
+import '../../../theme/app_colors.dart';
 
 class DriverInfoCard extends StatelessWidget {
   final Driver driver;

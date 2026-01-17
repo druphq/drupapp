@@ -1,0 +1,85 @@
+import 'package:drup/core/animation/drup_animation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../theme/app_colors.dart';
+
+// Provider to track if driver onboarding has been shown
+final driverOnboardingShownProvider = StateProvider<bool>((ref) => false);
+
+class DriverSplashScreen extends ConsumerStatefulWidget {
+  const DriverSplashScreen({super.key});
+
+  @override
+  ConsumerState<DriverSplashScreen> createState() => _DriverSplashScreenState();
+}
+
+class _DriverSplashScreenState extends ConsumerState<DriverSplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    // Wait for 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    // Check if driver onboarding has been shown
+    final hasSeenOnboarding = ref.read(driverOnboardingShownProvider);
+
+    // // Navigate to appropriate screen
+    // if (mounted) {
+    //   if (hasSeenOnboarding) {
+    //     // User has seen onboarding, go to driver home
+    //     context.go(AppRoutes.driverHomeRoute);
+    //   } else {
+    //     // First time driver mode, show onboarding
+    //     context.go(AppRoutes.driverOnboardRoute);
+    //   }
+    // }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                Color(0xff253B80),
+                Color(0xff253B80),
+                Color(0xff5490D0),
+                Color(0xff5C9EDC),
+              ],
+            ),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DrupLogoAnimation(),
+                SizedBox(height: 24),
+                Text(
+                  'Driver Mode',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

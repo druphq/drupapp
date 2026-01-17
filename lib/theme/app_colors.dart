@@ -66,7 +66,7 @@ class AppColors {
   static const white = Color(0xffffffff);
   static const Color bgWhite = Color(0xfff3f3f3);
   static const Color bgBlack = Color(0xff000000);
-  static const Color splashBg = Color(0xff222D65);
+  static const Color splashBg = Color(0xff253B80);
 
   static const Color grey = Colors.grey;
   static Color grey50 = Color(0xFFFFFAFA);

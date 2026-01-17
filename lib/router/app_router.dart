@@ -54,6 +54,8 @@ class AppRouter {
         AppScreens.splashRoute,
         AppScreens.loginRoute,
         AppScreens.mainRoute,
+        AppScreens.driverSplashRoute,
+        AppScreens.driverOnboardRoute,
         AppScreens.driverMainRoute,
         AppScreens.rideRequestRoute,
         AppScreens.userTrackingRoute,

@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/providers.dart';
-import '../../providers/ride_notifier.dart';
-import '../../providers/user_notifier.dart';
-import '../../data/models/location_model.dart';
+import '../../../providers/providers.dart';
+import '../../../providers/ride_notifier.dart';
+import '../../../providers/user_notifier.dart';
+import '../../../data/models/location_model.dart';
 
 class LocationSearchScreen extends ConsumerStatefulWidget {
   const LocationSearchScreen({super.key});
