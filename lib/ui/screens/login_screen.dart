@@ -70,7 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Navigate to appropriate screen
       if (mounted) {
         if (_isDriver) {
-          context.go(AppRoutes.driverMapRoute);
+          context.go(AppRoutes.driverHomeRoute);
         } else {
           context.go(AppRoutes.homeRoute);
         }

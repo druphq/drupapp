@@ -1,6 +1,7 @@
 import 'package:drup/core/animation/drup_animation.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_notifier.dart';
@@ -44,7 +45,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // Navigate to appropriate screen
       if (mounted) {
         if (isDriver) {
-          context.go(AppRoutes.driverMapRoute);
+          context.go(AppRoutes.driverHomeRoute);
         } else {
           context.go(AppRoutes.homeRoute);
         }
@@ -59,9 +60,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: AppColors.splashBg,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
       body: SafeArea(
         bottom: false,
         top: false,

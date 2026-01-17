@@ -22,7 +22,7 @@ class AppRouter {
     if (isLoggedIn) {
       // check if user's last activity was as a driver or rider
       initialLocation = isDriver
-          ? AppRoutes.driverMapRoute
+          ? AppRoutes.driverHomeRoute
           : AppRoutes.homeRoute;
     }
 
@@ -45,7 +45,7 @@ class AppRouter {
 
         // Redirect logged-in users away from login
         if (isLoggedIn && state.matchedLocation == AppRoutes.loginRoute) {
-          return isDriver ? AppRoutes.driverMapRoute : AppRoutes.homeRoute;
+          return isDriver ? AppRoutes.driverHomeRoute : AppRoutes.homeRoute;
         }
 
         return null;

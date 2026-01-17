@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/user_notifier.dart';
-import '../../providers/auth_notifier.dart';
+import '../../../providers/user_notifier.dart';
+import '../../../providers/auth_notifier.dart';
 
-class AppDrawer extends ConsumerWidget {
-  const AppDrawer({super.key});
+class DriverAppDrawer extends ConsumerWidget {
+  const DriverAppDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -175,9 +175,9 @@ class AppDrawer extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: CustomButton(
-                          text: 'Driver Mode',
+                          text: 'Passenger Mode',
                           onPressed: () {
-                            context.push(AppRoutes.driverHomeRoute);
+                            context.go(AppRoutes.homeRoute);
                           },
                         ),
                       ),

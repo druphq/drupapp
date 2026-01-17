@@ -19,7 +19,7 @@ class AppStrings {
   // home screen
 
   // schedule ride screen
-  static const scheduleYourRideTitleTxt = 'Schedule Your Ride';
+  static const scheduleYourRideTitleTxt = 'Plan Airport Ride';
   static const currentLocationHintTxt = 'Current Location';
   static const whereToHintTxt = 'Where to?';
   static const scheduleRideTitleTxt = 'Schedule Ride';

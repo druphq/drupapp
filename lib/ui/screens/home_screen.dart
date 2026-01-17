@@ -2,6 +2,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/ui/widgets/bottom_sheet_widget.dart';
 import 'package:drup/ui/widgets/app_drawer.dart';
+import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +25,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
   bool _selectingPickup = true;
+  bool _isAtUserLocation = true;
 
   @override
   void initState() {
@@ -54,6 +56,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _onMapTap(LatLng position) async {
+    setState(() {
+      _isAtUserLocation = false;
+    });
+
     final mapsService = ref.read(googleMapsServiceProvider);
 
     // Get address from coordinates
@@ -71,6 +77,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
     } else {
       ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+    }
+  }
+
+  void _onCameraMove(CameraPosition position) {
+    final userState = ref.read(userNotifierProvider);
+    final currentLocation = userState.currentLocation;
+
+    if (currentLocation != null) {
+      // Calculate distance between camera position and user location
+      final distance = _calculateDistance(
+        position.target.latitude,
+        position.target.longitude,
+        currentLocation.latitude,
+        currentLocation.longitude,
+      );
+
+      // If distance is very small (within ~50 meters), consider it at user location
+      final isNearUser = distance < 0.0005;
+
+      if (_isAtUserLocation != isNearUser) {
+        setState(() {
+          _isAtUserLocation = isNearUser;
+        });
+      }
+    }
+  }
+
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    final dLat = lat2 - lat1;
+    final dLon = lon2 - lon1;
+    return dLat * dLat + dLon * dLon;
+  }
+
+  Future<void> _onMyLocationButtonPressed() async {
+    final userState = ref.read(userNotifierProvider);
+    if (userState.currentLocation != null && _mapController != null) {
+      await _mapController!.animateCamera(
+        CameraUpdate.newLatLng(userState.currentLocation!.latLng),
+      );
+      setState(() {
+        _isAtUserLocation = true;
+      });
     }
   }
 
@@ -111,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           builder: (context) => Container(
             margin: EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: context.colorScheme.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -122,7 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             child: IconButton(
-              icon: Icon(Icons.menu, color: AppColors.onAccent, size: 18.0),
+              icon: Icon(Icons.menu, color: AppColors.onAccent, size: 24.0),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -144,6 +197,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               mapType: MapType.normal,
               onMapCreated: _onMapCreated,
               onTap: _onMapTap,
+              onCameraMove: _onCameraMove,
               initialCameraPosition: CameraPosition(
                 target:
                     currentLocation?.latLng ?? const LatLng(37.7749, -122.4194),
@@ -156,6 +210,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               zoomControlsEnabled: false,
             ),
           ),
+
+          // Custom My Location Button
+          if (!_isAtUserLocation)
+            Positioned(
+              right: 16,
+              bottom: MediaQuery.of(context).size.height * 0.22,
+              child: FloatingActionButton(
+                mini: true,
+                backgroundColor: Colors.white,
+                onPressed: _onMyLocationButtonPressed,
+                child: Icon(Icons.my_location, color: AppColors.primary),
+              ),
+            ),
 
           // Bottom sheet with controls - positioned at bottom
           Positioned(

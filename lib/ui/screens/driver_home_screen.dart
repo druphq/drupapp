@@ -1,19 +1,23 @@
+import 'package:drup/ui/driver/widgets/driver_app_drawer.dart';
+import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../providers/driver_notifier.dart';
 import '../../theme/app_colors.dart';
 import '../../core/utils/map_helper.dart';
 import '../widgets/ride_request_card.dart';
 
-class DriverMapScreen extends ConsumerStatefulWidget {
-  const DriverMapScreen({super.key});
+class DriverHomeScreen extends ConsumerStatefulWidget {
+  const DriverHomeScreen({super.key});
 
   @override
-  ConsumerState<DriverMapScreen> createState() => _DriverMapScreenState();
+  ConsumerState<DriverHomeScreen> createState() => _DriverMapScreenState();
 }
 
-class _DriverMapScreenState extends ConsumerState<DriverMapScreen> {
+class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
   GoogleMapController? _mapController;
 
   void _onMapCreated(GoogleMapController controller) {
@@ -54,15 +58,61 @@ class _DriverMapScreenState extends ConsumerState<DriverMapScreen> {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+
+      drawer: const DriverAppDrawer(),
       appBar: AppBar(
-        title: const Text('Driver Dashboard'),
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.transparent,
+        leading: Builder(
+          builder: (context) => Container(
+            margin: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surface,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(Icons.menu, color: AppColors.onAccent, size: 24.0),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
+          ),
+        ),
         actions: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isAvailable ? AppColors.success : AppColors.error,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(color: AppColors.shadow, blurRadius: 8),
+              ],
+            ),
+            child: Text(
+              isAvailable ? 'ONLINE' : 'OFFLINE',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Gap(5.0),
           Switch(
             value: isAvailable,
             onChanged: (value) {
               ref.read(driverNotifierProvider.notifier).toggleAvailability();
             },
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
           ),
           const SizedBox(width: 8),
         ],
@@ -71,6 +121,7 @@ class _DriverMapScreenState extends ConsumerState<DriverMapScreen> {
         children: [
           // Google Map
           GoogleMap(
+            mapType: MapType.normal,
             onMapCreated: _onMapCreated,
             initialCameraPosition: CameraPosition(
               target:
@@ -84,27 +135,27 @@ class _DriverMapScreenState extends ConsumerState<DriverMapScreen> {
           ),
 
           // Status badge
-          Positioned(
-            top: 16,
-            left: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isAvailable ? AppColors.success : AppColors.error,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(color: AppColors.shadow, blurRadius: 8),
-                ],
-              ),
-              child: Text(
-                isAvailable ? 'AVAILABLE' : 'OFFLINE',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   top: 16,
+          //   left: 16,
+          //   child: Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          //     decoration: BoxDecoration(
+          //       color: isAvailable ? AppColors.success : AppColors.error,
+          //       borderRadius: BorderRadius.circular(20),
+          //       boxShadow: const [
+          //         BoxShadow(color: AppColors.shadow, blurRadius: 8),
+          //       ],
+          //     ),
+          //     child: Text(
+          //       isAvailable ? 'ONLINE' : 'OFFLINE',
+          //       style: const TextStyle(
+          //         color: Colors.white,
+          //         fontWeight: FontWeight.bold,
+          //       ),
+          //     ),
+          //   ),
+          // ),
 
           // Pending requests
           if (pendingRequests.isNotEmpty && isAvailable)

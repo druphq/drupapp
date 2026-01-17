@@ -1,7 +1,7 @@
 import 'package:drup/core/animation/page_route_animation.dart';
 import 'package:drup/router/app_router.dart';
-import 'package:drup/ui/driver/driver_main_screen.dart';
-import 'package:drup/ui/screens/driver_map_screen.dart';
+import 'package:drup/ui/driver/screens/driver_main_screen.dart';
+import 'package:drup/ui/screens/driver_home_screen.dart';
 import 'package:drup/ui/screens/home_screen.dart';
 import 'package:drup/ui/screens/location_search_screen.dart';
 import 'package:drup/ui/screens/login_screen.dart';
@@ -18,7 +18,7 @@ class AppRoutes {
   static const String loginRoute = '/login';
   static const String homeRoute = '/home';
   static const String rideRequestRoute = '/ride-request';
-  static const String driverMapRoute = '/driver-map';
+  static const String driverHomeRoute = '/driver-home';
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
   static const String searchLocationsRoute = '/pick-locations';
@@ -68,13 +68,13 @@ class AppScreens {
         child: DriverMainScreen(child: child),
       );
     },
-    routes: [driverMapScreen],
+    routes: [driverHomeScreen],
   );
 
   // driver map route
-  static final driverMapScreen = GoRoute(
-    path: AppRoutes.driverMapRoute,
-    builder: (context, state) => const DriverMapScreen(),
+  static final driverHomeScreen = GoRoute(
+    path: AppRoutes.driverHomeRoute,
+    builder: (context, state) => const DriverHomeScreen(),
   );
 
   // other user's routes
