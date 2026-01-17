@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/resources/app_strings.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
@@ -22,26 +23,60 @@ class LocationSearchScreen extends ConsumerStatefulWidget {
 }
 
 class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
-  final _currentLocationController = TextEditingController();
+  final _pickupController = TextEditingController();
   final _destinationController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
   bool _isCurrentLocationField = false;
   Timer? _debounceTimer;
+  final focusNode1 = FocusNode();
+  final focusNode2 = FocusNode();
+  bool _showCurrentLocationBtn = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setCurrentLocationBtnVisiblity();
       _setCurrentLocation();
+    });
+  }
+
+  void _setCurrentLocationBtnVisiblity() {
+    final userState = ref.read(userNotifierProvider);
+    final address = userState.currentLocation!.name;
+    _pickupController.addListener(() {
+      setState(() {
+        if ((_pickupController.text.isNotEmpty &&
+                _pickupController.text == address) ||
+            (_destinationController.text.isNotEmpty &&
+                _destinationController.text == address)) {
+          _showCurrentLocationBtn = false;
+        } else {
+          _showCurrentLocationBtn = true;
+        }
+      });
+    });
+
+    _destinationController.addListener(() {
+      setState(() {
+        if ((_pickupController.text.isNotEmpty &&
+                _pickupController.text == address) ||
+            (_destinationController.text.isNotEmpty &&
+                _destinationController.text == address)) {
+          _showCurrentLocationBtn = false;
+        } else {
+          _showCurrentLocationBtn = true;
+        }
+      });
     });
   }
 
   void _setCurrentLocation() {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation != null) {
-      final address = userState.currentLocation!.name ?? 'Pickup Location';
-      _currentLocationController.text = address;
+      final address = userState.currentLocation!.name;
+      _pickupController.text = address ?? '';
       ref
           .read(rideNotifierProvider.notifier)
           .setPickupLocation(userState.currentLocation!);
@@ -51,7 +86,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _currentLocationController.dispose();
+    _pickupController.dispose();
     _destinationController.dispose();
     super.dispose();
   }
@@ -116,12 +151,13 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
     final location = LocationModel(
       latitude: place['latitude'],
       longitude: place['longitude'],
+      name: place['name'],
       address: place['address'],
     );
 
     // Update the text field with selected airport
     if (_isCurrentLocationField) {
-      _currentLocationController.text = place['name'];
+      _pickupController.text = place['name'];
       ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
     } else {
       _destinationController.text = place['name'];
@@ -131,6 +167,21 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
     setState(() {
       _searchResults = [];
     });
+  }
+
+  Future<void> _navigateToAirports(bool isPickup) async {
+    final result = await context.push(
+      '${AppRoutes.nigeriaAirportsRoute}?isPickup=$isPickup',
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      // Update the text field with selected airport
+      if (isPickup) {
+        _pickupController.text = result['name'];
+      } else {
+        _destinationController.text = result['name'];
+      }
+    }
   }
 
   @override
@@ -190,7 +241,8 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                   height: Sizes.tfieldHeight,
                   alignment: Alignment.center,
                   child: TextField(
-                    controller: _currentLocationController,
+                    controller: _pickupController,
+                    focusNode: focusNode1,
                     onChanged: (value) {
                       setState(() {
                         _isCurrentLocationField = true;
@@ -213,21 +265,35 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                         color: AppColors.textSecondary,
                         fontSize: FontSizes.s16,
                       ),
-                      suffixIcon: _currentLocationController.text.isNotEmpty
-                          ? IconButton(
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (_pickupController.text.isNotEmpty &&
+                              focusNode1.hasFocus)
+                            IconButton(
                               icon: const Icon(
-                                Icons.clear,
+                                Icons.cancel,
                                 color: AppColors.textSecondary,
                                 size: 20,
                               ),
                               onPressed: () {
-                                _currentLocationController.clear();
+                                _pickupController.clear();
                                 setState(() {
                                   _searchResults = [];
                                 });
                               },
-                            )
-                          : null,
+                            ),
+                          IconButton(
+                            onPressed: () => _navigateToAirports(true),
+                            icon: ImageIcon(
+                              AssetImage(AppAssets.flightIcon),
+                              color: AppColors.accent,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     style: TextStyles.t2.copyWith(
                       color: AppColors.onAccent,
@@ -253,6 +319,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _destinationController,
+                    focusNode: focusNode2,
                     autofocus: true,
                     keyboardType: TextInputType.streetAddress,
                     textInputAction: TextInputAction.done,
@@ -281,6 +348,35 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                         color: AppColors.textSecondary,
                         fontSize: FontSizes.s16,
                       ),
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (_destinationController.text.isNotEmpty &&
+                              focusNode2.hasFocus)
+                            IconButton(
+                              icon: const Icon(
+                                Icons.cancel,
+                                color: AppColors.textSecondary,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                _destinationController.clear();
+                                setState(() {
+                                  _searchResults = [];
+                                });
+                              },
+                            ),
+                          IconButton(
+                            onPressed: () => _navigateToAirports(false),
+                            icon: ImageIcon(
+                              AssetImage(AppAssets.flightIcon),
+                              color: AppColors.accent,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     style: TextStyles.t2.copyWith(
                       color: AppColors.onAccent,
@@ -294,66 +390,123 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
               const Gap(16),
 
               // Search results section
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
-                  child: _isSearching
-                      ? const Padding(
-                          padding: EdgeInsets.only(top: 30.0),
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _isSearching
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 30.0),
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                      : _searchResults.isEmpty
-                      ? SizedBox.shrink()
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16.0,
-                          ),
-                          itemCount: _searchResults.length,
-                          itemBuilder: (context, index) {
-                            final place = _searchResults[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(Corners.md),
-                                color: Colors.black.withValues(alpha: 0.2),
-                              ),
-                              child: ListTile(
-                                leading: ImageIcon(
-                                  AssetImage(AppAssets.flightIcon),
-                                  color: Colors.white70,
-                                  size: 18,
-                                ),
-                                title: Text(
-                                  place['name'] ?? '',
-                                  style: TextStyles.t2.copyWith(
-                                    color: Colors.white,
-                                    fontSize: FontSizes.s15,
-                                    fontWeight: FontWeight.w600,
+                          )
+                        : _searchResults.isEmpty
+                        ? SizedBox.shrink()
+                        : Column(
+                            children: [
+                              ...List.generate(_searchResults.length, (index) {
+                                final place = _searchResults[index];
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                      Corners.md,
+                                    ),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  place['address'] ?? '',
-                                  style: TextStyles.t2.copyWith(
-                                    color: Colors.white70,
-                                    fontSize: FontSizes.s13,
+                                  child: ListTile(
+                                    leading: ImageIcon(
+                                      AssetImage(AppAssets.flightIcon),
+                                      color: Colors.white70,
+                                      size: 18,
+                                    ),
+                                    title: Text(
+                                      place['name'] ?? '',
+                                      style: TextStyles.t2.copyWith(
+                                        color: Colors.white,
+                                        fontSize: FontSizes.s15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      place['address'] ?? '',
+                                      style: TextStyles.t2.copyWith(
+                                        color: Colors.white70,
+                                        fontSize: FontSizes.s13,
+                                      ),
+                                    ),
+                                    onTap: () => _selectLocation(place),
                                   ),
-                                ),
-                                onTap: () => _selectLocation(place),
-                              ),
-                            );
-                          },
+                                );
+                              }),
+                            ],
+                          ),
+
+                    // show current location button
+                    if (_showCurrentLocationBtn)
+                      Material(
+                        clipBehavior: Clip.hardEdge,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Corners.md),
                         ),
+                        color: Colors.black.withValues(alpha: 0.2),
+                        child: InkWell(
+                          onTap: () {
+                            final userState = ref.read(userNotifierProvider);
+                            if (userState.currentLocation != null) {
+                              final address =
+                                  userState.currentLocation!.name ??
+                                  'Current Location';
+
+                              if (focusNode1.hasFocus) {
+                                _pickupController.text = address;
+
+                                ref
+                                    .read(rideNotifierProvider.notifier)
+                                    .setPickupLocation(
+                                      userState.currentLocation!,
+                                    );
+                              } else if (focusNode2.hasFocus) {
+                                _destinationController.text = address;
+                                ref
+                                    .read(rideNotifierProvider.notifier)
+                                    .setDestinationLocation(
+                                      userState.currentLocation!,
+                                    );
+                              }
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.my_location,
+                                  size: 24,
+                                  color: Colors.white,
+                                ),
+                                Gap(10.0),
+                                Text(
+                                  'Current location',
+                                  style: TextStyles.t1.copyWith(
+                                    fontSize: 16.0,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

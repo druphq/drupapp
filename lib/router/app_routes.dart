@@ -12,6 +12,7 @@ import 'package:drup/ui/passenger/screens/ride_status_screen.dart';
 import 'package:drup/ui/passenger/screens/splash_screen.dart';
 import 'package:drup/ui/passenger/screens/user_tracking_screen.dart';
 import 'package:drup/ui/passenger/screens/main_screen.dart';
+import 'package:drup/ui/passenger/screens/nigeria_airports_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRoutes {
@@ -26,6 +27,7 @@ class AppRoutes {
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
   static const String searchLocationsRoute = '/pick-locations';
+  static const String nigeriaAirportsRoute = '/nigeria-airports';
 }
 
 class AppScreens {
@@ -135,5 +137,17 @@ class AppScreens {
       key: state.pageKey,
       child: const LocationSearchScreen(),
     ),
+  );
+
+  static final nigeriaAirportsRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.nigeriaAirportsRoute,
+    pageBuilder: (context, state) {
+      final isPickupLocation = state.uri.queryParameters['isPickup'] == 'true';
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: NigeriaAirportsScreen(isPickupLocation: isPickupLocation),
+      );
+    },
   );
 }

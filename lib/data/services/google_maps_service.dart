@@ -209,6 +209,49 @@ class GoogleMapsService {
     }
   }
 
+  /// Load all Nigerian airports
+  Future<List<Map<String, dynamic>>> loadNigerianAirports() async {
+    try {
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/textsearch/json?'
+        'query=${Uri.encodeComponent('airport Nigeria')}&'
+        'type=airport&'
+        'region=ng&'
+        'key=$_apiKey',
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK') {
+          // Get all place IDs
+          final placeIds = (data['results'] as List)
+              .map((place) => place['place_id'] as String)
+              .toList();
+
+          // Fetch all place details concurrently
+          final detailsFutures = placeIds.map(
+            (placeId) => _getPlaceDetails(placeId),
+          );
+          final detailsResults = await Future.wait(detailsFutures);
+
+          // Filter out null results and return
+          return detailsResults
+              .where((details) => details != null)
+              .cast<Map<String, dynamic>>()
+              .toList();
+        }
+      }
+
+      return [];
+    } catch (e, stackTrace) {
+      debugPrint('Error loading Nigerian airports: $e\n$stackTrace');
+      return [];
+    }
+  }
+
   /// Get detailed information for a place using Place Details API
   Future<Map<String, dynamic>?> _getPlaceDetails(String placeId) async {
     try {

@@ -61,6 +61,7 @@ class AppRouter {
         AppScreens.userTrackingRoute,
         AppScreens.riderStatusRoute,
         AppScreens.searchLocationsRoute,
+        AppScreens.nigeriaAirportsRoute,
       ],
     );
   }
