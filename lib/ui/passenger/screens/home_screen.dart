@@ -2,6 +2,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/ui/passenger/widgets/bottom_sheet_widget.dart';
 import 'package:drup/ui/passenger/widgets/app_drawer.dart';
+import 'package:drup/ui/passenger/widgets/location_permission_bottom_sheet.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,16 +39,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _initializeLocation() async {
     final userState = ref.read(userNotifierProvider);
 
-    if (userState.currentLocation == null) {
-      await ref.read(userNotifierProvider.notifier).updateUserLocation();
+    if (userState.currentLocation == null ||
+        userState.currentLocation!.address == null) {
+      // Show location permission bottom sheet
+      _showLocationPermissionSheet();
+    } else {
+      // Update camera to current location
+      if (_mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(userState.currentLocation!.latLng),
+        );
+      }
     }
+  }
 
-    final updatedState = ref.read(userNotifierProvider);
-    if (updatedState.currentLocation != null && _mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newLatLng(updatedState.currentLocation!.latLng),
-      );
-    }
+  void _showLocationPermissionSheet() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const LocationPermissionBottomSheet(),
+    ).then((_) {
+      // After bottom sheet is closed, check if location is now available
+      final userState = ref.read(userNotifierProvider);
+      if (userState.currentLocation != null && _mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(userState.currentLocation!.latLng),
+        );
+      }
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
