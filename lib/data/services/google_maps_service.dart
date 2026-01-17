@@ -85,6 +85,45 @@ class GoogleMapsService {
     }
   }
 
+  /// Get detailed location info (name + address) from coordinates
+  Future<Map<String, String?>> getLocationDetails(
+    LocationModel location,
+  ) async {
+    try {
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?'
+        'latlng=${location.latitude},${location.longitude}&'
+        'key=$_apiKey',
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
+          final result = data['results'][0];
+
+          // Get the name (first address component or point of interest)
+          String? name;
+          if (result['address_components'] != null &&
+              result['address_components'].isNotEmpty) {
+            name = result['address_components'][0]['long_name'];
+          }
+
+          // Get formatted address
+          String? address = result['formatted_address'];
+
+          return {'name': name, 'address': address};
+        }
+      }
+      return {'name': null, 'address': null};
+    } catch (e) {
+      print('Error getting location details: $e');
+      return {'name': null, 'address': null};
+    }
+  }
+
   /// Search places by query
   Future<List<Map<String, dynamic>>> searchPlaces(String query) async {
     try {

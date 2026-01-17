@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import '../models/location_model.dart';
 
@@ -39,12 +40,22 @@ class LocationService {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+
+      // Get location details (name + address)
+      final details = await _getLocationDetails(
+        position.latitude,
+        position.longitude,
       );
 
       return LocationModel(
         latitude: position.latitude,
         longitude: position.longitude,
+        name: details['name'],
+        address: details['address'],
       );
     } catch (e) {
       print('Error getting current location: $e');
@@ -105,6 +116,37 @@ class LocationService {
       to.latitude,
       to.longitude,
     );
+  }
+
+  /// Get location details (name + address) from coordinates
+  Future<Map<String, String?>> _getLocationDetails(
+    double lat,
+    double lng,
+  ) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+
+        // Name: Use the most specific available
+        String? name = place.name ?? place.street ?? place.subLocality;
+
+        // Address: Build formatted address
+        String? address = [
+          place.street,
+          place.subLocality,
+          place.locality,
+          place.country,
+        ].where((e) => e != null && e.isNotEmpty).join(', ');
+
+        return {'name': name, 'address': address.isNotEmpty ? address : null};
+      }
+      return {'name': null, 'address': null};
+    } catch (e) {
+      print('Error getting location details: $e');
+      return {'name': null, 'address': null};
+    }
   }
 
   void dispose() {

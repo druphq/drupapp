@@ -1,4 +1,4 @@
-import 'package:drup/core/animation/drup_animation.dart';
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +22,7 @@ class _DriverSplashScreenState extends ConsumerState<DriverSplashScreen> {
   @override
   void initState() {
     super.initState();
-    // _initialize();
+    _initialize();
   }
 
   Future<void> _initialize() async {
@@ -69,7 +69,26 @@ class _DriverSplashScreenState extends ConsumerState<DriverSplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                DrupLogoAnimation(),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ImageIcon(
+                      AssetImage(AppAssets.drupLogoIcon),
+                      size: 70,
+                      color: Colors.white,
+                    ),
+                    // Animated Drup text logo sliding out from the logo icon
+                    Image.asset(
+                      AppAssets.drupTextIcon,
+                      height: 50,
+                      width: 120,
+                      fit: BoxFit.fill,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
                 Gap(5),
                 Text(
                   'Driver',

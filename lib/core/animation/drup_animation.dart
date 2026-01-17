@@ -18,7 +18,7 @@ class DrupLogoAnimationState extends State<DrupLogoAnimation>
     super.initState();
     _logoController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4), // Adjust duration as needed
+      duration: const Duration(seconds: 2), // Adjust duration as needed
     );
     _logoController.forward();
   }
