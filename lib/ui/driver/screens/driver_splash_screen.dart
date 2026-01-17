@@ -1,7 +1,11 @@
 import 'package:drup/core/animation/drup_animation.dart';
+import 'package:drup/router/app_routes.dart';
+import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import '../../../theme/app_colors.dart';
 
 // Provider to track if driver onboarding has been shown
@@ -18,7 +22,7 @@ class _DriverSplashScreenState extends ConsumerState<DriverSplashScreen> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    // _initialize();
   }
 
   Future<void> _initialize() async {
@@ -31,15 +35,15 @@ class _DriverSplashScreenState extends ConsumerState<DriverSplashScreen> {
     final hasSeenOnboarding = ref.read(driverOnboardingShownProvider);
 
     // // Navigate to appropriate screen
-    // if (mounted) {
-    //   if (hasSeenOnboarding) {
-    //     // User has seen onboarding, go to driver home
-    //     context.go(AppRoutes.driverHomeRoute);
-    //   } else {
-    //     // First time driver mode, show onboarding
-    //     context.go(AppRoutes.driverOnboardRoute);
-    //   }
-    // }
+    if (mounted) {
+      if (hasSeenOnboarding) {
+        // User has seen onboarding, go to driver home
+        context.go(AppRoutes.driverHomeRoute);
+      } else {
+        // First time driver mode, show onboarding
+        context.go(AppRoutes.driverOnboardRoute);
+      }
+    }
   }
 
   @override
@@ -61,15 +65,15 @@ class _DriverSplashScreenState extends ConsumerState<DriverSplashScreen> {
               ],
             ),
           ),
-          child: const Center(
+          child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 DrupLogoAnimation(),
-                SizedBox(height: 24),
+                Gap(5),
                 Text(
-                  'Driver Mode',
-                  style: TextStyle(
+                  'Driver',
+                  style: TextStyles.appTitle1.copyWith(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

@@ -61,22 +61,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.splashBg,
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      body: SafeArea(
-        bottom: false,
-        top: false,
-        child: Center(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [DrupLogoAnimation()],
+      backgroundColor: AppColors.surface,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Container(
+          decoration: const BoxDecoration(
+           color: AppColors.splashBg,
+          ),
+          child: Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [DrupLogoAnimation()],
+            ),
           ),
         ),
       ),

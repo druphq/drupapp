@@ -2,7 +2,8 @@ import 'package:drup/resources/app_assets.dart';
 import 'package:flutter/material.dart';
 
 class DrupLogoAnimation extends StatefulWidget {
-  const DrupLogoAnimation({super.key});
+  const DrupLogoAnimation({super.key, this.isDriver = false});
+  final bool isDriver;
 
   @override
   DrupLogoAnimationState createState() => DrupLogoAnimationState();
@@ -34,34 +35,69 @@ class DrupLogoAnimationState extends State<DrupLogoAnimation>
           size: 70,
           color: Colors.white,
         ),
-        // Animated Drup text logo  sliding in from left
+        // Animated Drup text logo sliding out from the logo icon
         SlideTransition(
           position:
               Tween<Offset>(
-                begin: const Offset(-2, 0), // Start position (right screen)
-                end: const Offset(0, 0), // End position (center of screen)
+                begin: const Offset(-0.5, 0), // Start from logo position
+                end: const Offset(0, 0), // End position (next to logo)
               ).animate(
                 CurvedAnimation(
                   parent: _logoController,
                   curve: const Interval(
-                    0,
-                    0.5,
-                    curve: Curves.linearToEaseOut,
-                  ), // Animation curve
+                    0.3,
+                    0.8,
+                    curve: Curves.easeOutBack,
+                  ), // Animation curve with bounce
                 ),
               ),
-          child: Image.asset(
-            AppAssets.drupTextIcon,
-            height: 80,
-            width: 120,
-            fit: BoxFit.fill,
-            color: Colors.white,
+          child: FadeTransition(
+            opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+              CurvedAnimation(
+                parent: _logoController,
+                curve: const Interval(0.3, 0.6, curve: Curves.easeIn),
+              ),
+            ),
+            child: Image.asset(
+              AppAssets.drupTextIcon,
+              height: 50,
+              width: 120,
+              fit: BoxFit.fill,
+              color: Colors.white,
+            ),
           ),
+
+          // ScaleTransition(
+          //   scale:
+          //       Tween<double>(
+          //         begin: 0.0, // Start invisible/small
+          //         end: 1.0, // Full size
+          //       ).animate(
+          //         CurvedAnimation(
+          //           parent: _logoController,
+          //           curve: const Interval(0.3, 0.8, curve: Curves.easeOutBack),
+          //         ),
+          //       ),
+          //   child: FadeTransition(
+          //     opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+          //       CurvedAnimation(
+          //         parent: _logoController,
+          //         curve: const Interval(0.3, 0.6, curve: Curves.easeIn),
+          //       ),
+          //     ),
+          //     child: Image.asset(
+          //       AppAssets.drupTextIcon,
+          //       height: 50,
+          //       width: 120,
+          //       fit: BoxFit.fill,
+          //       color: Colors.white,
+          //     ),
+          //   ),
+          // ),
         ),
       ],
     );
   }
-
 
   @override
   void dispose() {
