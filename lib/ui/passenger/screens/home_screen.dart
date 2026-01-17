@@ -44,6 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Show location permission bottom sheet
       _showLocationPermissionSheet();
     } else {
+
+     print('location available: ${userState.currentLocation}');
+
       // Update camera to current location
       if (_mapController != null) {
         _mapController!.animateCamera(

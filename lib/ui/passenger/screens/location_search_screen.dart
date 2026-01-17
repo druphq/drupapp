@@ -40,14 +40,11 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   void _setCurrentLocation() {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation != null) {
-      final address = userState.currentLocation!.address ?? 'Pickup Location';
+      final address = userState.currentLocation!.name ?? 'Pickup Location';
       _currentLocationController.text = address;
       ref
           .read(rideNotifierProvider.notifier)
           .setPickupLocation(userState.currentLocation!);
-
-      print('user location: ${userState.currentLocation}');
-      print('Current location set to: $address');
     }
   }
 
