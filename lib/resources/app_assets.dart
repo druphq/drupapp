@@ -16,5 +16,7 @@ class AppAssets {
   static const flightIcon = 'assets/icons/flight.png';
 
   // others
+  static const drupLogoIcon  = 'assets/others/drup_logo_icon.png';
+  static const drupTextIcon = 'assets/others/drup_text_icon.png';
   static const deliveryPng = AssetImage('assets/others/delivery.png');
 }
