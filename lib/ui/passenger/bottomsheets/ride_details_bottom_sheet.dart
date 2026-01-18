@@ -43,7 +43,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
               TextButton(
                 onPressed: () {},
                 child: Text(
-                  'Cancel Ride',
+                  'Cancel',
                   style: TextStyles.t1.copyWith(
                     fontSize: FontSizes.s16,
                     fontWeight: FontWeight.w700,
