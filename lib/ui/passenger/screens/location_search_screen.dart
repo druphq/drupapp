@@ -5,6 +5,7 @@ import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/ui/passenger/widgets/location_dot_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -167,6 +168,17 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
     setState(() {
       _searchResults = [];
     });
+
+    // Check if both locations are selected, then pop back to home
+    _checkAndPopIfBothLocationsSelected();
+  }
+
+  void _checkAndPopIfBothLocationsSelected() {
+    if (_pickupController.text.isNotEmpty &&
+        _destinationController.text.isNotEmpty) {
+      // Both locations selected, pop back to home screen
+      context.pop(true);
+    }
   }
 
   Future<void> _navigateToAirports(bool isPickup) async {
@@ -181,6 +193,9 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
       } else {
         _destinationController.text = result['name'];
       }
+
+      // Check if both locations are selected, then pop back to home
+      _checkAndPopIfBothLocationsSelected();
     }
   }
 
@@ -251,13 +266,17 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     },
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      icon: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                        ),
+                      // icon: Container(
+                      //   width: 12,
+                      //   height: 12,
+                      //   decoration: const BoxDecoration(
+                      //     shape: BoxShape.circle,
+                      //     color: AppColors.primary,
+                      //   ),
+                      // ),
+                      icon: LocationDotWidget(
+                        bgColor: AppColors.green400,
+                        isActive: _pickupController.text.isNotEmpty,
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       hintText: 'Pickup Location',
@@ -332,15 +351,19 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     },
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      icon: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.fromBorderSide(
-                            BorderSide(color: AppColors.greyStrong, width: 2),
-                          ),
-                        ),
+                      // icon: Container(
+                      //   width: 14,
+                      //   height: 14,
+                      //   decoration: BoxDecoration(
+                      //     shape: BoxShape.circle,
+                      //     border: Border.fromBorderSide(
+                      //       BorderSide(color: AppColors.greyStrong, width: 2),
+                      //     ),
+                      //   ),
+                      // ),
+                      icon: LocationDotWidget(
+                        bgColor: AppColors.accent,
+                        isActive: _destinationController.text.isNotEmpty,
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       hintText: 'Where to?',
@@ -481,6 +504,9 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                                       userState.currentLocation!,
                                     );
                               }
+
+                              // Check if both locations are selected
+                              _checkAndPopIfBothLocationsSelected();
                             }
                           },
                           child: Padding(

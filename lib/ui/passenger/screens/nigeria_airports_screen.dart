@@ -83,8 +83,8 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
         centerTitle: true,
         title: Text(
           widget.isPickupLocation
-              ? 'Select Pickup Airport'
-              : 'Select Destination Airport',
+              ? 'Select Pickup'
+              : 'Select Destination',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,

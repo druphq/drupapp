@@ -1,8 +1,10 @@
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
+import 'package:drup/ui/passenger/bottomsheets/schedule_detail_bottomsheet.dart';
 import 'package:drup/ui/passenger/widgets/bottom_sheet_widget.dart';
 import 'package:drup/ui/passenger/widgets/app_drawer.dart';
 import 'package:drup/ui/passenger/widgets/location_permission_bottom_sheet.dart';
+import 'package:drup/ui/passenger/bottomsheets/ride_details_bottom_sheet.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +29,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
   bool _selectingPickup = true;
   bool _isAtUserLocation = true;
+  // bool _hasShownRideDetails = false;
+  Set<Polyline> polylines = {};
+  Set<Marker> markers = {};
+  LocationModel? currentLocation;
 
   @override
   void initState() {
@@ -44,8 +50,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Show location permission bottom sheet
       _showLocationPermissionSheet();
     } else {
-
-     print('location available: ${userState.currentLocation}');
+      setState(() {
+        currentLocation = userState.currentLocation;
+      });
 
       // Update camera to current location
       if (_mapController != null) {
@@ -68,6 +75,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // After bottom sheet is closed, check if location is now available
       final userState = ref.read(userNotifierProvider);
       if (userState.currentLocation != null && _mapController != null) {
+        setState(() {
+          currentLocation = userState.currentLocation;
+        });
+
         _mapController!.animateCamera(
           CameraUpdate.newLatLng(userState.currentLocation!.latLng),
         );
@@ -154,30 +165,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userState = ref.watch(userNotifierProvider);
-    final rideState = ref.watch(rideNotifierProvider);
-
-    final currentLocation = userState.currentLocation;
-    final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.destinationLocation;
-
-    Set<Marker> markers = {};
-
-    if (pickupLocation != null) {
-      markers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
-    }
-
-    if (destinationLocation != null) {
-      markers.add(
-        MapHelper.createDestinationMarker(destinationLocation.latLng),
-      );
-    }
-
-    Set<Polyline> polylines = {};
-    if (rideState.routePoints.isNotEmpty) {
-      polylines.add(MapHelper.createRoutePolyline(rideState.routePoints));
-    }
-
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
@@ -217,9 +204,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             top: 0,
             left: 0,
             right: 0,
-            bottom: MediaQuery.of(context).size.height * 0.2,
+            bottom: 0,
             child: GoogleMap(
               mapType: MapType.normal,
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height * 0.2,
+              ),
               onMapCreated: _onMapCreated,
               onTap: _onMapTap,
               onCameraMove: _onCameraMove,
@@ -255,15 +245,85 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             right: 0,
             bottom: 0,
             child: BottomSheetWidget(
-              onWhereToTap: () {
+              onWhereToTap: () async {
                 // Navigate to location search screen with slide up transition
-                context.push(AppRoutes.searchLocationsRoute);
+                final result = await context.push(
+                  AppRoutes.searchLocationsRoute,
+                );
+                if (result == true) {
+                  _drawDirectionOnMap();
+                }
               },
+              onScheduleRide: _scheduleRideBottomsheet,
             ),
           ),
         ],
       ),
     );
+  }
+
+  // fill scheduling details bottomsheet
+  void _scheduleRideBottomsheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          ScheduleDetailBottomSheet(), // this bottomsheet will contain the forms for the ride scheduling
+    );
+  }
+  
+
+  // Animate camera to show both pickup and destination locations
+  Future<void> _animateCameraToRoute() async {
+    final rideState = ref.read(rideNotifierProvider);
+
+    if (rideState.pickupLocation == null ||
+        rideState.destinationLocation == null) {
+      return;
+    }
+
+    if (_mapController == null) return;
+
+    // Calculate bounds to show both markers
+    final bounds = MapHelper.calculateBounds([
+      rideState.pickupLocation!.latLng,
+      rideState.destinationLocation!.latLng,
+    ]);
+
+    await _mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 100),
+    );
+  }
+
+  _drawDirectionOnMap() {
+    final rideState = ref.watch(rideNotifierProvider);
+
+    final pickupLocation = rideState.pickupLocation;
+    final destinationLocation = rideState.destinationLocation;
+
+    // Check if both locations are set and show ride details
+    if (pickupLocation != null && destinationLocation != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _animateCameraToRoute();
+      });
+    }
+
+    if (pickupLocation != null) {
+      markers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
+    }
+
+    if (destinationLocation != null) {
+      markers.add(
+        MapHelper.createDestinationMarker(destinationLocation.latLng),
+      );
+    }
+
+    if (rideState.routePoints.isNotEmpty) {
+      polylines.add(MapHelper.createRoutePolyline(rideState.routePoints));
+    }
+
+    // Trigger a function that calculates fare estimate based on distance
   }
 
   @override
