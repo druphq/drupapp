@@ -76,8 +76,8 @@ class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.45,
-      minChildSize: 0.4,
+      initialChildSize: 0.5,
+      minChildSize: 0.45,
       maxChildSize: 1.0,
       builder: (context, scrollController) {
         return Container(
@@ -247,17 +247,31 @@ class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
             ],
           ),
 
-          Gap(20.0),
+          Gap(30.0),
 
           Row(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.accent),
-                ),
-                padding: EdgeInsets.all(4),
-                child: Icon(Icons.drive_eta, color: AppColors.accent, size: 70),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(shape: BoxShape.circle),
+                    child: Image.asset(
+                      AppAssets.driverIcon,
+                      width: 70,
+                      height: 70,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -3,
+                    right: -3,
+                    child: Image.asset(
+                      AppAssets.verifiedIcon,
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
+                ],
               ),
               Gap(10.0),
               Column(
@@ -292,7 +306,7 @@ class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
             ],
           ),
 
-          Gap(24.0),
+          Gap(30.0),
 
           LinearProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
@@ -442,7 +456,7 @@ class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
 
   Widget _buildDriverMatchedState(ScrollController scrollController) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 40.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,19 +499,19 @@ class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
             ],
           ),
 
-          Gap(20.0),
+          Gap(30.0),
 
           Center(
             child: InkWell(
               onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) {
-                    return _buildViewDriverDetails(scrollController);
-                  },
-                );
+                // showModalBottomSheet(
+                //   context: context,
+                //   isScrollControlled: true,
+                //   backgroundColor: Colors.transparent,
+                //   builder: (context) {
+                //     return _buildViewDriverDetails(scrollController);
+                //   },
+                // );
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -584,7 +598,7 @@ class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
             ),
           ),
 
-          Gap(24.0),
+          Spacer(),
 
           CustomButton(text: 'Make Payment', onPressed: () {}),
         ],

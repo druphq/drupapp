@@ -12,4 +12,25 @@
    - Geocoding API
 4. Create API Key
 
-
+ final _scaffoldKey = GlobalKey<ScaffoldState>();
+ _scaffoldKey.currentState?.showBottomSheet(
+              enableDrag: true,
+              showDragHandle: true,
+              (context) => NotificationListener<DraggableScrollableNotification>(
+                onNotification: (notification) {
+                  setState(() {
+                    _bottomSheetHeight =
+                        notification.extent * MediaQuery.of(context).size.height;
+                  });
+                  return true;
+                },
+                child: RideSearchBottomSheet(
+                  onClose: () {
+                    setState(() {
+                      _bottomSheetHeight = 0.0;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            );

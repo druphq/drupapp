@@ -147,33 +147,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       extendBody: true,
       extendBodyBehindAppBar: true,
       drawer: const AppDrawer(),
-      appBar: AppBar(
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        leading: Builder(
-          builder: (context) => Container(
-            margin: EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: context.colorScheme.surface,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 6,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(Icons.menu, color: AppColors.onAccent, size: 24.0),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      // appBar:
+      //  AppBar(
+      //   systemOverlayStyle: SystemUiOverlayStyle.dark,
+      //   leading: SizedBox.shrink(),
+      // leading: Builder(
+      //   builder: (context) => Container(
+      //     margin: EdgeInsets.all(8.0),
+      //     decoration: BoxDecoration(
+      //       color: context.colorScheme.surface,
+      //       shape: BoxShape.circle,
+      //       boxShadow: [
+      //         BoxShadow(
+      //           color: Colors.black.withValues(alpha: 0.5),
+      //           blurRadius: 6,
+      //           offset: Offset(0, 2),
+      //         ),
+      //       ],
+      //     ),
+      //     child: IconButton(
+      //       icon: Icon(Icons.menu, color: AppColors.onAccent, size: 24.0),
+      //       onPressed: () {
+      //         Scaffold.of(context).openDrawer();
+      //       },
+      //     ),
+      //   ),
+      // ),
+      //   backgroundColor: Colors.transparent,
+      //   iconTheme: const IconThemeData(color: Colors.black),
+      // ),
       body: Stack(
         children: [
           // Google Map - stops at top of collapsed bottom sheet
@@ -244,6 +246,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 });
               },
             ),
+
+          // Menu button
+          Positioned(
+            top: 16,
+            left: 16,
+            child: SafeArea(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Icons.menu, size: 24.0),
+                    color: AppColors.onAccent,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
