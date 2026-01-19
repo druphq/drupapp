@@ -235,9 +235,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
 
-          // Ride Search Draggable Bottom Sheet
+          // Ride Search Draggable Bottom Sheet with backdrop
           if (_showRideSearchSheet)
-            Positioned.fill(child: RideSearchBottomSheet()),
+            RideSearchBottomSheet(
+              onClose: () {
+                setState(() {
+                  _showRideSearchSheet = false;
+                });
+              },
+            ),
         ],
       ),
     );

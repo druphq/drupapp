@@ -1,31 +1,38 @@
+import 'package:drup/core/animation/searching_ripple.dart';
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/providers/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 enum RideSearchState { searching, availableRides, driverMatched }
 
-class RideSearchBottomSheet extends StatefulWidget {
-  const RideSearchBottomSheet({super.key});
+class RideSearchBottomSheet extends ConsumerStatefulWidget {
+  const RideSearchBottomSheet({super.key, this.onClose});
+  final VoidCallback? onClose;
 
   @override
-  State<RideSearchBottomSheet> createState() => _RideSearchBottomSheetState();
+  ConsumerState<RideSearchBottomSheet> createState() =>
+      _RideSearchBottomSheetState();
 }
 
-class _RideSearchBottomSheetState extends State<RideSearchBottomSheet> {
+class _RideSearchBottomSheetState extends ConsumerState<RideSearchBottomSheet> {
   RideSearchState _currentState = RideSearchState.searching;
   String? _selectedRideType;
 
-  // Global variables for ride details
+  // Ride details
   String pickupLocation = '';
   String destinationLocation = '';
   double rideAmount = 0.0;
 
   void _initialize() {
-    // This function can be called to set the ride details
-    // For now, these will be set from outside or via a method
+    final rideState = ref.read(rideNotifierProvider);
+    pickupLocation = rideState.pickupLocation?.address ?? '';
+    destinationLocation = rideState.destinationLocation?.address ?? '';
+    rideAmount = rideState.estimatedFare ?? 0.0;
   }
 
   @override
@@ -33,7 +40,7 @@ class _RideSearchBottomSheetState extends State<RideSearchBottomSheet> {
     super.initState();
     _initialize();
     // Simulate searching for drivers
-    _startSearching();
+    // _startSearching();
   }
 
   Future<void> _startSearching() async {
@@ -63,7 +70,7 @@ class _RideSearchBottomSheetState extends State<RideSearchBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.6,
+      initialChildSize: 0.45,
       minChildSize: 0.4,
       maxChildSize: 1.0,
       builder: (context, scrollController) {
@@ -84,16 +91,28 @@ class _RideSearchBottomSheetState extends State<RideSearchBottomSheet> {
           ),
           child: Column(
             children: [
-              // Handle bar
+              // Handle bar with close button
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.greyStrong,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(width: 40),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.greyStrong,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: AppColors.onAccent),
+                      onPressed: widget.onClose,
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                    ),
+                  ],
                 ),
               ),
 
@@ -117,39 +136,57 @@ class _RideSearchBottomSheetState extends State<RideSearchBottomSheet> {
   }
 
   Widget _buildSearchingState() {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 80,
-            height: 80,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            ),
-          ),
-          Gap(24),
-          Text(
-            _selectedRideType == null
-                ? 'Searching for available drivers...'
-                : 'Connecting with driver...',
-            style: TextStyles.t1.copyWith(
-              fontSize: FontSizes.s18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.onAccent,
-            ),
-          ),
-          Gap(12),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              'Please wait while we find the best ride for you',
-              textAlign: TextAlign.center,
-              style: TextStyles.t2.copyWith(
-                fontSize: FontSizes.s14,
-                color: AppColors.textSecondary,
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedRideType == null
+                          ? 'Searching for available drivers...'
+                          : 'Connecting with driver...',
+                      style: TextStyles.t1.copyWith(
+                        fontSize: FontSizes.s18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.onAccent,
+                      ),
+                    ),
+                    // Gap(4),
+                    Text(
+                      'Hold on lets search for available rides around you',
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.start,
+                      style: TextStyles.t2.copyWith(
+                        fontSize: FontSizes.s14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.red400.withOpacity(0.1),
+                  border: Border.all(color: AppColors.red400),
+                ),
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.drive_eta, color: AppColors.red400, size: 24),
+              ),
+            ],
+          ),
+
+          Center(
+            child: SearchingRipple(
+              size: 180,
+              primaryColor: AppColors.accent, // teal-ish outer rings
             ),
           ),
         ],
