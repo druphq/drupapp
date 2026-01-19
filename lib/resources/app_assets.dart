@@ -15,6 +15,11 @@ class AppAssets {
   static const messageIcon = 'assets/icons/messages.png';
   static const flightIcon = 'assets/icons/flight.png';
   static const scheduleIcon = 'assets/icons/calendar.png';
+  static const carIcon = 'assets/icons/car.png';
+  static const personIcon = 'assets/icons/person.png';
+  static const verifiedIcon = 'assets/icons/verified.png';
+  static const rideIcon = 'assets/icons/ride.png';
+  static const driverIcon = 'assets/icons/driver.png';
 
   // others
   static const drupLogoIcon  = 'assets/others/drup_logo_icon.png';

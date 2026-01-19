@@ -29,7 +29,7 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width ?? double.infinity,
-      height: height ?? 50,
+      height: height ?? 60,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
 
@@ -38,7 +38,7 @@ class CustomButton extends StatelessWidget {
           backgroundColor: backgroundColor ?? AppColors.accent,
           foregroundColor: textColor ?? Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(50),
           ),
         ),
         child: isLoading
