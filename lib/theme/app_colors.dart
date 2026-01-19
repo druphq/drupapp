@@ -69,7 +69,7 @@ class AppColors {
   static const Color splashBg = Color(0xff253B80);
 
   static const Color grey = Colors.grey;
-  static Color grey50 = Color(0xFFFFFAFA);
-  static Color greyStrong = Colors.grey.shade500;
+  static Color grey50 = Color(0xFFF4F4F6);
+  static Color greyStrong = Color(0xff747682);
   static Color greyStronger = Colors.grey.shade700;
 }

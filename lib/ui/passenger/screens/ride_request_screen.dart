@@ -174,7 +174,6 @@ class RideRequestScreen extends ConsumerWidget {
                   context.go(AppRoutes.userTrackingRoute);
                 }
               },
-              icon: Icons.check_circle,
               isLoading: rideState.isLoading,
             ),
           ],

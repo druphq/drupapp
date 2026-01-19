@@ -45,10 +45,13 @@ class _BottomSheetWidgetState extends ConsumerState<BottomSheetWidget> {
         children: [
           switch (showRideDetails) {
             true => RideDetailsBottomSheet(
-              pickupLocation: pickupLocation!.name!,
-              destinationLocation: destinationLocation!.name!,
+              pickupLocation: pickupLocation!.name ?? '',
+              destinationLocation: destinationLocation!.name ?? '',
               rideAmount: rideState.currentRide?.actualFare,
               onScheduleRide: widget.onScheduleRide,
+              onCancelRide: () {
+                ref.read(rideNotifierProvider.notifier).clearRoute();
+              },
             ),
             false => HomeActionsContent(onWhereToTap: widget.onWhereToTap),
           },

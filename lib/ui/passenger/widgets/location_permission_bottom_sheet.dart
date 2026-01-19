@@ -26,14 +26,19 @@ class _LocationPermissionBottomSheetState
     try {
       await ref.read(userNotifierProvider.notifier).updateUserLocation();
 
+      if (!mounted) return;
+
       // Check if location was successfully obtained
       final userState = ref.read(userNotifierProvider);
-      if (mounted) {
-        if (userState.currentLocation != null) {
-          // Successfully got location, close the bottom sheet
-          Navigator.pop(context);
-        } else {
-          // Failed to get location
+
+      if (userState.currentLocation != null) {
+        // Successfully got location, close the bottom sheet
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
+      } else {
+        // Failed to get location
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
@@ -41,6 +46,9 @@ class _LocationPermissionBottomSheetState
               ),
             ),
           );
+          setState(() {
+            _isLoading = false;
+          });
         }
       }
     } catch (e) {
@@ -48,9 +56,6 @@ class _LocationPermissionBottomSheetState
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    } finally {
-      if (mounted) {
         setState(() {
           _isLoading = false;
         });

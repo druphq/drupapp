@@ -14,6 +14,7 @@ class AppAssets {
   static const infoIcon = 'assets/icons/info.png';
   static const messageIcon = 'assets/icons/messages.png';
   static const flightIcon = 'assets/icons/flight.png';
+  static const scheduleIcon = 'assets/icons/calendar.png';
 
   // others
   static const drupLogoIcon  = 'assets/others/drup_logo_icon.png';

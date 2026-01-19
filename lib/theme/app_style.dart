@@ -94,8 +94,8 @@ class TextStyles {
 
   static TextStyle get btnStyle => _createTextStyle(
     style: redHatDisplay,
-    weight: FontWeight.w400,
-    fontSize: FontSizes.s14,
+    weight: FontWeight.w600,
+    fontSize: FontSizes.s16,
   );
 
   static TextStyle get caption => _createTextStyle(
@@ -143,6 +143,8 @@ class FontSizes {
   static double s18 = 18;
 
   static double s20 = 20;
+
+  static double s22 = 22;
 
   static double s24 = 24;
 

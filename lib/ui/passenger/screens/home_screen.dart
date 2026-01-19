@@ -1,10 +1,10 @@
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/ui/passenger/bottomsheets/schedule_detail_bottomsheet.dart';
+import 'package:drup/ui/passenger/bottomsheets/ride_search_bottomsheet.dart';
 import 'package:drup/ui/passenger/widgets/bottom_sheet_widget.dart';
 import 'package:drup/ui/passenger/widgets/app_drawer.dart';
 import 'package:drup/ui/passenger/widgets/location_permission_bottom_sheet.dart';
-import 'package:drup/ui/passenger/bottomsheets/ride_details_bottom_sheet.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,7 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
   bool _selectingPickup = true;
   bool _isAtUserLocation = true;
-  // bool _hasShownRideDetails = false;
+  bool _showRideSearchSheet = false;
   Set<Polyline> polylines = {};
   Set<Marker> markers = {};
   LocationModel? currentLocation;
@@ -61,29 +61,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       }
     }
-  }
-
-  void _showLocationPermissionSheet() {
-    showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const LocationPermissionBottomSheet(),
-    ).then((_) {
-      // After bottom sheet is closed, check if location is now available
-      final userState = ref.read(userNotifierProvider);
-      if (userState.currentLocation != null && _mapController != null) {
-        setState(() {
-          currentLocation = userState.currentLocation;
-        });
-
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLng(userState.currentLocation!.latLng),
-        );
-      }
-    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -257,22 +234,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onScheduleRide: _scheduleRideBottomsheet,
             ),
           ),
+
+          // Ride Search Draggable Bottom Sheet
+          if (_showRideSearchSheet)
+            Positioned.fill(child: RideSearchBottomSheet()),
         ],
       ),
     );
   }
-
-  // fill scheduling details bottomsheet
-  void _scheduleRideBottomsheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) =>
-          ScheduleDetailBottomSheet(), // this bottomsheet will contain the forms for the ride scheduling
-    );
-  }
-  
 
   // Animate camera to show both pickup and destination locations
   Future<void> _animateCameraToRoute() async {
@@ -324,6 +293,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     // Trigger a function that calculates fare estimate based on distance
+  }
+
+  // fill scheduling details bottomsheet
+  void _scheduleRideBottomsheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ScheduleDetailBottomSheet(
+        onConfirm: () {
+          // Close schedule detail sheet
+          Navigator.of(context).pop();
+
+          // Wait for bottom sheet to close before showing the next one
+          Future.delayed(const Duration(milliseconds: 300), () {
+            setState(() {
+              _showRideSearchSheet = true;
+            });
+          });
+        },
+      ),
+    );
+  }
+
+  // Show location permission bottom sheet
+  void _showLocationPermissionSheet() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const LocationPermissionBottomSheet(),
+    ).then((_) {
+      // After bottom sheet is closed, check if location is now available
+      final userState = ref.read(userNotifierProvider);
+      if (userState.currentLocation != null && _mapController != null) {
+        setState(() {
+          currentLocation = userState.currentLocation;
+        });
+
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(userState.currentLocation!.latLng),
+        );
+      }
+    });
   }
 
   @override

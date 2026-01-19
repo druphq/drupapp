@@ -9,7 +9,7 @@ class CustomButton extends StatelessWidget {
   final Color? textColor;
   final double? width;
   final double? height;
-  final IconData? icon;
+  final Widget? icon;
   final TextStyle? textStyle;
 
   const CustomButton({
@@ -53,10 +53,6 @@ class CustomButton extends StatelessWidget {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                  ],
                   Text(
                     text,
                     style:
@@ -66,6 +62,7 @@ class CustomButton extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                   ),
+                  if (icon != null) ...[const SizedBox(width: 8), icon!],
                 ],
               ),
       ),

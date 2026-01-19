@@ -139,7 +139,6 @@ class _UserTrackingScreenState extends ConsumerState<UserTrackingScreen> {
                             }
                           },
                           backgroundColor: AppColors.success,
-                          icon: Icons.play_arrow,
                         ),
                         const SizedBox(height: 8),
                         TextButton(

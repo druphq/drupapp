@@ -1,3 +1,4 @@
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/ui/passenger/widgets/location_dot_widget.dart';
@@ -10,13 +11,15 @@ class RideDetailsBottomSheet extends StatelessWidget {
   final String destinationLocation;
   final double? rideAmount;
   final VoidCallback? onScheduleRide;
+  final VoidCallback? onCancelRide;
 
   const RideDetailsBottomSheet({
     super.key,
     required this.pickupLocation,
     required this.destinationLocation,
     this.rideAmount = 6000,
-    required this.onScheduleRide,
+    this.onScheduleRide,
+    this.onCancelRide,
   });
 
   @override
@@ -41,7 +44,9 @@ class RideDetailsBottomSheet extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  onCancelRide?.call();
+                },
                 child: Text(
                   'Cancel',
                   style: TextStyles.t1.copyWith(
@@ -69,7 +74,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
                   Text(
                     'Pickup',
                     style: TextStyles.t2.copyWith(
-                      fontSize: FontSizes.s12,
+                      fontSize: FontSizes.s14,
                       color: AppColors.surface,
                     ),
                   ),
@@ -77,8 +82,8 @@ class RideDetailsBottomSheet extends StatelessWidget {
                   Text(
                     pickupLocation,
                     style: TextStyles.t2.copyWith(
-                      fontSize: FontSizes.s15,
-                      fontWeight: FontWeight.w600,
+                      fontSize: FontSizes.s18,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.white,
                     ),
                   ),
@@ -102,7 +107,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
                   Text(
                     'Destination',
                     style: TextStyles.t2.copyWith(
-                      fontSize: FontSizes.s12,
+                      fontSize: FontSizes.s14,
                       color: AppColors.surface,
                     ),
                   ),
@@ -110,8 +115,8 @@ class RideDetailsBottomSheet extends StatelessWidget {
                   Text(
                     destinationLocation,
                     style: TextStyles.t2.copyWith(
-                      fontSize: FontSizes.s15,
-                      fontWeight: FontWeight.w600,
+                      fontSize: FontSizes.s18,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.white,
                     ),
                   ),
@@ -125,8 +130,15 @@ class RideDetailsBottomSheet extends StatelessWidget {
         // Schedule Ride Button
         CustomButton(
           text: 'Schedule Ride',
-          onPressed: rideAmount != null ? onScheduleRide : () {},
+          // onPressed: rideAmount != null ? onScheduleRide : () {},
+          onPressed: onScheduleRide,
           isLoading: false,
+          textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
+          icon: ImageIcon(
+            AssetImage(AppAssets.scheduleIcon),
+            size: 20,
+            color: AppColors.white,
+          ),
         ),
       ],
     );

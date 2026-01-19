@@ -237,7 +237,6 @@ class _RideStatusScreenState extends ConsumerState<RideStatusScreen> {
                       }
                     },
                     backgroundColor: AppColors.success,
-                    icon: Icons.check_circle,
                   ),
                 ],
               ),
