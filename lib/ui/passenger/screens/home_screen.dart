@@ -5,7 +5,6 @@ import 'package:drup/ui/passenger/bottomsheets/ride_search_bottomsheet.dart';
 import 'package:drup/ui/passenger/widgets/bottom_sheet_widget.dart';
 import 'package:drup/ui/passenger/widgets/app_drawer.dart';
 import 'package:drup/ui/passenger/widgets/location_permission_bottom_sheet.dart';
-import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

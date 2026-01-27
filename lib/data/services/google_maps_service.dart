@@ -158,6 +158,54 @@ class GoogleMapsService {
     }
   }
 
+   /// Search for airports in Nigeria only
+  Future<List<Map<String, dynamic>>> searchNigerianAddresses(
+    String query,
+  ) async {
+    try {
+      // Add "Nigeria" to the query to ensure we get Nigerian addresses
+      final searchQuery = query.isEmpty ? 'Nigeria' : '$query Nigeria';
+
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/textsearch/json?'
+        'query=${Uri.encodeComponent(searchQuery)}&'
+        'region=ng&'
+        'key=$_apiKey',
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK') {
+          // Limit to 5 results and extract only place IDs
+          final placeIds = (data['results'] as List)
+              .take(5)
+              .map((place) => place['place_id'] as String)
+              .toList();
+
+          // Fetch all place details concurrently
+          final detailsFutures = placeIds.map(
+            (placeId) => _getPlaceDetails(placeId),
+          );
+          final detailsResults = await Future.wait(detailsFutures);
+
+          // Filter out null results and return
+          return detailsResults
+              .where((details) => details != null)
+              .cast<Map<String, dynamic>>()
+              .toList();
+        }
+      }
+
+      return [];
+    } catch (e, stackTrace) {
+      debugPrint('Error searching Nigerian addresses: $e\n$stackTrace');
+      return [];
+    }
+  }
+
   /// Search for airports in Nigeria only
   Future<List<Map<String, dynamic>>> searchNigerianAirports(
     String query,
@@ -348,3 +396,6 @@ class GoogleMapsService {
     }
   }
 }
+
+ 
+

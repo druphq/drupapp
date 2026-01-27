@@ -27,6 +27,10 @@ class AppConstants {
   static const String userIdKey = 'userId';
   static const String userTypeKey = 'userType';
   static const String isLoggedInKey = 'isLoggedIn';
+
+
+  // Cache Keys
+  static const String airportsKey = 'app_cachedAirports';
 }
 
 enum UserType { rider, driver }

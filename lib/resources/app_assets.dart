@@ -20,6 +20,7 @@ class AppAssets {
   static const verifiedIcon = 'assets/icons/verified.png';
   static const rideIcon = 'assets/icons/ride.png';
   static const driverIcon = 'assets/icons/driver.png';
+  static const locationIcon = 'assets/icons/location_on.png';
 
   // others
   static const drupLogoIcon  = 'assets/others/drup_logo_icon.png';

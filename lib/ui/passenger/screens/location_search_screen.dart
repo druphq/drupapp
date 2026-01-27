@@ -129,7 +129,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
 
     try {
       final mapsService = ref.read(googleMapsServiceProvider);
-      final results = await mapsService.searchNigerianAirports(query);
+      final results = await mapsService.searchNigerianAddresses(query);
 
       setState(() {
         _searchResults = results;
@@ -141,9 +141,9 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
         _searchResults = [];
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error searching airports: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error searching addresses: $e')),
+        );
       }
     }
   }
@@ -156,7 +156,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
       address: place['address'],
     );
 
-    // Update the text field with selected airport
+    // Update the text field with selected address
     if (_isCurrentLocationField) {
       _pickupController.text = place['name'];
       ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
@@ -340,6 +340,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     controller: _destinationController,
                     focusNode: focusNode2,
                     autofocus: true,
+                    autocorrect: false,
                     keyboardType: TextInputType.streetAddress,
                     textInputAction: TextInputAction.done,
                     textCapitalization: TextCapitalization.sentences,
@@ -351,16 +352,6 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     },
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      // icon: Container(
-                      //   width: 14,
-                      //   height: 14,
-                      //   decoration: BoxDecoration(
-                      //     shape: BoxShape.circle,
-                      //     border: Border.fromBorderSide(
-                      //       BorderSide(color: AppColors.greyStrong, width: 2),
-                      //     ),
-                      //   ),
-                      // ),
                       icon: LocationDotWidget(
                         bgColor: AppColors.accent,
                         isActive: _destinationController.text.isNotEmpty,
@@ -446,10 +437,13 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                                   ),
                                   child: ListTile(
                                     leading: ImageIcon(
-                                      AssetImage(AppAssets.flightIcon),
+                                      place['type']?.toLowerCase() == 'airport'
+                                          ? AssetImage(AppAssets.flightIcon)
+                                          : AssetImage(AppAssets.locationIcon),
                                       color: Colors.white70,
                                       size: 18,
                                     ),
+
                                     title: Text(
                                       place['name'] ?? '',
                                       style: TextStyles.t2.copyWith(

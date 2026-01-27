@@ -1,3 +1,4 @@
+import 'package:drup/data/cache/location_cache.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_style.dart';
@@ -34,8 +35,18 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
     });
 
     try {
+      final cachedAirports = await LocationCache.getCachedAirports();
+      if (cachedAirports.isNotEmpty) {
+        setState(() {
+          _airports = cachedAirports;
+          _isLoading = false;
+        });
+        return;
+      }
+      
       final mapsService = ref.read(googleMapsServiceProvider);
       final airports = await mapsService.loadNigerianAirports();
+      await LocationCache.cachedAirports(airports);
 
       setState(() {
         _airports = airports;
@@ -82,9 +93,7 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          widget.isPickupLocation
-              ? 'Select Pickup'
-              : 'Select Destination',
+          widget.isPickupLocation ? 'Select Pickup' : 'Select Destination',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,

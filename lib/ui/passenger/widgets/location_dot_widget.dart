@@ -21,9 +21,11 @@ class LocationDotWidget extends StatelessWidget {
         shape: BoxShape.circle,
         border: isActive
             ? null
-            : Border.all(color: AppColors.greyStrong, width: 2),
+            : Border.all(color: AppColors.greyStrong, width: 1.5),
       ),
-      child: isActive ? Icon(Icons.circle, color: Colors.white, size: 10) : null,
+      child: isActive
+          ? Icon(Icons.circle, color: Colors.white, size: 10)
+          : null,
     );
   }
 }

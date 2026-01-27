@@ -1,4 +1,4 @@
-package com.example.drup
+package com.drup.app
 
 import io.flutter.embedding.android.FlutterActivity
 
