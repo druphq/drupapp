@@ -11,8 +11,8 @@ import '../data/repositories/ride_repository.dart';
 // Service Providers (Singletons)
 // ============================================================================
 
-final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService();
+final authServiceProvider = Provider<ExternalAuthService>((ref) {
+  return ExternalAuthService();
 });
 
 final locationServiceProvider = Provider<LocationService>((ref) {
@@ -32,8 +32,7 @@ final rideServiceProvider = Provider<RideService>((ref) {
 // ============================================================================
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return UserRepository(authService);
+  return UserRepository();
 });
 
 final driverRepositoryProvider = Provider<DriverRepository>((ref) {

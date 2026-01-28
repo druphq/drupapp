@@ -309,20 +309,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Image.asset(
-                                        'assets/icons/google_icon.png',
-                                        height: 24,
-                                        width: 24,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Icon(
-                                                Icons.g_mobiledata,
-                                                size: 24,
-                                                color: Colors.grey.shade700,
-                                              );
-                                            },
-                                      ),
-                                      const Gap(12.0),
                                       Text(
                                         'Continue with Google',
                                         style: TextStyles.btnStyle.copyWith(

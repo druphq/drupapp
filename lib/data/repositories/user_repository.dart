@@ -1,63 +1,52 @@
 import '../models/user.dart';
-import '../services/auth_service.dart';
+import '../../features/auth/repository/auth_repository.dart';
 
+/// Repository for user-related operations
+/// Uses AuthRepository for user data management
 class UserRepository {
-  final AuthService _authService;
+  final AuthRepository _authRepo;
 
-  UserRepository(this._authService);
+  UserRepository({AuthRepository? authRepository})
+    : _authRepo = authRepository ?? AuthRepository();
 
-  /// Get current user
-  User? getCurrentUser() {
-    return _authService.getCurrentUser();
+  /// Get current user from cache
+  Future<User?> getCurrentUser() async {
+    return await _authRepo.getCurrentUser();
   }
 
-  /// Update user profile
+  /// Update user profile in cache
+  /// For API-based profile updates, use user profile API endpoints
   Future<User?> updateUserProfile(User user) async {
-    // Mock update - in real app, this would call an API
-    await Future.delayed(const Duration(milliseconds: 500));
+    await _authRepo.updateCachedUser(user);
     return user;
   }
 
-  /// Get user by ID
-  Future<User?> getUserById(String userId) async {
-    // Mock - in real app, this would call an API
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    final now = DateTime.now();
-    // Return mock user
-    return User(
-      id: userId,
-      firstName: 'Mock',
-      lastName: 'User',
-      email: 'user@example.com',
-      phone: '+1234567890',
-      userType: UserType.rider,
-      createdAt: now,
-      updatedAt: now,
-    );
-  }
-
   /// Check if user is logged in
-  bool isLoggedIn() {
-    return _authService.isLoggedIn();
+  Future<bool> isLoggedIn() async {
+    return await _authRepo.isAuthenticated();
   }
 
   /// Check if user is driver
-  bool isDriver() {
-    return _authService.isDriver();
+  Future<bool> isDriver() async {
+    final user = await getCurrentUser();
+    return user?.userType == UserType.driver;
   }
 
-  /// Update user location (Mock implementation)
-  Future<bool> updateUserLocation(String userId, double lat, double lng) async {
-    // Mock - in real app, this would call an API
-    await Future.delayed(const Duration(milliseconds: 300));
-    return true;
+  /// Update user location
+  /// TODO: Implement API call to update location
+  Future<void> updateUserLocation(
+    String userId,
+    double latitude,
+    double longitude,
+  ) async {
+    // TODO: Implement API endpoint for location updates
+    // For now, location updates are handled locally
   }
 
-  /// Get user ride history (Mock implementation)
+  /// Get user ride history
+  /// TODO: Implement API call to /rides/history
   Future<List<dynamic>> getUserRideHistory(String userId) async {
-    // Mock - in real app, this would call an API
-    await Future.delayed(const Duration(milliseconds: 500));
+    // TODO: Implement ride history API call
     return [];
   }
 }

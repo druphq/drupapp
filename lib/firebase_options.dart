@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '346199166720',
     projectId: 'drup-riders-main',
     storageBucket: 'drup-riders-main.firebasestorage.app',
+    iosClientId: '346199166720-6mf50ttui961hee07du66g5ve5vmngal.apps.googleusercontent.com',
     iosBundleId: 'com.drup.app',
   );
+
 }

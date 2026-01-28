@@ -1,18 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user.dart';
 import '../data/services/auth_service.dart';
+import '../features/auth/repository/auth_repository.dart';
+import '../features/auth/model/auth.dart';
 import 'providers.dart';
 
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   final Ref ref;
+  final AuthRepository _authRepo = AuthRepository();
 
   AuthNotifier(this.ref) : super(const AsyncValue.loading()) {
     _initialize();
   }
 
   Future<void> _initialize() async {
-    // Initialize with null user (not logged in)
-    state = const AsyncData(null);
+    // Check for existing authentication
+    final isAuth = await _authRepo.isAuthenticated();
+    if (isAuth) {
+      final user = await _authRepo.getCurrentUser();
+      state = AsyncData(user);
+    } else {
+      state = const AsyncData(null);
+    }
   }
 
   /// Login with Google
@@ -40,19 +49,26 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
+  /// Request OTP for phone login
+  /// Returns true if OTP was sent successfully
   Future<bool> loginWithPhone(String phone) async {
     state = const AsyncLoading();
 
-    final authService = ref.read(authServiceProvider);
-
     try {
-      final user = await authService.loginWithPhone(phone);
+      final response = await _authRepo.signIn(
+        SignInRequest(phoneNumber: phone),
+      );
 
-      if (user != null) {
-        state = AsyncData(user);
+      if (response.success) {
+        // OTP sent successfully, keep loading state
+        // UI will navigate to OTP screen
+        state = const AsyncData(null);
         return true;
       } else {
-        state = AsyncError('Invalid credentials', StackTrace.current);
+        state = AsyncError(
+          response.message ?? 'Failed to send OTP',
+          StackTrace.current,
+        );
         return false;
       }
     } catch (e, stack) {
@@ -61,29 +77,29 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
+  /// Request OTP (same as loginWithPhone)
   Future<bool> sendOTP(String phone) async {
-    final authService = ref.read(authServiceProvider);
-
-    try {
-      return await authService.sendOTP(phone);
-    } catch (e) {
-      return false;
-    }
+    return loginWithPhone(phone);
   }
 
+  /// Verify OTP and authenticate user
   Future<bool> verifyOTP(String phone, String otp) async {
     state = const AsyncLoading();
 
-    final authService = ref.read(authServiceProvider);
-
     try {
-      final user = await authService.verifyOTP(phone, otp);
+      final response = await _authRepo.verifyOtp(
+        VerifyOtpRequest(phoneNumber: phone, otp: otp),
+      );
 
-      if (user != null) {
-        state = AsyncData(user);
+      if (response.success && response.data != null) {
+        // Tokens and user are automatically stored by repository
+        state = AsyncData(response.data!.user);
         return true;
       } else {
-        state = AsyncError('Invalid OTP', StackTrace.current);
+        state = AsyncError(
+          response.message ?? 'Invalid OTP',
+          StackTrace.current,
+        );
         return false;
       }
     } catch (e, stack) {
@@ -92,49 +108,76 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
+  /// Complete Google Sign-In with phone verification
+  /// Call after user verifies OTP with Google data
+  Future<bool> completeGoogleSignIn({
+    required String phone,
+    required String otp,
+    required GoogleData googleData,
+  }) async {
+    state = const AsyncLoading();
+
+    try {
+      final response = await _authRepo.googleComplete(
+        GoogleCompleteRequest(
+          phoneNumber: phone,
+          otp: otp,
+          googleData: googleData,
+        ),
+      );
+
+      if (response.success && response.data != null) {
+        // Tokens and user are automatically stored by repository
+        state = AsyncData(response.data!.user);
+        return true;
+      } else {
+        state = AsyncError(
+          response.message ?? 'Google sign-in completion failed',
+          StackTrace.current,
+        );
+        return false;
+      }
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+      return false;
+    }
+  }
+
+  /// Register is handled via phone verification flow
+  /// Users are automatically created when verifying OTP
+  @Deprecated('Use loginWithPhone + verifyOTP flow instead')
   Future<bool> register({
     required String name,
     required String email,
     required String phone,
     required String password,
   }) async {
-    state = const AsyncLoading();
+    // New API creates users automatically on OTP verification
+    return loginWithPhone(phone);
+  }
 
-    final authService = ref.read(authServiceProvider);
-
+  /// Logout user and clear all auth data
+  Future<void> logout() async {
     try {
-      final user = await authService.register(
-        name: name,
-        email: email,
-        phone: phone,
-        password: password,
-      );
+      // Logout from API and clear tokens
+      await _authRepo.logout();
 
-      if (user != null) {
-        state = AsyncData(user);
-        return true;
-      } else {
-        state = AsyncError('Registration failed', StackTrace.current);
-        return false;
-      }
-    } catch (e, stack) {
-      state = AsyncError(e, stack);
-      return false;
+      // Also sign out from Google
+      final authService = ref.read(authServiceProvider);
+      await authService.signOutGoogle();
+
+      state = const AsyncData(null);
+    } catch (e) {
+      // Even if API call fails, clear local state
+      state = const AsyncData(null);
     }
   }
 
-  Future<void> logout() async {
-    final authService = ref.read(authServiceProvider);
-    await authService.logout();
-    state = const AsyncData(null);
-  }
-
+  /// Update user profile in cache
   Future<void> updateProfile(User updatedUser) async {
-    final authService = ref.read(authServiceProvider);
-
     try {
-      final user = await authService.updateProfile(updatedUser);
-      state = AsyncData(user);
+      await _authRepo.updateCachedUser(updatedUser);
+      state = AsyncData(updatedUser);
     } catch (e, stack) {
       state = AsyncError(e, stack);
     }

@@ -9,6 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../repository/auth_repository.dart';
 import '../model/auth.dart';
+import '../../../providers/auth_notifier.dart';
 import '../../../providers/user_notifier.dart';
 import '../../../theme/app_colors.dart';
 
@@ -59,41 +60,30 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final authRepo = AuthRepository();
+      bool success;
 
       if (widget.isGoogleSignIn && widget.googleData != null) {
-        // Google Sign-In completion flow
-        final result = await authRepo.googleComplete(
-          GoogleCompleteRequest(
-            phoneNumber: widget.phoneNumber,
-            otp: _otp,
-            googleData: widget.googleData!,
-          ),
-        );
-
-        if (result.success && mounted) {
-          final user = result.data!.user;
-          await ref
-              .read(userNotifierProvider.notifier)
-              .loadUserProfile(user.id);
-          await ref.read(userNotifierProvider.notifier).updateUserLocation();
-
-          if (user.isProfileComplete) {
-            context.go(AppRoutes.homeRoute);
-          } else {
-            _showProfileIncompleteDialog();
-          }
-        } else if (mounted) {
-          _showError(result.message ?? 'OTP verification failed');
-        }
+        // Google Sign-In completion flow via AuthNotifier
+        success = await ref
+            .read(authNotifierProvider.notifier)
+            .completeGoogleSignIn(
+              phone: widget.phoneNumber,
+              otp: _otp,
+              googleData: widget.googleData!,
+            );
       } else {
-        // Phone-only sign-in flow
-        final result = await authRepo.verifyOtp(
-          VerifyOtpRequest(phoneNumber: widget.phoneNumber, otp: _otp),
-        );
+        // Phone-only sign-in flow via AuthNotifier
+        success = await ref
+            .read(authNotifierProvider.notifier)
+            .verifyOTP(widget.phoneNumber, _otp);
+      }
 
-        if (result.success && mounted) {
-          final user = result.data!.user;
+      if (success && mounted) {
+        // Get the authenticated user from state
+        final user = ref.read(authNotifierProvider).value;
+
+        if (user != null) {
+          // Load user profile and location
           await ref
               .read(userNotifierProvider.notifier)
               .loadUserProfile(user.id);
@@ -104,9 +94,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
           } else {
             _showProfileIncompleteDialog();
           }
-        } else if (mounted) {
-          _showError(result.message ?? 'OTP verification failed');
         }
+      } else if (mounted) {
+        final error = ref.read(authNotifierProvider).error;
+        _showError(error?.toString() ?? 'OTP verification failed');
       }
     } catch (e) {
       if (mounted) {

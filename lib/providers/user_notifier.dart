@@ -52,7 +52,9 @@ class UserNotifier extends StateNotifier<UserState> {
 
     try {
       final userRepository = ref.read(userRepositoryProvider);
-      final user = await userRepository.getUserById(userId);
+
+      // Try to get user from cache first
+      final user = await userRepository.getCurrentUser();
 
       if (user != null) {
         state = state.copyWith(user: user, isLoading: false);

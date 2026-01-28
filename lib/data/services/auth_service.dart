@@ -18,9 +18,7 @@ class GoogleSignInResult {
   });
 }
 
-/// Legacy Auth Service - for backward compatibility
-/// Use AuthRepository for new API-based authentication
-class AuthService {
+class ExternalAuthService {
   User? _currentUser;
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
@@ -30,7 +28,6 @@ class AuthService {
       // Sign out first to ensure account picker is shown
       await _googleSignIn.signOut();
 
-      // Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -88,110 +85,6 @@ class AuthService {
     return await _googleSignIn.isSignedIn();
   }
 
-  /// Login with email and password (Mock implementation)
-  Future<User?> loginWithPhone(String phone) async {
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Mock validation
-      if (phone.isEmpty) {
-        throw Exception('Phone number is required');
-      }
-
-      final now = DateTime.now();
-      // Create mock user
-      _currentUser = User(
-        id: 'user_${now.millisecondsSinceEpoch}',
-        phone: phone,
-        userType: UserType.rider,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      return _currentUser;
-    } catch (e) {
-      print('Login error: $e');
-      return null;
-    }
-  }
-
-  /// Login with phone and OTP (Mock implementation)
-  Future<bool> sendOTP(String phone) async {
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Mock OTP sent successfully
-      print('OTP sent to $phone');
-      return true;
-    } catch (e) {
-      print('Send OTP error: $e');
-      return false;
-    }
-  }
-
-  /// Verify OTP (Mock implementation)
-  Future<User?> verifyOTP(String phone, String otp) async {
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Mock OTP validation (accept any 6-digit OTP)
-      if (otp.length != 6) {
-        throw Exception('Invalid OTP');
-      }
-
-      final now = DateTime.now();
-      // Create mock user
-      _currentUser = User(
-        id: 'user_${now.millisecondsSinceEpoch}',
-        firstName: 'User',
-        lastName: phone.substring(phone.length - 4),
-        email: '$phone@example.com',
-        phone: phone,
-        userType: UserType.rider,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      return _currentUser;
-    } catch (e) {
-      print('Verify OTP error: $e');
-      return null;
-    }
-  }
-
-  /// Login as driver (Mock implementation)
-  Future<User?> loginAsDriver(String email, String password) async {
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Mock validation
-      if (email.isEmpty || password.isEmpty) {
-        throw Exception('Email and password are required');
-      }
-
-      final now = DateTime.now();
-      // Create mock driver user
-      _currentUser = User(
-        id: 'driver_${now.millisecondsSinceEpoch}',
-        firstName: email.split('@').first.toUpperCase(),
-        email: email,
-        phone: '+1234567890',
-        userType: UserType.driver,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      return _currentUser;
-    } catch (e) {
-      print('Driver login error: $e');
-      return null;
-    }
-  }
-
   /// Logout
   Future<void> logout() async {
     _currentUser = null;
@@ -206,59 +99,5 @@ class AuthService {
   /// Check if user is logged in
   bool isLoggedIn() {
     return _currentUser != null;
-  }
-
-  /// Check if current user is driver
-  bool isDriver() {
-    return _currentUser?.userType == UserType.driver;
-  }
-
-  /// Register new user (Mock implementation)
-  Future<User?> register({
-    required String name,
-    required String email,
-    required String password,
-    required String phone,
-  }) async {
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Mock validation
-      if (email.isEmpty || password.isEmpty || name.isEmpty) {
-        throw Exception('All fields are required');
-      }
-
-      final now = DateTime.now();
-      // Create mock user
-      _currentUser = User(
-        id: 'user_${now.millisecondsSinceEpoch}',
-        firstName: name,
-        email: email,
-        phone: phone,
-        userType: UserType.rider,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      return _currentUser;
-    } catch (e) {
-      print('Registration error: $e');
-      return null;
-    }
-  }
-
-  /// Update user profile (Mock implementation)
-  Future<User?> updateProfile(User updatedUser) async {
-    try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _currentUser = updatedUser;
-      return _currentUser;
-    } catch (e) {
-      print('Update profile error: $e');
-      return null;
-    }
   }
 }
