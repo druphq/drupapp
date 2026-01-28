@@ -53,6 +53,7 @@ class AppRouter {
       routes: [
         AppScreens.splashRoute,
         AppScreens.loginRoute,
+        AppScreens.otpRoute,
         AppScreens.mainRoute,
         AppScreens.driverSplashRoute,
         AppScreens.driverOnboardRoute,

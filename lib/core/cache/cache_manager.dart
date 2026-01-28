@@ -222,4 +222,31 @@ class CacheManager {
       return null;
     }
   }
+
+  /// Store a JSON-serializable object
+  Future<bool> storeObject(String key, Map<String, dynamic> value) async {
+    try {
+      await _ensureInitialized();
+      final jsonString = json.encode(value);
+      return await _prefs!.setString(key, jsonString);
+    } catch (e, stackTrace) {
+      debugPrint('CacheManager: Error storing object $key: $e');
+      debugPrint('StackTrace: $stackTrace');
+      return false;
+    }
+  }
+
+  /// Retrieve a stored object
+  Future<Map<String, dynamic>?> getObject(String key) async {
+    try {
+      await _ensureInitialized();
+      final jsonString = _prefs!.getString(key);
+      if (jsonString == null) return null;
+      return json.decode(jsonString) as Map<String, dynamic>;
+    } catch (e, stackTrace) {
+      debugPrint('CacheManager: Error getting object $key: $e');
+      debugPrint('StackTrace: $stackTrace');
+      return null;
+    }
+  }
 }

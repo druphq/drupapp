@@ -1,7 +1,92 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user.dart';
 
+/// Google Sign-In result containing user data for API authentication
+class GoogleSignInResult {
+  final String idToken;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String? profileImage;
+
+  GoogleSignInResult({
+    required this.idToken,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.profileImage,
+  });
+}
+
+/// Legacy Auth Service - for backward compatibility
+/// Use AuthRepository for new API-based authentication
 class AuthService {
   User? _currentUser;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+
+  /// Sign in with Google
+  Future<GoogleSignInResult?> loginWithGoogle() async {
+    try {
+      // Sign out first to ensure account picker is shown
+      await _googleSignIn.signOut();
+
+      // Trigger Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        print('Google Sign-In cancelled by user');
+        return null;
+      }
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final idToken = googleAuth.idToken;
+      if (idToken == null) {
+        print('Failed to get Google ID token');
+        return null;
+      }
+
+      // Parse name into first and last name
+      String? firstName;
+      String? lastName;
+      final displayName = googleUser.displayName;
+      if (displayName != null && displayName.isNotEmpty) {
+        final nameParts = displayName.split(' ');
+        firstName = nameParts.first;
+        if (nameParts.length > 1) {
+          lastName = nameParts.sublist(1).join(' ');
+        }
+      }
+
+      return GoogleSignInResult(
+        idToken: idToken,
+        email: googleUser.email,
+        firstName: firstName,
+        lastName: lastName,
+        profileImage: googleUser.photoUrl,
+      );
+    } catch (e) {
+      print('Google Sign-In error: $e');
+      return null;
+    }
+  }
+
+  /// Sign out from Google
+  Future<void> signOutGoogle() async {
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      print('Google Sign-Out error: $e');
+    }
+  }
+
+  /// Check if user is signed in with Google
+  Future<bool> isGoogleSignedIn() async {
+    return await _googleSignIn.isSignedIn();
+  }
 
   /// Login with email and password (Mock implementation)
   Future<User?> loginWithPhone(String phone) async {
@@ -14,15 +99,14 @@ class AuthService {
         throw Exception('Phone number is required');
       }
 
+      final now = DateTime.now();
       // Create mock user
       _currentUser = User(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        name: '',
+        id: 'user_${now.millisecondsSinceEpoch}',
         phone: phone,
-        email: '',
-        userType: 'rider',
-        rating: 4.8,
-        totalRides: 25,
+        userType: UserType.rider,
+        createdAt: now,
+        updatedAt: now,
       );
 
       return _currentUser;
@@ -58,15 +142,17 @@ class AuthService {
         throw Exception('Invalid OTP');
       }
 
+      final now = DateTime.now();
       // Create mock user
       _currentUser = User(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        name: 'User ${phone.substring(phone.length - 4)}',
+        id: 'user_${now.millisecondsSinceEpoch}',
+        firstName: 'User',
+        lastName: phone.substring(phone.length - 4),
         email: '$phone@example.com',
         phone: phone,
-        userType: 'rider',
-        rating: 5.0,
-        totalRides: 0,
+        userType: UserType.rider,
+        createdAt: now,
+        updatedAt: now,
       );
 
       return _currentUser;
@@ -87,15 +173,16 @@ class AuthService {
         throw Exception('Email and password are required');
       }
 
+      final now = DateTime.now();
       // Create mock driver user
       _currentUser = User(
-        id: 'driver_${DateTime.now().millisecondsSinceEpoch}',
-        name: email.split('@').first.toUpperCase(),
+        id: 'driver_${now.millisecondsSinceEpoch}',
+        firstName: email.split('@').first.toUpperCase(),
         email: email,
         phone: '+1234567890',
-        userType: 'driver',
-        rating: 4.9,
-        totalRides: 150,
+        userType: UserType.driver,
+        createdAt: now,
+        updatedAt: now,
       );
 
       return _currentUser;
@@ -108,6 +195,7 @@ class AuthService {
   /// Logout
   Future<void> logout() async {
     _currentUser = null;
+    await signOutGoogle();
   }
 
   /// Get current user
@@ -122,7 +210,7 @@ class AuthService {
 
   /// Check if current user is driver
   bool isDriver() {
-    return _currentUser?.userType == 'driver';
+    return _currentUser?.userType == UserType.driver;
   }
 
   /// Register new user (Mock implementation)
@@ -141,15 +229,16 @@ class AuthService {
         throw Exception('All fields are required');
       }
 
+      final now = DateTime.now();
       // Create mock user
       _currentUser = User(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        name: name,
+        id: 'user_${now.millisecondsSinceEpoch}',
+        firstName: name,
         email: email,
         phone: phone,
-        userType: 'rider',
-        rating: 5.0,
-        totalRides: 0,
+        userType: UserType.rider,
+        createdAt: now,
+        updatedAt: now,
       );
 
       return _currentUser;

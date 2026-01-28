@@ -1,24 +1,27 @@
 import 'package:drup/core/animation/page_route_animation.dart';
 import 'package:drup/router/app_router.dart';
-import 'package:drup/ui/driver/screens/driver_main_screen.dart';
-import 'package:drup/ui/driver/screens/driver_splash_screen.dart';
-import 'package:drup/ui/driver/screens/driver_onboard_screen.dart';
-import 'package:drup/ui/driver/screens/driver_home_screen.dart';
-import 'package:drup/ui/passenger/screens/home_screen.dart';
-import 'package:drup/ui/passenger/screens/location_search_screen.dart';
-import 'package:drup/ui/passenger/screens/login_screen.dart';
-import 'package:drup/ui/passenger/screens/ride_request_screen.dart';
-import 'package:drup/ui/passenger/screens/ride_status_screen.dart';
-import 'package:drup/ui/passenger/screens/splash_screen.dart';
-import 'package:drup/ui/passenger/screens/user_tracking_screen.dart';
-import 'package:drup/ui/passenger/screens/main_screen.dart';
-import 'package:drup/ui/passenger/screens/nigeria_airports_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_main_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_splash_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_onboard_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
+import 'package:drup/features/passenger/ui/screens/home_screen.dart';
+import 'package:drup/features/passenger/ui/screens/location_search_screen.dart';
+import 'package:drup/features/drivers/ui/login_screen.dart';
+import 'package:drup/features/auth/ui/otp_screen.dart';
+import 'package:drup/features/passenger/ui/screens/ride_request_screen.dart';
+import 'package:drup/features/passenger/ui/screens/ride_status_screen.dart';
+import 'package:drup/features/passenger/ui/screens/splash_screen.dart';
+import 'package:drup/features/passenger/ui/screens/user_tracking_screen.dart';
+import 'package:drup/features/passenger/ui/screens/main_screen.dart';
+import 'package:drup/features/passenger/ui/screens/nigeria_airports_screen.dart';
 import 'package:go_router/go_router.dart';
+import 'package:drup/features/auth/model/auth.dart';
 
 class AppRoutes {
   // Routes
   static const String splashRoute = '/';
   static const String loginRoute = '/login';
+  static const String otpRoute = '/otp';
   static const String homeRoute = '/home';
   static const String rideRequestRoute = '/ride-request';
   static const String driverSplashRoute = '/driver-splash';
@@ -45,6 +48,37 @@ class AppScreens {
       key: state.pageKey,
       child: const LoginScreen(),
     ),
+  );
+
+  static final otpRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.otpRoute,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      final phoneNumber = extra?['phoneNumber'] as String? ?? '';
+      final isGoogleSignIn = extra?['isGoogleSignIn'] as bool? ?? false;
+      final googleDataMap = extra?['googleData'] as Map<String, dynamic>?;
+
+      GoogleData? googleData;
+      if (googleDataMap != null) {
+        googleData = GoogleData(
+          googleId: googleDataMap['googleId'] as String? ?? '',
+          email: googleDataMap['email'] as String? ?? '',
+          firstName: googleDataMap['firstName'] as String?,
+          lastName: googleDataMap['lastName'] as String?,
+          profileImage: googleDataMap['profileImage'] as String?,
+        );
+      }
+
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: OTPScreen(
+          phoneNumber: phoneNumber,
+          googleData: googleData,
+          isGoogleSignIn: isGoogleSignIn,
+        ),
+      );
+    },
   );
 
   //! User routes

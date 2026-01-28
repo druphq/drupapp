@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user.dart';
+import '../data/services/auth_service.dart';
 import 'providers.dart';
 
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
@@ -12,6 +13,31 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   Future<void> _initialize() async {
     // Initialize with null user (not logged in)
     state = const AsyncData(null);
+  }
+
+  /// Login with Google
+  /// Returns GoogleSignInResult for API authentication flow
+  Future<GoogleSignInResult?> loginWithGoogle() async {
+    state = const AsyncLoading();
+
+    final authService = ref.read(authServiceProvider);
+
+    try {
+      final result = await authService.loginWithGoogle();
+
+      if (result == null) {
+        // User cancelled or failed
+        state = const AsyncData(null);
+        return null;
+      }
+
+      // Return the result for the UI to continue with phone verification
+      state = const AsyncData(null);
+      return result;
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+      return null;
+    }
   }
 
   Future<bool> loginWithPhone(String phone) async {
@@ -133,7 +159,7 @@ final isLoggedInProvider = Provider<bool>((ref) {
 
 final isDriverProvider = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
-  return authState.value?.userType == 'driver';
+  return authState.value?.userType == UserType.driver;
 });
 
 final currentUserProvider = Provider<User?>((ref) {

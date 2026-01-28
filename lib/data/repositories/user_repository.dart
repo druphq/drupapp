@@ -23,15 +23,17 @@ class UserRepository {
     // Mock - in real app, this would call an API
     await Future.delayed(const Duration(milliseconds: 300));
 
+    final now = DateTime.now();
     // Return mock user
     return User(
       id: userId,
-      name: 'Mock User',
+      firstName: 'Mock',
+      lastName: 'User',
       email: 'user@example.com',
       phone: '+1234567890',
-      userType: 'rider',
-      rating: 4.5,
-      totalRides: 10,
+      userType: UserType.rider,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 
