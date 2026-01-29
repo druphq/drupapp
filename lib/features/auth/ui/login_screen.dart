@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../providers/auth_notifier.dart';
+import '../provider/auth_notifier.dart';
 import '../../../theme/app_colors.dart';
 import '../../../core/widgets/custom_button.dart';
 import 'package:gap/gap.dart';
@@ -161,13 +161,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       // Request OTP using AuthRepository
       final authRepo = AuthRepository();
-      final result = await authRepo.signIn(SignInRequest(phoneNumber: phone));
+      final result = await authRepo.signIn(SignInRequest(phoneNumber: '+234$phone'));
 
       if (result.success && mounted) {
         // Navigate to OTP screen
         context.push(
           AppRoutes.otpRoute,
-          extra: {'phoneNumber': phone, 'isGoogleSignIn': false},
+          extra: {'phoneNumber': '+234$phone', 'isGoogleSignIn': false},
         );
       } else if (mounted) {
         _showError(result.message ?? 'Failed to send OTP');

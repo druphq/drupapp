@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../providers/user_notifier.dart';
-import '../../../../providers/auth_notifier.dart';
+import '../../../auth/provider/auth_notifier.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -62,37 +62,41 @@ class AppDrawer extends ConsumerWidget {
                         ),
                       ),
                       Gap(14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userName,
-                            style: TextStyles.t1.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userName,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyles.t1.copyWith(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.star,
-                                size: 15,
-                                color: AppColors.accent,
-                              ),
-                              Gap(5.0),
-                              Text(
-                                '4.5',
-                                style: TextStyles.t1.copyWith(fontSize: 14),
-                              ),
-                              Gap(2.0),
-                              Text(
-                                '(208)',
-                                style: TextStyles.t1.copyWith(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  size: 15,
+                                  color: AppColors.orange400,
+                                ),
+                                Gap(5.0),
+                                Text(
+                                  '4.5',
+                                  style: TextStyles.t1.copyWith(fontSize: 14),
+                                ),
+                                Gap(2.0),
+                                Text(
+                                  '(208)',
+                                  style: TextStyles.t1.copyWith(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

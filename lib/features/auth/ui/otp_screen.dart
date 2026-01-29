@@ -9,7 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../repository/auth_repository.dart';
 import '../model/auth.dart';
-import '../../../providers/auth_notifier.dart';
+import '../provider/auth_notifier.dart';
 import '../../../providers/user_notifier.dart';
 import '../../../theme/app_colors.dart';
 
@@ -92,7 +92,8 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
           if (user.isProfileComplete) {
             context.go(AppRoutes.homeRoute);
           } else {
-            _showProfileIncompleteDialog();
+            // Navigate to complete profile screen
+            context.go(AppRoutes.completeProfileRoute);
           }
         }
       } else if (mounted) {
@@ -140,30 +141,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
         setState(() => _isResending = false);
       }
     }
-  }
-
-  void _showProfileIncompleteDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Complete Your Profile'),
-        content: const Text(
-          'Please complete your profile to continue using the app.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Navigate to profile completion screen
-              // context.go(AppRoutes.profileSetupRoute);
-              context.go(AppRoutes.homeRoute); // Temporary
-            },
-            child: const Text('Complete Profile'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showError(String message) {

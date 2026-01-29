@@ -11,17 +11,30 @@ class ApiRoutes {
   static const String logout = '/auth/user/logout';
 
   // ============== USER ROUTES ==============
-  static const String userProfile = '/user/profile';
-  static const String updateProfile = '/user/profile';
-  static const String uploadProfileImage = '/user/profile/image';
+  static const String userProfile = '/users/profile';
+  static const String updateProfile = '/users/profile';
+  static const String uploadProfilePhoto = '/users/profile/photo';
+  static const String deviceToken = '/users/device-token';
+  static const String deleteAccount = '/users/account';
 
   // ============== SAVED PLACES ==============
-  static const String savedPlaces = '/user/saved-places';
-  static String savedPlace(String id) => '/user/saved-places/$id';
+  static const String savedPlaces = '/users/places';
+  static String savedPlace(String id) => '/users/places/$id';
 
   // ============== EMERGENCY CONTACTS ==============
-  static const String emergencyContacts = '/user/emergency-contacts';
-  static String emergencyContact(String id) => '/user/emergency-contacts/$id';
+  static const String emergencyContacts = '/users/emergency-contacts';
+  static String emergencyContact(String id) => '/users/emergency-contacts/$id';
+
+  // ============== NOTIFICATIONS ==============
+  static const String notificationSettings = '/users/notifications';
+
+  // ============== EMAIL VERIFICATION ==============
+  static const String resendEmailVerification =
+      '/users/email/resend-verification';
+  static const String verifyEmail = '/users/email/verify';
+
+  // ============== RIDE HISTORY ==============
+  static const String userRides = '/users/rides';
 
   // ============== WALLET ==============
   static const String wallet = '/user/wallet';

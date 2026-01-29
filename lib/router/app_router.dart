@@ -2,7 +2,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/auth_notifier.dart';
+import '../features/auth/provider/auth_notifier.dart';
 
 final GlobalKey<NavigatorState> rootNavigator = GlobalKey(debugLabel: 'root');
 final GlobalKey<NavigatorState> mainShellNavigator = GlobalKey(
@@ -38,6 +38,12 @@ class AppRouter {
           return null;
         }
 
+        // Allow access to OTP and complete profile screens without full authentication
+        if (state.matchedLocation == AppRoutes.otpRoute ||
+            state.matchedLocation == AppRoutes.completeProfileRoute) {
+          return null;
+        }
+
         // Redirect to login if not logged in
         if (!isLoggedIn && state.matchedLocation != AppRoutes.loginRoute) {
           return AppRoutes.loginRoute;
@@ -54,6 +60,7 @@ class AppRouter {
         AppScreens.splashRoute,
         AppScreens.loginRoute,
         AppScreens.otpRoute,
+        AppScreens.completeProfileRoute,
         AppScreens.mainRoute,
         AppScreens.driverSplashRoute,
         AppScreens.driverOnboardRoute,

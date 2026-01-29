@@ -2,7 +2,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../providers/auth_notifier.dart';
+import '../../../auth/provider/auth_notifier.dart';
 import '../../../../providers/ride_notifier.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../core/constants/constants.dart';

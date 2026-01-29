@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../providers/user_notifier.dart';
-import '../../../../providers/auth_notifier.dart';
+import '../../../auth/provider/auth_notifier.dart';
 
 class DriverAppDrawer extends ConsumerWidget {
   const DriverAppDrawer({super.key});

@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/user.dart';
-import '../data/services/auth_service.dart';
-import '../features/auth/repository/auth_repository.dart';
-import '../features/auth/model/auth.dart';
-import 'providers.dart';
+import '../../../data/models/user.dart';
+import '../../../data/services/auth_service.dart';
+import '../repository/auth_repository.dart';
+import '../model/auth.dart';
+import '../../../providers/providers.dart';
 
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   final Ref ref;

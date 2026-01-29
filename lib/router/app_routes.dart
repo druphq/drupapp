@@ -6,8 +6,9 @@ import 'package:drup/features/drivers/ui/screens/driver_onboard_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/location_search_screen.dart';
-import 'package:drup/features/drivers/ui/login_screen.dart';
+import 'package:drup/features/auth/ui/login_screen.dart';
 import 'package:drup/features/auth/ui/otp_screen.dart';
+import 'package:drup/features/auth/ui/complete_profile_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_request_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_status_screen.dart';
 import 'package:drup/features/passenger/ui/screens/splash_screen.dart';
@@ -22,6 +23,7 @@ class AppRoutes {
   static const String splashRoute = '/';
   static const String loginRoute = '/login';
   static const String otpRoute = '/otp';
+  static const String completeProfileRoute = '/complete-profile';
   static const String homeRoute = '/home';
   static const String rideRequestRoute = '/ride-request';
   static const String driverSplashRoute = '/driver-splash';
@@ -79,6 +81,15 @@ class AppScreens {
         ),
       );
     },
+  );
+
+  static final completeProfileRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.completeProfileRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const CompleteProfileScreen(),
+    ),
   );
 
   //! User routes
