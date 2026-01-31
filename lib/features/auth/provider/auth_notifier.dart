@@ -3,7 +3,7 @@ import '../../../data/models/user.dart';
 import '../../../data/services/auth_service.dart';
 import '../repository/auth_repository.dart';
 import '../model/auth.dart';
-import '../../../providers/providers.dart';
+import '../../../di/providers.dart';
 
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   final Ref ref;
@@ -77,11 +77,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  /// Request OTP (same as loginWithPhone)
-  Future<bool> sendOTP(String phone) async {
-    return loginWithPhone(phone);
-  }
-
   /// Verify OTP and authenticate user
   Future<bool> verifyOTP(String phone, String otp) async {
     state = const AsyncLoading();
@@ -143,19 +138,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  /// Register is handled via phone verification flow
-  /// Users are automatically created when verifying OTP
-  @Deprecated('Use loginWithPhone + verifyOTP flow instead')
-  Future<bool> register({
-    required String name,
-    required String email,
-    required String phone,
-    required String password,
-  }) async {
-    // New API creates users automatically on OTP verification
-    return loginWithPhone(phone);
-  }
-
   /// Logout user and clear all auth data
   Future<void> logout() async {
     try {
@@ -181,10 +163,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     } catch (e, stack) {
       state = AsyncError(e, stack);
     }
-  }
-
-  void signOut() {
-    state = const AsyncData(null);
   }
 }
 

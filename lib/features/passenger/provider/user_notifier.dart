@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/user.dart';
-import '../data/models/location_model.dart';
-import 'providers.dart';
+import '../../../data/models/user.dart';
+import '../../../data/models/location_model.dart';
+import '../../../di/providers.dart';
 
 class UserState {
   final User? user;

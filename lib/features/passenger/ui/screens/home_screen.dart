@@ -10,9 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../../../providers/user_notifier.dart';
-import '../../../../providers/ride_notifier.dart';
-import '../../../../providers/providers.dart';
+import '../../provider/user_notifier.dart';
+import '../../../../di/ride_notifier.dart';
 import '../../../../data/models/location_model.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/map_helper.dart';
@@ -26,7 +25,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
-  bool _selectingPickup = true;
   bool _isAtUserLocation = true;
   bool _showRideSearchSheet = false;
   Set<Polyline> polylines = {};
@@ -44,15 +42,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _initializeLocation() async {
     final userState = ref.read(userNotifierProvider);
 
-    if (userState.currentLocation == null ||
-        userState.currentLocation!.address == null) {
+    if (userState.currentLocation == null) {
       // Show location permission bottom sheet
       _showLocationPermissionSheet();
     } else {
       setState(() {
         currentLocation = userState.currentLocation;
       });
-
       // Update camera to current location
       if (_mapController != null) {
         _mapController!.animateCamera(
@@ -67,30 +63,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _initializeLocation();
   }
 
-  void _onMapTap(LatLng position) async {
-    setState(() {
-      _isAtUserLocation = false;
-    });
+  // void _onMapTap(LatLng position) async {
+  //   setState(() {
+  //     _isAtUserLocation = false;
+  //   });
 
-    final mapsService = ref.read(googleMapsServiceProvider);
+  //   final mapsService = ref.read(googleMapsServiceProvider);
 
-    // Get address from coordinates
-    final address = await mapsService.getAddressFromCoordinates(
-      LocationModel(latitude: position.latitude, longitude: position.longitude),
-    );
+  //   // Get address from coordinates
+  //   final address = await mapsService.getAddressFromCoordinates(
+  //     LocationModel(latitude: position.latitude, longitude: position.longitude),
+  //   );
 
-    final location = LocationModel(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      address: address,
-    );
+  //   final location = LocationModel(
+  //     latitude: position.latitude,
+  //     longitude: position.longitude,
+  //     address: address,
+  //   );
 
-    if (_selectingPickup) {
-      ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
-    } else {
-      ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
-    }
-  }
+  //   if (_selectingPickup) {
+  //     ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
+  //   } else {
+  //     ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+  //   }
+  // }
 
   void _onCameraMove(CameraPosition position) {
     final userState = ref.read(userNotifierProvider);
@@ -175,105 +171,109 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       //   backgroundColor: Colors.transparent,
       //   iconTheme: const IconThemeData(color: Colors.black),
       // ),
-      body: Stack(
-        children: [
-          // Google Map - stops at top of collapsed bottom sheet
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: GoogleMap(
-              mapType: MapType.normal,
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height * 0.2,
-              ),
-              onMapCreated: _onMapCreated,
-              onTap: _onMapTap,
-              onCameraMove: _onCameraMove,
-              initialCameraPosition: CameraPosition(
-                target:
-                    currentLocation?.latLng ?? const LatLng(37.7749, -122.4194),
-                zoom: AppConstants.defaultCameraZoom,
-              ),
-              markers: markers,
-              polylines: polylines,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-            ),
-          ),
-
-          // Custom My Location Button
-          if (!_isAtUserLocation)
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: Stack(
+          children: [
+            // Google Map - stops at top of collapsed bottom sheet
             Positioned(
-              right: 16,
-              bottom: MediaQuery.of(context).size.height * 0.22,
-              child: FloatingActionButton(
-                mini: true,
-                backgroundColor: Colors.white,
-                onPressed: _onMyLocationButtonPressed,
-                child: Icon(Icons.my_location, color: AppColors.primary),
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GoogleMap(
+                mapType: MapType.normal,
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height * 0.2,
+                ),
+                onMapCreated: _onMapCreated,
+                // onTap: _onMapTap,
+                onCameraMove: _onCameraMove,
+                initialCameraPosition: CameraPosition(
+                  target:
+                      currentLocation?.latLng ??
+                      const LatLng(37.7749, -122.4194),
+                  zoom: AppConstants.defaultCameraZoom,
+                ),
+                markers: markers,
+                polylines: polylines,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
               ),
             ),
 
-          // Bottom sheet with controls - positioned at bottom
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: BottomSheetWidget(
-              onWhereToTap: () async {
-                // Navigate to location search screen with slide up transition
-                final result = await context.push(
-                  AppRoutes.searchLocationsRoute,
-                );
-                if (result == true) {
-                  _drawDirectionOnMap();
-                }
-              },
-              onScheduleRide: _scheduleRideBottomsheet,
-            ),
-          ),
-
-          // Ride Search Draggable Bottom Sheet with backdrop
-          if (_showRideSearchSheet)
-            RideSearchBottomSheet(
-              onClose: () {
-                setState(() {
-                  _showRideSearchSheet = false;
-                });
-              },
-            ),
-
-          // Menu button
-          Positioned(
-            top: 16,
-            left: 16,
-            child: SafeArea(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+            // Custom My Location Button
+            if (!_isAtUserLocation)
+              Positioned(
+                right: 16,
+                bottom: MediaQuery.of(context).size.height * 0.22,
+                child: FloatingActionButton(
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  onPressed: _onMyLocationButtonPressed,
+                  child: Icon(Icons.my_location, color: AppColors.primary),
                 ),
-                child: Builder(
-                  builder: (context) => IconButton(
-                    icon: const Icon(Icons.menu, size: 24.0),
-                    color: AppColors.onAccent,
-                    onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+
+            // Bottom sheet with controls - positioned at bottom
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: BottomSheetWidget(
+                onWhereToTap: () async {
+                  // Navigate to location search screen with slide up transition
+                  final result = await context.push(
+                    AppRoutes.searchLocationsRoute,
+                  );
+                  if (result == true) {
+                    _drawDirectionOnMap();
+                  }
+                },
+                onScheduleRide: _scheduleRideBottomsheet,
+              ),
+            ),
+
+            // Ride Search Draggable Bottom Sheet with backdrop
+            if (_showRideSearchSheet)
+              RideSearchBottomSheet(
+                onClose: () {
+                  setState(() {
+                    _showRideSearchSheet = false;
+                  });
+                },
+              ),
+
+            // Menu button
+            Positioned(
+              top: 16,
+              left: 16,
+              child: SafeArea(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Builder(
+                    builder: (context) => IconButton(
+                      icon: const Icon(Icons.menu, size: 24.0),
+                      color: AppColors.onAccent,
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -5,8 +5,8 @@ import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../providers/providers.dart';
-import '../../../../providers/ride_notifier.dart';
+import '../../../../di/providers.dart';
+import '../../../../di/ride_notifier.dart';
 import '../../../../data/models/location_model.dart';
 
 class NigeriaAirportsScreen extends ConsumerStatefulWidget {

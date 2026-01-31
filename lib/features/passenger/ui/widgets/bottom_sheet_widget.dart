@@ -1,4 +1,4 @@
-import 'package:drup/providers/ride_notifier.dart';
+import 'package:drup/di/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_details_bottom_sheet.dart';
 import 'package:drup/features/passenger/ui/widgets/home_actions_content.dart';

@@ -10,7 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../repository/auth_repository.dart';
 import '../model/auth.dart';
 import '../provider/auth_notifier.dart';
-import '../../../providers/user_notifier.dart';
+import '../../passenger/provider/user_notifier.dart';
 import '../../../theme/app_colors.dart';
 
 class OTPScreen extends ConsumerStatefulWidget {

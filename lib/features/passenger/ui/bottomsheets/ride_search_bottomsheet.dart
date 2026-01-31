@@ -1,6 +1,6 @@
 import 'package:drup/core/animation/searching_ripple.dart';
 import 'package:drup/core/widgets/custom_button.dart';
-import 'package:drup/providers/ride_notifier.dart';
+import 'package:drup/di/ride_notifier.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';

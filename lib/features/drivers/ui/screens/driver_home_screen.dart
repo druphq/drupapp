@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../../../providers/driver_notifier.dart';
+import '../../provider/driver_notifier.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../core/utils/map_helper.dart';
 import '../../../passenger/ui/widgets/ride_request_card.dart';

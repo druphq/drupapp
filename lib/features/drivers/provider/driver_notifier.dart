@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/driver.dart';
-import '../data/models/ride.dart';
-import '../data/models/ride_request.dart';
-import '../data/models/location_model.dart';
-import 'providers.dart';
+import '../../../data/models/driver.dart';
+import '../../../data/models/ride.dart';
+import '../../../data/models/ride_request.dart';
+import '../../../data/models/location_model.dart';
+import '../../../di/providers.dart';
 
 class DriverState {
   final Driver? driver;

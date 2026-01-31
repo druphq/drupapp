@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../providers/user_notifier.dart';
+import '../../../passenger/provider/user_notifier.dart';
 import '../../../auth/provider/auth_notifier.dart';
 
 class DriverAppDrawer extends ConsumerWidget {
@@ -152,23 +152,23 @@ class DriverAppDrawer extends ConsumerWidget {
                                 _showMessage(context, 'About - Coming Soon');
                               },
                             ),
-                            _buildDrawerItem(
-                              icon: AppAssets.exitIcon,
-                              title: 'Logout',
-                              onTap: () {
-                                Navigator.pop(context);
-                                _handleLogout(context, ref);
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.deleteIcon,
-                              title: 'Delete Account',
-                              textColor: Colors.red[300],
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showDeleteAccountDialog(context);
-                              },
-                            ),
+                            // _buildDrawerItem(
+                            //   icon: AppAssets.exitIcon,
+                            //   title: 'Logout',
+                            //   onTap: () {
+                            //     Navigator.pop(context);
+                            //     _handleLogout(context, ref);
+                            //   },
+                            // ),
+                            // _buildDrawerItem(
+                            //   icon: AppAssets.deleteIcon,
+                            //   title: 'Delete Account',
+                            //   textColor: Colors.red[300],
+                            //   onTap: () {
+                            //     Navigator.pop(context);
+                            //     _showDeleteAccountDialog(context);
+                            //   },
+                            // ),
                           ],
                         ),
                       ),
@@ -233,8 +233,11 @@ class DriverAppDrawer extends ConsumerWidget {
 
     if (shouldLogout == true) {
       // Perform logout
-      ref.read(authNotifierProvider.notifier).signOut();
-      _showMessage(context, 'Logged out successfully');
+      ref.read(authNotifierProvider.notifier).logout();
+      if (context.mounted) {
+        _showMessage(context, 'Logged out successfully');
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
     }
   }
 

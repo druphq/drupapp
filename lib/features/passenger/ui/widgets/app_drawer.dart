@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../providers/user_notifier.dart';
+import '../../provider/user_notifier.dart';
 import '../../../auth/provider/auth_notifier.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -228,7 +228,9 @@ class AppDrawer extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
             child: const Text('Logout'),
           ),
         ],
@@ -237,8 +239,11 @@ class AppDrawer extends ConsumerWidget {
 
     if (shouldLogout == true) {
       // Perform logout
-      ref.read(authNotifierProvider.notifier).signOut();
-      _showMessage(context, 'Logged out successfully');
+      ref.read(authNotifierProvider.notifier).logout();
+      if (context.mounted) {
+        _showMessage(context, 'Logged out successfully');
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
     }
   }
 
