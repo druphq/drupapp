@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import 'package:drup/core/cache/cache_manager.dart';
+import 'package:drup/router/app_router.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/refresh_token_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
@@ -58,16 +61,19 @@ class DioClient {
     // Clear any existing interceptors
     _dio.interceptors.clear();
 
-    // 1. Connectivity check - runs first to fail fast if no network
+    // 1. Error interceptor - Added first, runs LAST for errors (for final error transformation)
+    _dio.interceptors.add(ErrorInterceptor());
+
+    // 2. Connectivity check - fails fast if no network
     _dio.interceptors.add(ConnectivityInterceptor());
 
-    // 2. Auth interceptor - adds authentication token
+    // 3. Auth interceptor - adds authentication token
     _dio.interceptors.add(AuthInterceptor(cacheManager: _cacheManager));
 
-    // 3. Cache interceptor - for offline support
+    // 4. Cache interceptor - for offline support
     // _dio.interceptors.add(CacheInterceptor(cacheManager: _cacheManager));
 
-    // 4. Pretty logger - only in debug mode
+    // 5. Pretty logger - only in debug mode
     if (kDebugMode) {
       _dio.interceptors.add(
         PrettyDioLogger(
@@ -82,10 +88,10 @@ class DioClient {
       );
     }
 
-    // 5. Retry interceptor - retries failed requests
+    // 6. Retry interceptor - retries failed requests (but not 401s)
     _dio.interceptors.add(RetryInterceptor(dio: _dio));
 
-    // 6. Refresh token interceptor - handles 401 and refreshes token
+    // 7. Refresh token interceptor - Added last, runs FIRST for errors (handles 401 before transformation)
     _dio.interceptors.add(
       RefreshTokenInterceptor(
         dio: _dio,
@@ -94,16 +100,15 @@ class DioClient {
         onTokenExpired: _handleTokenExpired,
       ),
     );
-
-    // 7. Error interceptor - transforms errors (runs last for error handling)
-    _dio.interceptors.add(ErrorInterceptor());
   }
 
   /// Handle when refresh token expires
   void _handleTokenExpired() {
     debugPrint('Token expired - user needs to re-authenticate');
-    // You can add navigation to login screen or emit an event here
-    // Example: eventBus.emit(TokenExpiredEvent());
+    final context = rootNavigator.currentContext;
+    if (context != null && context.mounted) {
+      context.go(AppRoutes.loginRoute);
+    }
   }
 
   /// Reset the singleton instance (useful for testing or logout)

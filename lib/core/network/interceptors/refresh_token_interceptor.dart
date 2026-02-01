@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:drup/data/api/api_routes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:drup/core/cache/cache_manager.dart';
 
@@ -14,11 +15,8 @@ class RefreshTokenInterceptor extends Interceptor {
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
 
-  /// Flag to prevent multiple refresh attempts
-  bool _isRefreshing = false;
-
-  /// Queue of requests waiting for token refresh
-  final List<_RequestRetryInfo> _pendingRequests = [];
+  /// Completer to coordinate token refresh across multiple requests
+  Completer<String?>? _refreshCompleter;
 
   RefreshTokenInterceptor({
     required Dio dio,
@@ -41,36 +39,66 @@ class RefreshTokenInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    // If already refreshing, queue this request
-    if (_isRefreshing) {
-      return _queueRequest(err, handler);
+    // If already refreshing, wait for it to complete
+    if (_refreshCompleter != null && !_refreshCompleter!.isCompleted) {
+      try {
+        debugPrint('⏳ Waiting for ongoing token refresh...');
+        final newToken = await _refreshCompleter!.future;
+        if (newToken != null) {
+          // Retry the original request with new token
+          final response = await _retryRequest(err.requestOptions, newToken);
+          return handler.resolve(response);
+        } else {
+          return handler.next(err);
+        }
+      } catch (e) {
+        return handler.next(err);
+      }
     }
 
-    _isRefreshing = true;
+    // Start token refresh
+    _refreshCompleter = Completer<String?>();
 
     try {
+      debugPrint('🔄 Refreshing token due to 401 error...');
       final newToken = await _refreshToken();
 
       if (newToken != null) {
+        debugPrint('✅ Token refreshed successfully, retrying request...');
+        // Complete the completer for other waiting requests
+        if (!_refreshCompleter!.isCompleted) {
+          _refreshCompleter!.complete(newToken);
+        }
+
         // Retry the original request with new token
         final response = await _retryRequest(err.requestOptions, newToken);
         handler.resolve(response);
-
-        // Retry all pending requests
-        _retryPendingRequests(newToken);
       } else {
+        debugPrint('❌ Token refresh failed');
+        // Complete the completer with null
+        if (!_refreshCompleter!.isCompleted) {
+          _refreshCompleter!.complete(null);
+        }
+
         // Token refresh failed - user needs to re-authenticate
         _handleTokenExpired();
         handler.next(err);
-        _rejectPendingRequests(err);
       }
     } catch (e) {
-      debugPrint('Token refresh failed: $e');
+      debugPrint('❌ Token refresh error: $e');
+
+      // Complete the completer with error
+      if (!_refreshCompleter!.isCompleted) {
+        _refreshCompleter!.completeError(e);
+      }
+
       _handleTokenExpired();
       handler.next(err);
-      _rejectPendingRequests(err);
     } finally {
-      _isRefreshing = false;
+      // Reset the completer after a short delay
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _refreshCompleter = null;
+      });
     }
   }
 
@@ -94,7 +122,7 @@ class RefreshTokenInterceptor extends Interceptor {
       );
 
       final response = await refreshDio.post(
-        '/auth/user/refresh-token',
+        ApiRoutes.refreshToken,
         data: {'refreshToken': refreshToken},
       );
 
@@ -127,54 +155,13 @@ class RefreshTokenInterceptor extends Interceptor {
     RequestOptions requestOptions,
     String newToken,
   ) async {
-    final options = Options(
-      method: requestOptions.method,
+    // Clone the request options and update the token
+    final newOptions = requestOptions.copyWith(
       headers: {...requestOptions.headers, 'Authorization': 'Bearer $newToken'},
     );
 
-    return _dio.request<dynamic>(
-      requestOptions.path,
-      data: requestOptions.data,
-      queryParameters: requestOptions.queryParameters,
-      options: options,
-    );
-  }
-
-  /// Queue a request to be retried after token refresh
-  void _queueRequest(DioException err, ErrorInterceptorHandler handler) {
-    _pendingRequests.add(
-      _RequestRetryInfo(requestOptions: err.requestOptions, handler: handler),
-    );
-  }
-
-  /// Retry all pending requests with the new token
-  void _retryPendingRequests(String newToken) async {
-    for (final request in _pendingRequests) {
-      try {
-        final response = await _retryRequest(request.requestOptions, newToken);
-        request.handler.resolve(response);
-      } catch (e) {
-        request.handler.reject(
-          DioException(requestOptions: request.requestOptions, error: e),
-        );
-      }
-    }
-    _pendingRequests.clear();
-  }
-
-  /// Reject all pending requests
-  void _rejectPendingRequests(DioException error) {
-    for (final request in _pendingRequests) {
-      request.handler.next(
-        DioException(
-          requestOptions: request.requestOptions,
-          error: error.error,
-          response: error.response,
-          type: error.type,
-        ),
-      );
-    }
-    _pendingRequests.clear();
+    // Use fetch to bypass interceptors and prevent loops
+    return _dio.fetch<dynamic>(newOptions);
   }
 
   /// Handle token expiration
@@ -191,16 +178,8 @@ class RefreshTokenInterceptor extends Interceptor {
 
   /// Check if the endpoint is an auth endpoint
   bool _isAuthEndpoint(String path) {
-    return path.contains('/auth/refresh-token') ||
-        path.contains('/auth/login') ||
-        path.contains('/auth/register');
+    return path.contains(ApiRoutes.refreshToken) ||
+        path.contains(ApiRoutes.refreshToken) ||
+        path.contains(ApiRoutes.signIn);
   }
-}
-
-/// Helper class to store pending request info
-class _RequestRetryInfo {
-  final RequestOptions requestOptions;
-  final ErrorInterceptorHandler handler;
-
-  _RequestRetryInfo({required this.requestOptions, required this.handler});
 }

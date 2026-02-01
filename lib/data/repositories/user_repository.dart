@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../api/api_routes.dart';
-import '../services/api_service.dart';
+import '../api/api_service.dart';
 import '../../features/auth/repository/auth_repository.dart';
 
 /// Repository for user-related operations

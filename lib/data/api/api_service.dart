@@ -2,19 +2,18 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../api/dio_client.dart';
-import '../api/api_response.dart';
-import '../api/api_exceptions.dart';
+import '../../core/network/dio_client.dart';
+import '../../core/network/api_response.dart';
+import '../../core/network/api_exceptions.dart';
 
-export '../api/api_response.dart';
-export '../api/api_exceptions.dart';
-export '../api/dio_client.dart';
+export '../../core/network/api_response.dart';
+export '../../core/network/api_exceptions.dart';
+export '../../core/network/dio_client.dart';
 
 /// Main API Service for making HTTP requests
 class ApiService {
   final Dio _dio;
 
-  /// Create ApiService with default DioClient
   ApiService() : _dio = DioClient.instance.dio;
 
   /// Create ApiService with custom Dio instance
