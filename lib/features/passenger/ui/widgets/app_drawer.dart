@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:drup/router/app_router.dart';
 import '../../provider/user_notifier.dart';
 import '../../../auth/provider/auth_notifier.dart';
 
@@ -16,7 +17,7 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userNotifierProvider);
-    final userName = userState.user?.displayName ?? 'Guest User';
+    final userName = userState.user?.fullName ?? 'Guest User';
 
     return Drawer(
       backgroundColor: AppColors.surface,
@@ -160,19 +161,27 @@ class AppDrawer extends ConsumerWidget {
                               icon: AppAssets.exitIcon,
                               title: 'Logout',
                               onTap: () {
+                                // Capture auth notifier before closing drawer
+                                final authNotifier = ref.read(
+                                  authNotifierProvider.notifier,
+                                );
+
+                                // Close drawer first
                                 Navigator.pop(context);
-                                _handleLogout(context, ref);
+
+                                // Show confirmation and handle logout
+                                _handleLogout(context, authNotifier);
                               },
                             ),
-                            _buildDrawerItem(
-                              icon: AppAssets.deleteIcon,
-                              title: 'Delete Account',
-                              textColor: Colors.red[300],
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showDeleteAccountDialog(context);
-                              },
-                            ),
+                            // _buildDrawerItem(
+                            //   icon: AppAssets.deleteIcon,
+                            //   title: 'Delete Account',
+                            //   textColor: Colors.red[300],
+                            //   onTap: () {
+                            //     Navigator.pop(context);
+                            //     _showDeleteAccountDialog(context);
+                            //   },
+                            // ),
                           ],
                         ),
                       ),
@@ -215,63 +224,89 @@ class AppDrawer extends ConsumerWidget {
     );
   }
 
-  void _handleLogout(BuildContext context, WidgetRef ref) async {
+  void _handleLogout(BuildContext context, AuthNotifier authNotifier) async {
     // Show confirmation dialog
     final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Logout',
+          style: TextStyles.t3.copyWith(
+            fontSize: FontSizes.s20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: TextStyles.h3.copyWith(
+            fontSize: FontSizes.s14,
+            color: AppColors.surface500,
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancel',
+              style: TextStyles.t2.copyWith(
+                fontSize: FontSizes.s16,
+                color: AppColors.accentLight,
+              ),
+            ),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context, true);
-            },
-            child: const Text('Logout'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              'Logout',
+              style: TextStyles.t2.copyWith(
+                fontSize: FontSizes.s16,
+                color: AppColors.accentLight,
+              ),
+            ),
           ),
         ],
       ),
     );
 
+    // Check if user confirmed logout
     if (shouldLogout == true) {
-      // Perform logout
-      ref.read(authNotifierProvider.notifier).logout();
-      if (context.mounted) {
-        _showMessage(context, 'Logged out successfully');
-        Navigator.popUntil(context, (route) => route.isFirst);
+      // Perform logout using the captured notifier
+      authNotifier.logout();
+
+      // Use root navigator context for navigation
+      final navigatorContext = rootNavigator.currentContext;
+      if (navigatorContext != null && navigatorContext.mounted) {
+        // Navigate to login screen
+        Navigator.popUntil(navigatorContext, (route) => route.isFirst);
       }
     }
   }
 
-  void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text(
-          'Are you sure you want to delete your account? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showMessage(context, 'Delete Account - Coming Soon');
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _showDeleteAccountDialog(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Delete Account'),
+  //       content: const Text(
+  //         'Are you sure you want to delete your account? This action cannot be undone.',
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.pop(context);
+  //             _showMessage(context, 'Delete Account - Coming Soon');
+  //           },
+  //           style: TextButton.styleFrom(foregroundColor: Colors.red),
+  //           child: const Text('Delete'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(

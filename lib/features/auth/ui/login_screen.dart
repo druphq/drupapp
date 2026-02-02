@@ -161,7 +161,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       // Request OTP using AuthRepository
       final authRepo = AuthRepository();
-      final result = await authRepo.signIn(SignInRequest(phoneNumber: '+234$phone'));
+      final result = await authRepo.signIn(
+        SignInRequest(phoneNumber: '+234$phone'),
+      );
 
       if (result.success && mounted) {
         // Navigate to OTP screen
@@ -207,18 +209,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const Spacer(flex: 2),
                   Text(
                     AppStrings.enterYourNumberTxt,
-                    style: TextStyles.t1.copyWith(fontSize: FontSizes.s18),
+                    style: TextStyles.t1.copyWith(fontSize: FontSizes.s20),
                   ),
                   Text(
                     AppStrings.enterPhoneNumberCaptionTxt,
-                    style: TextStyles.body1,
+                    style: TextStyles.body1.copyWith(
+                      fontSize: FontSizes.s16,
+                      color: AppColors.surface600,
+                    ),
                   ),
                   const Gap(20.0),
                   AppPhoneField(
                     hint: 'Phone Number',
                     borderRadius: Corners.mmd,
                     controller: _phoneController,
-                    style: TextStyles.h3.copyWith(color: Colors.black),
+                    style: TextStyles.h3.copyWith(
+                      color: Colors.black,
+                      fontSize: FontSizes.s18,
+                    ),
                     validator: FieldValidator.minLength(
                       11,
                       message: AppStrings.phoneErrorMessage,
@@ -291,7 +299,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               side: BorderSide(color: Colors.grey.shade300),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
-                                  Corners.mmd,
+                                  Corners.vLg,
                                 ),
                               ),
                               padding: const EdgeInsets.symmetric(
@@ -361,6 +369,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             text: AppStrings.over18txt,
                             style: TextStyles.body2.copyWith(
                               fontSize: FontSizes.s12,
+                              
                             ),
                           ),
                         ],

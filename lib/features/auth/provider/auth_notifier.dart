@@ -175,12 +175,15 @@ final authNotifierProvider =
 // Computed providers for convenience
 final isLoggedInProvider = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
-  return authState.value != null;
+  return authState.maybeWhen(data: (user) => user != null, orElse: () => false);
 });
 
 final isDriverProvider = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
-  return authState.value?.userType == UserType.driver;
+  return authState.maybeWhen(
+    data: (user) => user?.userType == UserType.driver,
+    orElse: () => false,
+  );
 });
 
 final currentUserProvider = Provider<User?>((ref) {

@@ -1,12 +1,15 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/data/models/user.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:otp_pin_field/otp_pin_field.dart';
 import '../repository/auth_repository.dart';
 import '../model/auth.dart';
 import '../provider/auth_notifier.dart';
@@ -30,29 +33,20 @@ class OTPScreen extends ConsumerStatefulWidget {
 }
 
 class _OTPScreenState extends ConsumerState<OTPScreen> {
-  final List<TextEditingController> _otpControllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  final _otpPinFieldController = GlobalKey<OtpPinFieldState>();
+  String _otp = '';
   bool _isLoading = false;
   bool _isResending = false;
 
   @override
   void dispose() {
-    for (var controller in _otpControllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
     super.dispose();
   }
 
-  String get _otp => _otpControllers.map((c) => c.text).join();
+  Future<void> _verifyOTP([String? otpCode]) async {
+    final otp = otpCode ?? _otp;
 
-  Future<void> _verifyOTP() async {
-    if (_otp.length != 6) {
+    if (otp.length != 6) {
       _showError('Please enter the complete 6-digit OTP');
       return;
     }
@@ -68,14 +62,14 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
             .read(authNotifierProvider.notifier)
             .completeGoogleSignIn(
               phone: widget.phoneNumber,
-              otp: _otp,
+              otp: otp,
               googleData: widget.googleData!,
             );
       } else {
         // Phone-only sign-in flow via AuthNotifier
         success = await ref
             .read(authNotifierProvider.notifier)
-            .verifyOTP(widget.phoneNumber, _otp);
+            .verifyOTP(widget.phoneNumber, otp);
       }
 
       if (success && mounted) {
@@ -83,17 +77,15 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
         final user = ref.read(authNotifierProvider).value;
 
         if (user != null) {
-          // Load user profile and location
-          await ref
-              .read(userNotifierProvider.notifier)
-              .loadUserProfile(user.id);
-          await ref.read(userNotifierProvider.notifier).updateUserLocation();
+          // Load user profile
+          await ref.read(userNotifierProvider.notifier).loadUserProfile();
 
-          if (user.isProfileComplete) {
-            context.go(AppRoutes.homeRoute);
-          } else {
-            // Navigate to complete profile screen
-            context.go(AppRoutes.completeProfileRoute);
+          // Let the router handle navigation based on profile completion status
+          if (mounted) {
+            final isDriver = user.userType == UserType.driver;
+            context.go(
+              isDriver ? AppRoutes.driverHomeRoute : AppRoutes.homeRoute,
+            );
           }
         }
       } else if (mounted) {
@@ -123,11 +115,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       if (mounted) {
         if (result.success) {
           _showSuccess('OTP resent successfully');
-          // Clear OTP fields
-          for (var controller in _otpControllers) {
-            controller.clear();
-          }
-          _focusNodes[0].requestFocus();
+          // Clear OTP field
+          _otpPinFieldController.currentState?.clearOtp();
+          setState(() {
+            _otp = '';
+          });
         } else {
           _showError(result.message ?? 'Failed to resend OTP');
         }
@@ -158,118 +150,126 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Gap(20),
-              Text(
-                'Enter OTP',
-                style: TextStyles.t1.copyWith(fontSize: FontSizes.s24),
-              ),
-              const Gap(8),
-              Text(
-                'We sent a code to ${widget.phoneNumber}',
-                style: TextStyles.body1,
-                textAlign: TextAlign.center,
-              ),
-              const Gap(40),
-              // OTP Input Fields
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(
-                  6,
-                  (index) => SizedBox(
-                    width: 50,
-                    height: 60,
-                    child: TextField(
-                      controller: _otpControllers[index],
-                      focusNode: _focusNodes[index],
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      maxLength: 1,
-                      style: TextStyles.h1.copyWith(fontSize: FontSizes.s24),
-                      decoration: InputDecoration(
-                        counterText: '',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(Corners.md),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(Corners.md),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(Corners.md),
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                          ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Gap(20),
+                Text(
+                  'Enter Code',
+                  style: TextStyles.t1.copyWith(fontSize: FontSizes.s20),
+                ),
+                const Gap(8),
+
+                Text.rich(
+                  TextSpan(
+                    text: 'We sent a verification code to ',
+                    style: TextStyles.body1.copyWith(
+                      fontSize: FontSizes.s16,
+                      color: AppColors.surface600,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: widget.phoneNumber,
+                        style: TextStyles.body1.copyWith(
+                          fontSize: FontSizes.s16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.surface600,
                         ),
                       ),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      onChanged: (value) {
-                        if (value.isNotEmpty && index < 5) {
-                          _focusNodes[index + 1].requestFocus();
-                        } else if (value.isEmpty && index > 0) {
-                          _focusNodes[index - 1].requestFocus();
-                        }
-
-                        // Auto-submit when all 6 digits are entered
-                        if (index == 5 && value.isNotEmpty) {
-                          _verifyOTP();
-                        }
-                      },
+                    ],
+                  ),
+                ),
+                const Gap(40),
+                // OTP Input Field
+                OtpPinField(
+                  key: _otpPinFieldController,
+                  autoFillEnable: false,
+                  textInputAction: TextInputAction.done,
+                  onSubmit: (text) {
+                    _otp = text;
+                    _verifyOTP(text);
+                  },
+                  onChange: (text) {
+                    setState(() {
+                      _otp = text;
+                    });
+                  },
+                  maxLength: 6,
+                  showCursor: true,
+                  cursorColor: AppColors.primary,
+                  cursorWidth: 2,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  otpPinFieldStyle: OtpPinFieldStyle(
+                    defaultFieldBorderColor: Colors.grey.shade300,
+                    activeFieldBorderColor: AppColors.primary,
+                    filledFieldBorderColor: AppColors.primary,
+                    fieldBorderWidth: 1,
+                    fieldBorderRadius: Corners.md,
+                    fieldPadding: 8,
+                  ),
+                  otpPinFieldDecoration: OtpPinFieldDecoration.custom,
+                  fieldWidth: 50,
+                  fieldHeight: 60,
+                ),
+                const Gap(30),
+                // Resend OTP
+                Text.rich(
+                  TextSpan(
+                    text: 'Didn\'t receive the code? ',
+                    style: TextStyles.body2.copyWith(
+                      fontSize: FontSizes.s16,
+                      color: AppColors.surface700,
                     ),
+                    children: [
+                      TextSpan(
+                        text: 'Resend',
+                        style: TextStyles.t1.copyWith(
+                          color: AppColors.primary,
+                          fontSize: FontSizes.s16,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = _isResending ? null : _resendOTP,
+                      ),
+
+                      WidgetSpan(
+                        child: _isResending
+                            ? Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const Gap(30),
-              // Resend OTP
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Didn't receive code? ", style: TextStyles.body2),
-                  TextButton(
-                    onPressed: _isResending ? null : _resendOTP,
-                    child: _isResending
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            'Resend',
-                            style: TextStyles.h3.copyWith(
-                              color: AppColors.primary,
-                              fontSize: FontSizes.s14,
-                            ),
-                          ),
+
+                const Gap(40),
+                // Verify Button
+                CustomButton(
+                  text: 'Verify',
+                  onPressed: _verifyOTP,
+                  isLoading: _isLoading,
+                  textStyle: TextStyles.btnStyle.copyWith(
+                    color: Colors.white,
+                    fontSize: 16.0,
                   ),
-                ],
-              ),
-              const Gap(40),
-              // Verify Button
-              CustomButton(
-                text: 'Verify',
-                onPressed: _verifyOTP,
-                isLoading: _isLoading,
-                textStyle: TextStyles.btnStyle.copyWith(
-                  color: Colors.white,
-                  fontSize: 16.0,
                 ),
-              ),
-              const Spacer(),
-            ],
+                const Spacer(),
+              ],
+            ),
           ),
         ),
       ),

@@ -596,8 +596,8 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
-  /// Legacy method - load user profile from cache
-  Future<void> loadUserProfile(String userId) async {
+  ///load user profile from cache
+  Future<void> loadUserProfile() async {
     await fetchUserProfile();
   }
 

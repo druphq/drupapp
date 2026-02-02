@@ -54,7 +54,6 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -62,7 +61,6 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

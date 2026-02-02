@@ -60,7 +60,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    _initializeLocation();
+    // Move camera to current location if already available
+    final userState = ref.read(userNotifierProvider);
+    if (userState.currentLocation != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLng(userState.currentLocation!.latLng),
+      );
+    }
   }
 
   // void _onMapTap(LatLng position) async {

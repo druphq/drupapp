@@ -23,7 +23,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
-    // Wait for 2 seconds
     await Future.delayed(const Duration(seconds: 3));
 
     if (!mounted) return;
@@ -35,15 +34,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // Check if user is logged in
     if (isLoggedIn && currentUser != null) {
       // Initialize user data
-      await ref
-          .read(userNotifierProvider.notifier)
-          .loadUserProfile(currentUser.id);
+      await ref.read(userNotifierProvider.notifier).loadUserProfile();
 
       // Request location permission and get current location
-      await ref.read(userNotifierProvider.notifier).updateUserLocation();
+      // await ref.read(userNotifierProvider.notifier).updateUserLocation();
 
       // Navigate to appropriate screen
       if (mounted) {
+        if (currentUser.isEmailVerified == false ||
+            currentUser.isPhoneVerified == false) {
+          context.go(AppRoutes.completeProfileRoute);
+          return;
+        }
+
         if (isDriver) {
           context.go(AppRoutes.driverHomeRoute);
         } else {
@@ -65,9 +68,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: Container(
-          decoration: const BoxDecoration(
-           color: AppColors.splashBg,
-          ),
+          decoration: const BoxDecoration(color: AppColors.splashBg),
           child: Center(
             child: Stack(
               alignment: Alignment.center,

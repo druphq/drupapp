@@ -41,11 +41,12 @@ class AppColors {
   static const Color onAccentLight = Color(0x000D0D0D);
 
   //* surface
-  static const Color surface700 = Color(0xff1A1A1A);
   static const Color surface100 = Color(0xffE2E7F2);
   static const Color surface200 = Color(0xffB7B7B7);
   static const Color surface300 = Color(0xff979797);
   static const Color surface500 = Color(0xff6A6A6A);
+  static const Color surface600 = Color(0xff4F4F4F);
+  static const Color surface700 = Color(0xff1A1A1A);
 
   //* others
   static const filledColor = Color(0xffD2D2D2);

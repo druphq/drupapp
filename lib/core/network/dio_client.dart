@@ -51,6 +51,8 @@ class DioClient {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        // Treat 401 as valid response so it reaches response interceptor
+        // RefreshTokenInterceptor will handle it in onResponse
         validateStatus: (status) => status != null && status < 500,
       ),
     );

@@ -20,6 +20,15 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // overlay status bar on Android
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+    ),
+  );
+
   runApp(const ProviderScope(child: DrupApp()));
 }
 
@@ -28,7 +37,7 @@ class DrupApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = AppRouter.createRouter(ref);
+    final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       title: 'Drup',
