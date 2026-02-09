@@ -170,9 +170,7 @@ class GoogleMapsService {
       final queryParams = {
         'input': query,
         'key': _apiKey,
-        // Restrict to Nigeria
         'components': 'country:ng',
-        // Return all place types relevant for ride-hailing
         'types': 'geocode|establishment',
       };
 
@@ -324,7 +322,7 @@ class GoogleMapsService {
       final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/place/details/json?'
         'place_id=$placeId&'
-        'fields=name,address_components,geometry&'
+        'fields=name,address_components,geometry,types&'
         'key=$_apiKey',
       );
 
@@ -346,6 +344,11 @@ class GoogleMapsService {
             'latitude': result['geometry']['location']['lat'],
             'longitude': result['geometry']['location']['lng'],
             'placeId': placeId,
+            'type':
+                result['types'] != null &&
+                    (result['types'] as List).contains('airport')
+                ? 'airport'
+                : 'address',
           };
         }
       }
