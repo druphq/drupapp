@@ -1,4 +1,6 @@
+import 'package:drup/core/widgets/app_phone_field.dart';
 import 'package:drup/core/widgets/custom_text_field.dart';
+import 'package:drup/di/providers.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -24,21 +26,35 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   final _firstnameController = TextEditingController();
   final _lastnameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  bool _isEmailVerified = false;
+  bool _isPhoneVerified = false;
   final formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
+  bool _isDataLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
   }
 
   void _loadUserData() {
-    final user = ref.read(authNotifierProvider).value;
+    if (_isDataLoaded) return;
+
+    final user = ref.read(authNotifierProvider).valueOrNull;
     if (user != null) {
-      _firstnameController.text = user.firstName ?? '';
-      _lastnameController.text = user.lastName ?? '';
-      _emailController.text = user.email ?? '';
+      setState(() {
+        _firstnameController.text = user.firstName ?? '';
+        _lastnameController.text = user.lastName ?? '';
+        _emailController.text = user.email ?? '';
+        _isEmailVerified = user.isEmailVerified;
+        _isPhoneVerified = user.isPhoneVerified;
+        _isDataLoaded = true;
+      });
     }
   }
 
@@ -60,7 +76,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
           'Complete  Profile',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -87,7 +103,10 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 CustomTextField(
                   controller: _firstnameController,
                   hintText: AppStrings.firstNameTxt,
-                  style: TextStyles.h4.copyWith(color: Colors.black),
+                  style: TextStyles.h4.copyWith(
+                    color: Colors.black,
+                    fontSize: FontSizes.s16,
+                  ),
                   validator: FieldValidator.required(
                     message: AppStrings.firstNameErrorMsg,
                   ),
@@ -96,20 +115,41 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 CustomTextField(
                   controller: _lastnameController,
                   hintText: AppStrings.lastNameTxt,
-                  style: TextStyles.h4.copyWith(color: Colors.black),
+                  style: TextStyles.h4.copyWith(
+                    color: Colors.black,
+                    fontSize: FontSizes.s16,
+                  ),
                   validator: FieldValidator.required(
                     message: AppStrings.lastNameErrorMsg,
                   ),
                 ),
                 const Gap(10.0),
-                CustomTextField(
-                  controller: _emailController,
-                  hintText: AppStrings.emailHintTXt,
-                  style: TextStyles.h4.copyWith(color: Colors.black),
-                  validator: FieldValidator.required(
-                    message: AppStrings.emailAddressErrorMsg,
+                if (!_isEmailVerified)
+                  CustomTextField(
+                    controller: _emailController,
+                    hintText: AppStrings.emailHintTXt,
+                    style: TextStyles.h4.copyWith(
+                      color: Colors.black,
+                      fontSize: FontSizes.s16,
+                    ),
+                    validator: FieldValidator.required(
+                      message: AppStrings.emailAddressErrorMsg,
+                    ),
                   ),
-                ),
+                if (!_isPhoneVerified)
+                  AppPhoneField(
+                    hint: 'Phone Number',
+                    borderRadius: Corners.mmd,
+                    controller: _phoneController,
+                    style: TextStyles.h3.copyWith(
+                      color: Colors.black,
+                      fontSize: FontSizes.s18,
+                    ),
+                    validator: FieldValidator.minLength(
+                      11,
+                      message: AppStrings.phoneErrorMessage,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -174,23 +214,80 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         return;
       }
 
+      // Determine if profile should be marked complete
+      // Only complete if no pending verifications
+      final needsEmailVerification =
+          !_isEmailVerified && _emailController.text.trim().isNotEmpty;
+      final needsPhoneVerification =
+          !_isPhoneVerified && _phoneController.text.trim().isNotEmpty;
+      final shouldMarkComplete =
+          !needsEmailVerification && !needsPhoneVerification;
+
       // Update user with new profile data
       final updatedUser = currentUser.copyWith(
         firstName: _firstnameController.text.trim(),
         lastName: _lastnameController.text.trim(),
-        email: _emailController.text.trim(),
-        profileStatus: ProfileCompletionStatus.complete,
+        email: _emailController.text.isNotEmpty
+            ? _emailController.text.trim()
+            : null,
+        phone: _phoneController.text.isNotEmpty
+            ? _phoneController.text.trim()
+            : null,
+        profileStatus: shouldMarkComplete
+            ? ProfileCompletionStatus.complete
+            : currentUser.profileStatus,
       );
 
       // Update profile via AuthNotifier
       await ref.read(authNotifierProvider.notifier).updateProfile(updatedUser);
 
       if (mounted) {
-        _showSuccess('Profile completed successfully!');
-        // Navigate to home after a short delay
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (mounted) {
-          context.go(AppRoutes.homeRoute);
+        // Check if user needs to verify email
+        if (!_isEmailVerified && _emailController.text.trim().isNotEmpty) {
+          // Send email verification OTP
+          final authRepo = ref.read(authRepositoryProvider);
+          final result = await authRepo.resendEmailVerification();
+
+          if (result.success) {
+            _showSuccess(
+              'Verification code sent to ${_emailController.text.trim()}',
+            );
+
+            // Navigate to email verification screen
+            await Future.delayed(const Duration(milliseconds: 500));
+            if (mounted) {
+              context.push(
+                AppRoutes.emailVerificationRoute,
+                extra: {'email': _emailController.text.trim()},
+              );
+            }
+          } else {
+            _showError(result.message ?? 'Failed to send verification code');
+          }
+        } else if (!_isPhoneVerified &&
+            _phoneController.text.trim().isNotEmpty) {
+          // Navigate to phone verification (OTP) screen
+          _showSuccess('Please verify your phone number');
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            context.push(
+              AppRoutes.otpRoute,
+              extra: {
+                'phoneNumber': _phoneController.text.trim(),
+                'isGoogleSignIn': false,
+              },
+            );
+          }
+        } else {
+          // Profile complete and all verifications done
+          _showSuccess('Profile completed successfully!');
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            final isDriver = updatedUser.userType == UserType.driver;
+            context.go(
+              isDriver ? AppRoutes.driverHomeRoute : AppRoutes.homeRoute,
+            );
+          }
         }
       }
     } catch (e) {

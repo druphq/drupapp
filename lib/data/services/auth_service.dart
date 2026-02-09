@@ -20,7 +20,15 @@ class GoogleSignInResult {
 
 class ExternalAuthService {
   User? _currentUser;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+
+  // Web client ID from google-services.json (client_type: 3)
+  static const String _serverClientId =
+      '346199166720-v7i7tfv63gisvdqr3abdqb044fa373mc.apps.googleusercontent.com';
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    serverClientId: _serverClientId, // Required to get idToken
+  );
 
   /// Sign in with Google
   Future<GoogleSignInResult?> loginWithGoogle() async {
@@ -32,7 +40,6 @@ class ExternalAuthService {
 
       if (googleUser == null) {
         // User cancelled the sign-in
-        print('Google Sign-In cancelled by user');
         return null;
       }
 
@@ -42,7 +49,6 @@ class ExternalAuthService {
 
       final idToken = googleAuth.idToken;
       if (idToken == null) {
-        print('Failed to get Google ID token');
         return null;
       }
 
@@ -66,7 +72,6 @@ class ExternalAuthService {
         profileImage: googleUser.photoUrl,
       );
     } catch (e) {
-      print('Google Sign-In error: $e');
       return null;
     }
   }
@@ -76,7 +81,7 @@ class ExternalAuthService {
     try {
       await _googleSignIn.signOut();
     } catch (e) {
-      print('Google Sign-Out error: $e');
+      // Silently fail
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/app_phone_field.dart';
+import 'package:drup/di/providers.dart';
 import 'package:drup/features/auth/repository/auth_repository.dart';
 import 'package:drup/features/auth/model/auth.dart';
 import 'package:drup/resources/app_dimen.dart';
@@ -43,7 +44,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authNotifierProvider.notifier)
           .loginWithGoogle();
 
-      if (result != null && mounted) {
+      if (!mounted) return;
+
+      if (result != null) {
         // Now need to request phone OTP
         _showPhoneVerificationDialog(result);
       }
@@ -160,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       // Request OTP using AuthRepository
-      final authRepo = AuthRepository();
+      final authRepo = ref.read(authRepositoryProvider);
       final result = await authRepo.signIn(
         SignInRequest(phoneNumber: '+234$phone'),
       );
@@ -369,7 +372,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             text: AppStrings.over18txt,
                             style: TextStyles.body2.copyWith(
                               fontSize: FontSizes.s12,
-                              
                             ),
                           ),
                         ],

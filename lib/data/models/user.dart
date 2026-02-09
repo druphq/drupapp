@@ -19,7 +19,7 @@ enum UserType {
 /// User model matching API response
 class User extends Equatable {
   final String id;
-  final String phone;
+  final String? phone;
   final String? email;
   final String? firstName;
   final String? lastName;
@@ -40,7 +40,7 @@ class User extends Equatable {
 
   const User({
     required this.id,
-    required this.phone,
+    this.phone,
     this.email,
     this.firstName,
     this.lastName,
@@ -184,7 +184,7 @@ class User extends Equatable {
     if (firstName != null || lastName != null) {
       return '${firstName ?? ''} ${lastName ?? ''}'.trim();
     }
-    return phone;
+    return phone ?? '';
   }
 
   @override

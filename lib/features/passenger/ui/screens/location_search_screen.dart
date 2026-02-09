@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../di/providers.dart';
-import '../../../../di/ride_notifier.dart';
+import '../../../drivers/provider/ride_notifier.dart';
 import '../../provider/user_notifier.dart';
 import '../../../../data/models/location_model.dart';
 

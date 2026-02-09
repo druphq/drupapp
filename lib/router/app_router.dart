@@ -13,28 +13,28 @@ final GlobalKey<NavigatorState> driverShellNavigator = GlobalKey(
   debugLabel: 'driver',
 );
 
+// Listenable to trigger router refresh without recreating the router
+class RouterRefreshNotifier extends ChangeNotifier {
+  RouterRefreshNotifier(Ref ref) {
+    // Listen to auth changes and notify router to re-evaluate redirects
+    ref.listen(isLoggedInProvider, (_, __) => notifyListeners());
+    ref.listen(isDriverProvider, (_, __) => notifyListeners());
+    ref.listen(userNotifierProvider, (_, __) => notifyListeners());
+  }
+}
+
 // Provider for the router - ensures single instance across rebuilds
 final routerProvider = Provider<GoRouter>((ref) {
-  final isLoggedIn = ref.watch(isLoggedInProvider);
-  final isDriver = ref.watch(isDriverProvider);
-  ref.watch(userNotifierProvider).user;
-
-  // Determine initial location based on auth state
-  String initialLocation = AppRoutes.splashRoute;
-  if (isLoggedIn) {
-    initialLocation = isDriver
-        ? AppRoutes.driverHomeRoute
-        : AppRoutes.homeRoute;
-  }
+  final refreshNotifier = RouterRefreshNotifier(ref);
 
   return GoRouter(
-    initialLocation: initialLocation,
+    initialLocation: AppRoutes.splashRoute,
     navigatorKey: rootNavigator,
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
       final isLoggedIn = ref.read(isLoggedInProvider);
       final isDriver = ref.read(isDriverProvider);
       final user = ref.read(userNotifierProvider).user;
-
       final currentPath = state.matchedLocation;
 
       // Skip redirect for splash screen
@@ -42,9 +42,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Allow access to OTP and complete
-      // profile screens without full authentication
+      // Allow access full authentication
       if (currentPath == AppRoutes.otpRoute ||
+          currentPath == AppRoutes.emailVerificationRoute ||
           currentPath == AppRoutes.completeProfileRoute) {
         return null;
       }
@@ -55,10 +55,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Redirect to complete profile if profile is incomplete
-      if (isLoggedIn && 
-          user != null && 
-          !user.isProfileComplete && 
-          currentPath != AppRoutes.completeProfileRoute) {
+      // But skip this check if navigating to verification screens
+      if (isLoggedIn &&
+          user != null &&
+          !user.isProfileComplete &&
+          currentPath != AppRoutes.completeProfileRoute &&
+          currentPath != AppRoutes.otpRoute &&
+          currentPath != AppRoutes.emailVerificationRoute) {
         return AppRoutes.completeProfileRoute;
       }
 
@@ -73,6 +76,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       AppScreens.splashRoute,
       AppScreens.loginRoute,
       AppScreens.otpRoute,
+      AppScreens.emailVerificationRoute,
       AppScreens.completeProfileRoute,
       AppScreens.mainRoute,
       AppScreens.driverSplashRoute,
@@ -84,7 +88,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
 
 // class AppRouter {
 //   static GoRouter createRouter(WidgetRef ref) {

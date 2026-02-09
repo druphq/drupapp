@@ -1,5 +1,6 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/data/models/user.dart';
+import 'package:drup/di/providers.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';
@@ -16,23 +17,18 @@ import '../provider/auth_notifier.dart';
 import '../../passenger/provider/user_notifier.dart';
 import '../../../theme/app_colors.dart';
 
-class OTPScreen extends ConsumerStatefulWidget {
-  final String phoneNumber;
-  final GoogleData? googleData;
-  final bool isGoogleSignIn;
+class EmailVerificationScreen extends ConsumerStatefulWidget {
+  final String email;
 
-  const OTPScreen({
-    super.key,
-    required this.phoneNumber,
-    this.googleData,
-    this.isGoogleSignIn = false,
-  });
+  const EmailVerificationScreen({super.key, required this.email});
 
   @override
-  ConsumerState<OTPScreen> createState() => _OTPScreenState();
+  ConsumerState<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
 }
 
-class _OTPScreenState extends ConsumerState<OTPScreen> {
+class _EmailVerificationScreenState
+    extends ConsumerState<EmailVerificationScreen> {
   final _otpPinFieldController = GlobalKey<OtpPinFieldState>();
   String _otp = '';
   bool _isLoading = false;
@@ -43,7 +39,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     super.dispose();
   }
 
-  Future<void> _verifyOTP([String? otpCode]) async {
+  Future<void> _verifyEmailOTP([String? otpCode]) async {
     final otp = otpCode ?? _otp;
 
     if (otp.length != 6) {
@@ -54,47 +50,32 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     setState(() => _isLoading = true);
 
     try {
-      bool success;
+      final authRepo = ref.read(authRepositoryProvider);
+      final request = VerifyEmailRequest(otp: otp);
+      final result = await authRepo.verifyEmail(request);
 
-      // if (widget.isGoogleSignIn && widget.googleData != null) {
-      //   // Google Sign-In completion flow via AuthNotifier
-      //   success = await ref
-      //       .read(authNotifierProvider.notifier)
-      //       .completeGoogleSignIn(
-      //         phone: widget.phoneNumber,
-      //         otp: otp,
-      //         googleData: widget.googleData!,
-      //       );
-      // } else {
-      // Phone-only sign-in flow via AuthNotifier
-      success = await ref
-          .read(authNotifierProvider.notifier)
-          .verifyOTP(widget.phoneNumber, otp);
-      // }
+      if (mounted) {
+        if (result.success && result.data != null) {
+          // Update auth state with verified user
+          ref.read(authNotifierProvider.notifier).updateUser(result.data!);
 
-      if (success && mounted) {
-        // Get the authenticated user from state
-        final user = ref.read(authNotifierProvider).value;
-
-        if (user != null) {
-          // Load user profile
+          // Reload user profile
           await ref.read(userNotifierProvider.notifier).loadUserProfile();
 
-          if (user.isProfileComplete && mounted) {
-            if (mounted) {
-              final isDriver = user.userType == UserType.driver;
-              context.go(
-                isDriver ? AppRoutes.driverHomeRoute : AppRoutes.homeRoute,
-              );
-            }
-          } else if (mounted) {
-            // Navigate to complete profile screen
-            context.go(AppRoutes.completeProfileRoute);
+          _showSuccess('Email verified successfully!');
+
+          // Navigate to home after verification
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            final user = ref.read(authNotifierProvider).value;
+            final isDriver = user?.userType == UserType.driver;
+            context.go(
+              isDriver ? AppRoutes.driverHomeRoute : AppRoutes.homeRoute,
+            );
           }
+        } else {
+          _showError(result.message ?? 'Email verification failed');
         }
-      } else if (mounted) {
-        final error = ref.read(authNotifierProvider).error;
-        _showError(error?.toString() ?? 'OTP verification failed');
       }
     } catch (e) {
       if (mounted) {
@@ -112,13 +93,11 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
 
     try {
       final authRepo = AuthRepository();
-      final result = await authRepo.signIn(
-        SignInRequest(phoneNumber: widget.phoneNumber),
-      );
+      final result = await authRepo.resendEmailVerification();
 
       if (mounted) {
         if (result.success) {
-          _showSuccess('OTP resent successfully');
+          _showSuccess('OTP resent successfully to ${widget.email}');
           // Clear OTP field
           _otpPinFieldController.currentState?.clearOtp();
           setState(() {
@@ -165,11 +144,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
               children: [
                 const Gap(20),
                 Text(
-                  'Enter Code',
+                  'Verify Email',
                   style: TextStyles.t1.copyWith(fontSize: FontSizes.s20),
                 ),
                 const Gap(8),
-
                 Text.rich(
                   TextSpan(
                     text: 'We sent a verification code to ',
@@ -179,7 +157,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                     ),
                     children: [
                       TextSpan(
-                        text: widget.phoneNumber,
+                        text: widget.email,
                         style: TextStyles.body1.copyWith(
                           fontSize: FontSizes.s16,
                           fontWeight: FontWeight.w600,
@@ -197,7 +175,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                   textInputAction: TextInputAction.done,
                   onSubmit: (text) {
                     _otp = text;
-                    _verifyOTP(text);
+                    _verifyEmailOTP(text);
                   },
                   onChange: (text) {
                     setState(() {
@@ -231,17 +209,15 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                       color: AppColors.surface700,
                     ),
                     children: [
-                      if (!_isResending)
-                        TextSpan(
-                          text: 'Resend',
-                          style: TextStyles.t1.copyWith(
-                            color: AppColors.primary,
-                            fontSize: FontSizes.s16,
-                          ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = _isResending ? null : _resendOTP,
+                      TextSpan(
+                        text: 'Resend',
+                        style: TextStyles.t1.copyWith(
+                          color: AppColors.primary,
+                          fontSize: FontSizes.s16,
                         ),
-
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = _isResending ? null : _resendOTP,
+                      ),
                       WidgetSpan(
                         child: _isResending
                             ? Padding(
@@ -260,19 +236,17 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                     ],
                   ),
                 ),
-
                 const Gap(40),
                 // Verify Button
                 CustomButton(
-                  text: 'Verify',
-                  onPressed: _verifyOTP,
+                  text: 'Verify Email',
+                  onPressed: _verifyEmailOTP,
                   isLoading: _isLoading,
                   textStyle: TextStyles.btnStyle.copyWith(
                     color: Colors.white,
                     fontSize: 16.0,
                   ),
                 ),
-                const Spacer(),
               ],
             ),
           ),

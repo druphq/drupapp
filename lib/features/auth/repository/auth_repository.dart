@@ -20,9 +20,6 @@ class AuthRepository {
       _cacheManager = cacheManager ?? CacheManager.instance;
 
   /// Request OTP for phone sign-in
-  ///
-  /// Creates user if not existing.
-  /// Returns [SignInResponse] on success.
   Future<ApiResponse<SignInResponse>> signIn(SignInRequest request) async {
     final response = await _apiService.post<Map<String, dynamic>>(
       ApiRoutes.signIn,
@@ -47,8 +44,6 @@ class AuthRepository {
   }
 
   /// Verify OTP and get auth tokens
-  ///
-  /// Returns [VerifyOtpResponse] with tokens and user data on success.
   Future<ApiResponse<VerifyOtpResponse>> verifyOtp(
     VerifyOtpRequest request,
   ) async {
@@ -84,7 +79,6 @@ class AuthRepository {
   }
 
   /// Authenticates Google account. Phone verification still required.
-  /// Returns [GoogleSignInResponse] with google data.
   Future<ApiResponse<GoogleSignInResponse>> googleSignIn(
     GoogleSignInRequest request,
   ) async {
@@ -111,7 +105,6 @@ class AuthRepository {
   }
 
   /// Call after Google Step 1 + Phone OTP verification.
-  /// Returns [GoogleCompleteResponse] with tokens and user data.
   Future<ApiResponse<GoogleCompleteResponse>> googleComplete(
     GoogleCompleteRequest request,
   ) async {
@@ -147,7 +140,6 @@ class AuthRepository {
   }
 
   /// Used when access token expires.
-  /// Returns [RefreshTokenResponse] with new tokens.
   Future<ApiResponse<RefreshTokenResponse>> refreshToken() async {
     final storedRefreshToken = await _cacheManager.getPref(refreshTokenKey);
 
@@ -211,7 +203,84 @@ class AuthRepository {
     return ApiResponse.success(message: 'Logged out successfully');
   }
 
-  /// Store authentication data locally
+  /// Update user profile
+  Future<ApiResponse<User>> updateProfile(User user) async {
+    final response = await _apiService.patch<Map<String, dynamic>>(
+      ApiRoutes.updateProfile,
+      data: {
+        'firstName': user.firstName,
+        'lastName': user.lastName,
+        if (user.email != null) 'email': user.email,
+        if (user.phone != null) 'phone': user.phone,
+      },
+    );
+
+    if (response.success && response.data != null) {
+      final data = response.data!['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        final userData = data['user'] as Map<String, dynamic>?;
+        if (userData != null) {
+          final updatedUser = User.fromJson(userData);
+          // Update cached user
+          await updateCachedUser(updatedUser);
+
+          return ApiResponse.success(
+            data: updatedUser,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+    }
+
+    return ApiResponse.failure(
+      message: response.message ?? 'Failed to update profile',
+      statusCode: response.statusCode,
+    );
+  }
+
+  /// Resend email verification OTP
+  Future<ApiResponse<void>> resendEmailVerification() async {
+    final response = await _apiService.post(ApiRoutes.resendEmailVerification);
+
+    return ApiResponse(
+      success: response.success,
+      message: response.message ?? 'Email verification sent',
+      statusCode: response.statusCode,
+    );
+  }
+
+  /// Verify email with OTP
+  Future<ApiResponse<User>> verifyEmail(VerifyEmailRequest request) async {
+    final response = await _apiService.post<Map<String, dynamic>>(
+      ApiRoutes.verifyEmail,
+      data: request.toJson(),
+    );
+
+    if (response.success && response.data != null) {
+      final data = response.data!['data'] as Map<String, dynamic>?;
+      final userData = data?['user'] as Map<String, dynamic>?;
+      if (userData != null) {
+        final user = User.fromJson(userData);
+        // Update cached user with verified email status
+        await updateCachedUser(user);
+
+        return ApiResponse.success(
+          data: user,
+          message: response.message,
+          statusCode: response.statusCode,
+        );
+      }
+    }
+
+    return ApiResponse.failure(
+      message: response.message ?? 'Failed to verify email',
+      statusCode: response.statusCode,
+    );
+  }
+
+  /// Store authentication data locally ///
+  //!---------------------------------------
   Future<void> _storeAuthData({
     required String accessToken,
     required String refreshToken,

@@ -39,8 +39,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
         state = const AsyncData(null);
         return null;
       }
-
-      // Return the result for the UI to continue with phone verification
+      // Return the result for the UI to continue with phone 
+      // verification
       state = const AsyncData(null);
       return result;
     } catch (e, stack) {
@@ -157,12 +157,27 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
 
   /// Update user profile in cache
   Future<void> updateProfile(User updatedUser) async {
+    state = const AsyncLoading();
+
     try {
-      await _authRepo.updateCachedUser(updatedUser);
-      state = AsyncData(updatedUser);
+      final response = await _authRepo.updateProfile(updatedUser);
+      if (response.success && response.data != null) {
+        state = AsyncData(response.data);
+      } else {
+        state = AsyncError(
+          response.message ?? 'Failed to update profile',
+          StackTrace.current,
+        );
+      }
     } catch (e, stack) {
       state = AsyncError(e, stack);
+      rethrow;
     }
+  }
+
+  /// Update user state (e.g., after email verification)
+  void updateUser(User user) {
+    state = AsyncData(user);
   }
 }
 

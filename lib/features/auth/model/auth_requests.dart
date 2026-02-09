@@ -142,3 +142,15 @@ class LogoutRequest extends Equatable {
   @override
   List<Object?> get props => [refreshToken];
 }
+
+/// Request model for email verification
+class VerifyEmailRequest extends Equatable {
+  final String otp;
+
+  const VerifyEmailRequest({required this.otp});
+
+  Map<String, dynamic> toJson() => {'otp': otp};
+
+  @override
+  List<Object?> get props => [otp];
+}

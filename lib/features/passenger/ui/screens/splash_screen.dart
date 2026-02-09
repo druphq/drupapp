@@ -36,13 +36,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // Initialize user data
       await ref.read(userNotifierProvider.notifier).loadUserProfile();
 
-      // Request location permission and get current location
-      // await ref.read(userNotifierProvider.notifier).updateUserLocation();
+      // Re-read user after loadUserProfile to get updated data
+      final updatedUser = ref.read(currentUserProvider);
 
       // Navigate to appropriate screen
       if (mounted) {
-        if (currentUser.isEmailVerified == false ||
-            currentUser.isPhoneVerified == false) {
+        if (updatedUser?.isEmailVerified == false ||
+            updatedUser?.isPhoneVerified == false) {
           context.go(AppRoutes.completeProfileRoute);
           return;
         }

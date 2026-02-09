@@ -8,6 +8,7 @@ import 'package:drup/features/passenger/ui/screens/home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/location_search_screen.dart';
 import 'package:drup/features/auth/ui/login_screen.dart';
 import 'package:drup/features/auth/ui/otp_screen.dart';
+import 'package:drup/features/auth/ui/email_verification_screen.dart';
 import 'package:drup/features/auth/ui/complete_profile_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_request_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_status_screen.dart';
@@ -23,6 +24,7 @@ class AppRoutes {
   static const String splashRoute = '/';
   static const String loginRoute = '/login';
   static const String otpRoute = '/otp';
+  static const String emailVerificationRoute = '/email-verification';
   static const String completeProfileRoute = '/complete-profile';
   static const String homeRoute = '/home';
   static const String rideRequestRoute = '/ride-request';
@@ -79,6 +81,20 @@ class AppScreens {
           googleData: googleData,
           isGoogleSignIn: isGoogleSignIn,
         ),
+      );
+    },
+  );
+
+  static final emailVerificationRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.emailVerificationRoute,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      final email = extra?['email'] as String? ?? '';
+
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: EmailVerificationScreen(email: email),
       );
     },
   );

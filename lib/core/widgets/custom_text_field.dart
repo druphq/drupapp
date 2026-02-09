@@ -45,12 +45,14 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: controller,
       style: style ?? const TextStyle(fontSize: 16.0),
       keyboardType: TextInputType.text,
       autocorrect: false,
       initialValue: initialValue,
       maxLines: maxLine,
       validator: validator,
+      textCapitalization: TextCapitalization.words,
       decoration: InputDecoration(
         fillColor: AppColors.filledColor,
         filled: true,

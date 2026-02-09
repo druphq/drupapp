@@ -1,3 +1,4 @@
+import 'package:drup/features/auth/repository/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/location_service.dart';
@@ -30,6 +31,10 @@ final rideServiceProvider = Provider<RideService>((ref) {
 // ============================================================================
 // Repository Providers (Depend on Services)
 // ============================================================================
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepository();
+});
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository();

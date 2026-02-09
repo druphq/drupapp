@@ -72,7 +72,7 @@ class AppPhoneField extends StatelessWidget {
             hintText: hint,
             hintStyle: (style ?? TextStyles.h3).copyWith(
               color: Colors.grey,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w300,
             ),
             disabledBorder: const OutlineInputBorder(borderSide: BorderSide()),
             border: OutlineInputBorder(
