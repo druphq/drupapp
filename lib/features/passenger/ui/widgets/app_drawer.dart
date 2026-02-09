@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:drup/router/app_router.dart';
 import '../../provider/user_notifier.dart';
 import '../../../auth/provider/auth_notifier.dart';
+import 'package:drup/utils/extension.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -17,7 +18,7 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userNotifierProvider);
-    final userName = userState.user?.fullName ?? 'Guest User';
+    final userName = (userState.user?.fullName.takeFirst) ?? 'Guest User';
 
     return Drawer(
       backgroundColor: AppColors.surface,
@@ -46,58 +47,77 @@ class AppDrawer extends ConsumerWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.only(top: 100.0),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Profile Image Placeholder
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black.withOpacity(0.2),
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Gap(14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              userName,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyles.t1.copyWith(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
+                      Row(
+                        children: [
+                          // Profile Image Placeholder
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.2),
                             ),
-                            const SizedBox(height: 4),
-                            Row(
+                            child: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: Colors.black,
+                            ),
+                          ),
+                          Gap(14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.star,
-                                  size: 15,
-                                  color: AppColors.orange400,
-                                ),
-                                Gap(5.0),
                                 Text(
-                                  '4.5',
-                                  style: TextStyles.t1.copyWith(fontSize: 14),
+                                  userName,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyles.t1.copyWith(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                                Gap(2.0),
                                 Text(
-                                  '(208)',
-                                  style: TextStyles.t1.copyWith(fontSize: 14),
+                                  'My Account',
+                                  style: TextStyles.t2.copyWith(
+                                    fontSize: FontSizes.s14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.accent,
+                                  ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
+
+                      Gap(16.0),
+
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.star,
+                            size: 15,
+                            color: AppColors.orange400,
+                          ),
+                          Gap(5.0),
+                          Text(
+                            '4.5',
+                            style: TextStyles.t1.copyWith(
+                              fontSize: FontSizes.s16,
+                            ),
+                          ),
+                          Gap(2.0),
+                          Text(
+                            '(10 Reviews)',
+                            style: TextStyles.t1.copyWith(
+                              fontSize: FontSizes.s14,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
