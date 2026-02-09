@@ -55,7 +55,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Redirect to complete profile if profile is incomplete
-      // But skip this check if navigating to verification screens
+      // But skip this check if navigating to verification sscreens
       if (isLoggedIn &&
           user != null &&
           !user.isProfileComplete &&
@@ -79,12 +79,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       AppScreens.emailVerificationRoute,
       AppScreens.completeProfileRoute,
       AppScreens.mainRoute,
+      AppScreens.pickLocationRoute,
+      AppScreens.nigeriaAirportsRoute,
       AppScreens.driverSplashRoute,
       AppScreens.driverOnboardRoute,
       AppScreens.driverMainRoute,
       AppScreens.rideRequestRoute,
       AppScreens.userTrackingRoute,
-      AppScreens.searchLocationsRoute,
     ],
   );
 });

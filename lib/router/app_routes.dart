@@ -5,7 +5,7 @@ import 'package:drup/features/drivers/ui/screens/driver_splash_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_onboard_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/home_screen.dart';
-import 'package:drup/features/passenger/ui/screens/location_search_screen.dart';
+import 'package:drup/features/passenger/ui/screens/pick_location_screen.dart';
 import 'package:drup/features/auth/ui/login_screen.dart';
 import 'package:drup/features/auth/ui/otp_screen.dart';
 import 'package:drup/features/auth/ui/email_verification_screen.dart';
@@ -24,6 +24,7 @@ class AppRoutes {
   static const String splashRoute = '/';
   static const String loginRoute = '/login';
   static const String otpRoute = '/otp';
+  static const String pickLocationRoute = '/pick-locations';
   static const String emailVerificationRoute = '/email-verification';
   static const String completeProfileRoute = '/complete-profile';
   static const String homeRoute = '/home';
@@ -33,7 +34,6 @@ class AppRoutes {
   static const String driverHomeRoute = '/driver-home';
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
-  static const String searchLocationsRoute = '/pick-locations';
   static const String nigeriaAirportsRoute = '/nigeria-airports';
 }
 
@@ -191,12 +191,12 @@ class AppScreens {
     ),
   );
 
-  static final searchLocationsRoute = GoRoute(
+  static final pickLocationRoute = GoRoute(
     parentNavigatorKey: rootNavigator,
-    path: AppRoutes.searchLocationsRoute,
+    path: AppRoutes.pickLocationRoute,
     pageBuilder: (context, state) => slideUpTransitionPage(
       key: state.pageKey,
-      child: const LocationSearchScreen(),
+      child: const PickLocationRoute(),
     ),
   );
 

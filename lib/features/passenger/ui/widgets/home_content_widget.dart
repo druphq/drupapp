@@ -5,8 +5,8 @@ import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
-class HomeActionsContent extends StatelessWidget {
-  const HomeActionsContent({super.key, this.onWhereToTap});
+class HomeContentWidget extends StatelessWidget {
+  const HomeContentWidget({super.key, this.onWhereToTap});
   final VoidCallback? onWhereToTap;
 
   @override

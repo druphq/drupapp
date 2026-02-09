@@ -15,15 +15,15 @@ import '../../../drivers/provider/ride_notifier.dart';
 import '../../provider/user_notifier.dart';
 import '../../../../data/models/location_model.dart';
 
-class LocationSearchScreen extends ConsumerStatefulWidget {
-  const LocationSearchScreen({super.key});
+class PickLocationRoute extends ConsumerStatefulWidget {
+  const PickLocationRoute({super.key});
 
   @override
-  ConsumerState<LocationSearchScreen> createState() =>
+  ConsumerState<PickLocationRoute> createState() =>
       _LocationSearchScreenState();
 }
 
-class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
+class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
   final _pickupController = TextEditingController();
   final _destinationController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
@@ -129,7 +129,11 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
 
     try {
       final mapsService = ref.read(googleMapsServiceProvider);
-      final results = await mapsService.searchNigerianAddresses(query);
+      final userState = ref.read(userNotifierProvider);
+      final results = await mapsService.searchNigerianAddresses(
+        query,
+        userLocation: userState.currentLocation,
+      );
 
       setState(() {
         _searchResults = results;
@@ -203,18 +207,18 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              Color(0xff253B80),
-              Color(0xff253B80),
-              Color(0xff5490D0),
-              Color(0xff5C9EDC),
-            ],
-          ),
-        ),
+        // decoration: const BoxDecoration(
+        //   gradient: LinearGradient(
+        //     begin: Alignment.bottomCenter,
+        //     end: Alignment.topCenter,
+        //     colors: [
+        //       Color(0xff253B80),
+        //       Color(0xff253B80),
+        //       Color(0xff5490D0),
+        //       Color(0xff5C9EDC),
+        //     ],
+        //   ),
+        // ),
         child: SafeArea(
           bottom: false,
           child: Column(
@@ -225,7 +229,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
+                      icon: const Icon(Icons.close, color: AppColors.accent),
                       onPressed: () => context.pop(),
                     ),
                     Expanded(
@@ -235,7 +239,6 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                         style: TextStyles.t1.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -252,7 +255,6 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     borderRadius: BorderRadius.circular(Corners.hMd),
                     color: AppColors.surface,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   height: Sizes.tfieldHeight,
                   alignment: Alignment.center,
                   child: TextField(
@@ -265,18 +267,33 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                       _onSearchChanged(value);
                     },
                     decoration: InputDecoration(
-                      border: InputBorder.none,
-                      // icon: Container(
-                      //   width: 12,
-                      //   height: 12,
-                      //   decoration: const BoxDecoration(
-                      //     shape: BoxShape.circle,
-                      //     color: AppColors.primary,
-                      //   ),
-                      // ),
-                      icon: LocationDotWidget(
-                        bgColor: AppColors.green400,
-                        isActive: _pickupController.text.isNotEmpty,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Corners.hMd),
+                        borderSide: BorderSide(color: AppColors.grey),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Corners.hMd),
+                        borderSide: BorderSide(
+                          color: AppColors.accent,
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Corners.hMd),
+                        borderSide: BorderSide(
+                          color: AppColors.accent,
+                          width: 2,
+                        ),
+                      ),
+                      prefixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Gap(16.0),
+                          LocationDotWidget(
+                            bgColor: AppColors.green400,
+                            isActive: _pickupController.text.isNotEmpty,
+                          ),
+                        ],
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       hintText: 'Pickup Location',
@@ -335,7 +352,6 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                   ),
                   height: Sizes.tfieldHeight,
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _destinationController,
                     focusNode: focusNode2,
@@ -351,16 +367,32 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                       _onSearchChanged(value);
                     },
                     decoration: InputDecoration(
-                      border: InputBorder.none,
-                      icon: LocationDotWidget(
-                        bgColor: AppColors.accent,
-                        isActive: _destinationController.text.isNotEmpty,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Corners.hMd),
+                        borderSide: BorderSide(color: AppColors.grey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(Corners.hMd),
+                        borderSide: BorderSide(
+                          color: AppColors.accent,
+                          width: 2,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       hintText: 'Where to?',
                       hintStyle: TextStyles.t2.copyWith(
                         color: AppColors.textSecondary,
                         fontSize: FontSizes.s16,
+                      ),
+                      prefixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Gap(16.0),
+                          LocationDotWidget(
+                            bgColor: AppColors.accent,
+                            isActive: _destinationController.text.isNotEmpty,
+                          ),
+                        ],
                       ),
                       suffixIcon: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -416,116 +448,179 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                               child: SizedBox.square(
                                 dimension: 20,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: Colors.grey,
                                 ),
                               ),
                             ),
                           )
                         : _searchResults.isEmpty
                         ? SizedBox.shrink()
-                        : Column(
-                            children: [
-                              ...List.generate(_searchResults.length, (index) {
-                                final place = _searchResults[index];
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                      Corners.md,
-                                    ),
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                  ),
-                                  child: ListTile(
-                                    leading: ImageIcon(
-                                      place['type']?.toLowerCase() == 'airport'
-                                          ? AssetImage(AppAssets.flightIcon)
-                                          : AssetImage(AppAssets.locationIcon),
-                                      color: Colors.white70,
-                                      size: 18,
-                                    ),
-
-                                    title: Text(
-                                      place['name'] ?? '',
-                                      style: TextStyles.t2.copyWith(
-                                        color: Colors.white,
-                                        fontSize: FontSizes.s15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      place['address'] ?? '',
-                                      style: TextStyles.t2.copyWith(
-                                        color: Colors.white70,
-                                        fontSize: FontSizes.s13,
-                                      ),
-                                    ),
-                                    onTap: () => _selectLocation(place),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-
-                    // show current location button
-                    if (_showCurrentLocationBtn)
-                      Material(
-                        clipBehavior: Clip.hardEdge,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(Corners.md),
-                        ),
-                        color: Colors.black.withValues(alpha: 0.2),
-                        child: InkWell(
-                          onTap: () {
-                            final userState = ref.read(userNotifierProvider);
-                            if (userState.currentLocation != null) {
-                              final address =
-                                  userState.currentLocation!.name ??
-                                  'Current Location';
-
-                              if (focusNode1.hasFocus) {
-                                _pickupController.text = address;
-
-                                ref
-                                    .read(rideNotifierProvider.notifier)
-                                    .setPickupLocation(
-                                      userState.currentLocation!,
-                                    );
-                              } else if (focusNode2.hasFocus) {
-                                _destinationController.text = address;
-                                ref
-                                    .read(rideNotifierProvider.notifier)
-                                    .setDestinationLocation(
-                                      userState.currentLocation!,
-                                    );
-                              }
-
-                              // Check if both locations are selected
-                              _checkAndPopIfBothLocationsSelected();
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
+                        : SingleChildScrollView(
+                            child: Column(
                               children: [
-                                Icon(
-                                  Icons.my_location,
-                                  size: 24,
-                                  color: Colors.white,
-                                ),
-                                Gap(10.0),
-                                Text(
-                                  'Current location',
-                                  style: TextStyles.t1.copyWith(
-                                    fontSize: 16.0,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                // ListView.separated(
+                                //   padding: EdgeInsets.zero,
+                                //   separatorBuilder: (_, __) => const Divider(),
+                                //   itemCount: _searchResults.length,
+                                //   shrinkWrap: true,
+                                //   physics: const NeverScrollableScrollPhysics(),
+                                //   itemBuilder: (_, index) {
+                                //     final place = _searchResults[index];
+                                //     return ListTile(
+                                //       leading: ImageIcon(
+                                //         place['type']?.toLowerCase() ==
+                                //                 'airport'
+                                //             ? const AssetImage(
+                                //                 AppAssets.flightIcon,
+                                //               )
+                                //             : const AssetImage(
+                                //                 AppAssets.locationIcon,
+                                //               ),
+                                //         color: AppColors.greyStrong,
+                                //         size: 18,
+                                //       ),
+                                //       title: Text(
+                                //         place['name'] ?? '',
+                                //         style: TextStyles.t2.copyWith(
+                                //           fontSize: FontSizes.s15,
+                                //           fontWeight: FontWeight.w600,
+                                //         ),
+                                //       ),
+                                //       subtitle: Text(
+                                //         place['address'] ?? '',
+                                //         style: TextStyles.t2.copyWith(
+                                //           fontSize: FontSizes.s13,
+                                //         ),
+                                //       ),
+                                //       onTap: () => _selectLocation(place),
+                                //     );
+                                //   },
+                                // ),
+                                ...ListTile.divideTiles(
+                                  color: Colors.grey.shade400,
+                                  tiles: [
+                                    ...List.generate(_searchResults.length, (
+                                      index,
+                                    ) {
+                                      final place = _searchResults[index];
+                                      return ListTile(
+                                        leading: ImageIcon(
+                                          place['type']?.toLowerCase() ==
+                                                  'airport'
+                                              ? const AssetImage(
+                                                  AppAssets.flightIcon,
+                                                )
+                                              : const AssetImage(
+                                                  AppAssets.locationIcon,
+                                                ),
+                                          color: AppColors.greyStrong,
+                                          size: 18,
+                                        ),
+                                        title: Text(
+                                          place['name'] ?? '',
+                                          style: TextStyles.t2.copyWith(
+                                            fontSize: FontSizes.s15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          place['address'] ?? '',
+                                          style: TextStyles.t2.copyWith(
+                                            fontSize: FontSizes.s13,
+                                          ),
+                                        ),
+                                        onTap: () => _selectLocation(place),
+                                      );
+                                    }),
+                                    // show current location button
+                                    if (_showCurrentLocationBtn)
+                                      Material(
+                                        clipBehavior: Clip.hardEdge,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            Corners.md,
+                                          ),
+                                        ),
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            final userState = ref.read(
+                                              userNotifierProvider,
+                                            );
+                                            if (userState.currentLocation !=
+                                                null) {
+                                              final address =
+                                                  userState
+                                                      .currentLocation!
+                                                      .name ??
+                                                  'Current Location';
+
+                                              if (focusNode1.hasFocus) {
+                                                _pickupController.text =
+                                                    address;
+
+                                                ref
+                                                    .read(
+                                                      rideNotifierProvider
+                                                          .notifier,
+                                                    )
+                                                    .setPickupLocation(
+                                                      userState
+                                                          .currentLocation!,
+                                                    );
+                                              } else if (focusNode2.hasFocus) {
+                                                _destinationController.text =
+                                                    address;
+                                                ref
+                                                    .read(
+                                                      rideNotifierProvider
+                                                          .notifier,
+                                                    )
+                                                    .setDestinationLocation(
+                                                      userState
+                                                          .currentLocation!,
+                                                    );
+                                              }
+
+                                              // Check if both locations are selected
+                                              _checkAndPopIfBothLocationsSelected();
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: AppColors.accent
+                                                        .withValues(alpha: 0.1),
+                                                  ),
+                                                  padding: EdgeInsets.all(4),
+                                                  child: Icon(
+                                                    Icons.my_location,
+                                                    size: 24,
+                                                    color: AppColors.accent,
+                                                  ),
+                                                ),
+                                                Gap(10.0),
+                                                Text(
+                                                  'Current location',
+                                                  style: TextStyles.t1.copyWith(
+                                                    fontSize: 16.0,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ),
                   ],
                 ),
               ),

@@ -158,19 +158,36 @@ class GoogleMapsService {
     }
   }
 
-   /// Search for airports in Nigeria only
+  /// Search for places in Nigeria using Place Autocomplete API
   Future<List<Map<String, dynamic>>> searchNigerianAddresses(
-    String query,
-  ) async {
+    String query, {
+    LocationModel? userLocation,
+  }) async {
     try {
-      // Add "Nigeria" to the query to ensure we get Nigerian addresses
-      final searchQuery = query.isEmpty ? 'Nigeria' : '$query Nigeria';
+      if (query.trim().isEmpty) return [];
 
-      final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/textsearch/json?'
-        'query=${Uri.encodeComponent(searchQuery)}&'
-        'region=ng&'
-        'key=$_apiKey',
+      // Build the autocomplete URL with proper parameters
+      final queryParams = {
+        'input': query,
+        'key': _apiKey,
+        // Restrict to Nigeria
+        'components': 'country:ng',
+        // Return all place types relevant for ride-hailing
+        'types': 'geocode|establishment',
+      };
+
+      // Add location bias if user location is available (improves relevance)
+      if (userLocation != null) {
+        queryParams['location'] =
+            '${userLocation.latitude},${userLocation.longitude}';
+        // Bias results within 50km radius (in meters)
+        queryParams['radius'] = '50000';
+      }
+
+      final url = Uri.https(
+        'maps.googleapis.com',
+        '/maps/api/place/autocomplete/json',
+        queryParams,
       );
 
       final response = await http.get(url);
@@ -179,15 +196,11 @@ class GoogleMapsService {
         final data = json.decode(response.body);
 
         if (data['status'] == 'OK') {
-          // Limit to 5 results and extract only place IDs
-          final placeIds = (data['results'] as List)
-              .take(5)
-              .map((place) => place['place_id'] as String)
-              .toList();
+          final predictions = data['predictions'] as List;
 
-          // Fetch all place details concurrently
-          final detailsFutures = placeIds.map(
-            (placeId) => _getPlaceDetails(placeId),
+          // Fetch place details for all predictions concurrently
+          final detailsFutures = predictions.map(
+            (prediction) => _getPlaceDetails(prediction['place_id'] as String),
           );
           final detailsResults = await Future.wait(detailsFutures);
 
@@ -196,6 +209,11 @@ class GoogleMapsService {
               .where((details) => details != null)
               .cast<Map<String, dynamic>>()
               .toList();
+        }
+
+        // Handle ZERO_RESULTS gracefully
+        if (data['status'] == 'ZERO_RESULTS') {
+          return [];
         }
       }
 
@@ -396,6 +414,3 @@ class GoogleMapsService {
     }
   }
 }
-
- 
-

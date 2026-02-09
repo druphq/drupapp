@@ -3,6 +3,7 @@ import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../di/providers.dart';
@@ -43,7 +44,7 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
         });
         return;
       }
-      
+
       final mapsService = ref.read(googleMapsServiceProvider);
       final airports = await mapsService.loadNigerianAirports();
       await LocationCache.cachedAirports(airports);
@@ -89,6 +90,7 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -97,61 +99,47 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
         scrolledUnderElevation: 0.0,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [
-              Color(0xff253B80),
-              Color(0xff253B80),
-              Color(0xff5490D0),
-              Color(0xff5C9EDC),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              // Airports List
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
-                  child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        )
-                      : _airports.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No airports found',
-                            style: TextStyles.t1.copyWith(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: _airports.length,
-                          padding: const EdgeInsets.all(16),
-                          itemBuilder: (context, index) {
-                            final airport = _airports[index];
-                            return _buildAirportCard(airport);
-                          },
-                        ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Airports List
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
                 ),
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                    : _airports.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No airports found',
+                          style: TextStyles.t1.copyWith(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: _airports.length,
+                        padding: const EdgeInsets.all(16),
+                        itemBuilder: (context, index) {
+                          final airport = _airports[index];
+                          return _buildAirportCard(airport);
+                        },
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 8),
+                      ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -162,13 +150,13 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(Corners.md),
-        color: Colors.black.withValues(alpha: 0.2),
+        color: Colors.transparent,
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         leading: ImageIcon(
           AssetImage(AppAssets.flightIcon),
-          color: Colors.white70,
+          color: Colors.grey,
           size: 18,
         ),
         title: Text(
@@ -176,16 +164,15 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
           style: TextStyles.t2.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
           ),
         ),
         subtitle: Text(
           airport['address'] ?? '',
-          style: TextStyles.h3.copyWith(fontSize: 14, color: Colors.white),
+          style: TextStyles.h3.copyWith(fontSize: 14),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () => _selectAirport(airport),
       ),
     );

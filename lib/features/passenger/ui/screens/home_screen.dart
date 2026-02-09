@@ -2,7 +2,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/schedule_detail_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_search_bottomsheet.dart';
-import 'package:drup/features/passenger/ui/widgets/bottom_sheet_widget.dart';
+import 'package:drup/features/passenger/ui/widgets/plan_ride_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/app_drawer.dart';
 import 'package:drup/features/passenger/ui/widgets/location_permission_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -227,11 +227,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               left: 0,
               right: 0,
               bottom: 0,
-              child: BottomSheetWidget(
+              child: PlanRideBottomsheet(
                 onWhereToTap: () async {
                   // Navigate to location search screen with slide up transition
                   final result = await context.push(
-                    AppRoutes.searchLocationsRoute,
+                    AppRoutes.pickLocationRoute,
                   );
                   if (result == true) {
                     _drawDirectionOnMap();

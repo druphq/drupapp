@@ -1,21 +1,25 @@
 import 'package:drup/features/drivers/provider/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_details_bottom_sheet.dart';
-import 'package:drup/features/passenger/ui/widgets/home_actions_content.dart';
+import 'package:drup/features/passenger/ui/widgets/home_content_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
-class BottomSheetWidget extends ConsumerStatefulWidget {
+class PlanRideBottomsheet extends ConsumerStatefulWidget {
   final VoidCallback? onWhereToTap;
   final VoidCallback? onScheduleRide;
-  const BottomSheetWidget({super.key, this.onWhereToTap, this.onScheduleRide});
+  const PlanRideBottomsheet({
+    super.key,
+    this.onWhereToTap,
+    this.onScheduleRide,
+  });
 
   @override
-  ConsumerState<BottomSheetWidget> createState() => _BottomSheetWidgetState();
+  ConsumerState<PlanRideBottomsheet> createState() => _BottomSheetWidgetState();
 }
 
-class _BottomSheetWidgetState extends ConsumerState<BottomSheetWidget> {
+class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
   @override
   Widget build(BuildContext context) {
     final rideState = ref.watch(rideNotifierProvider);
@@ -53,7 +57,7 @@ class _BottomSheetWidgetState extends ConsumerState<BottomSheetWidget> {
                 ref.read(rideNotifierProvider.notifier).clearRoute();
               },
             ),
-            false => HomeActionsContent(onWhereToTap: widget.onWhereToTap),
+            false => HomeContentWidget(onWhereToTap: widget.onWhereToTap),
           },
           Gap(MediaQuery.of(context).size.height * 0.06),
         ],
