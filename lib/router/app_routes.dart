@@ -16,6 +16,15 @@ import 'package:drup/features/auth/ui/splash_screen.dart';
 import 'package:drup/features/passenger/ui/screens/user_tracking_screen.dart';
 import 'package:drup/features/passenger/ui/screens/main_screen.dart';
 import 'package:drup/features/passenger/ui/screens/nigeria_airports_screen.dart';
+import 'package:drup/features/passenger/ui/screens/ride_history_screen.dart';
+import 'package:drup/features/passenger/ui/screens/messages_screen.dart';
+import 'package:drup/features/passenger/ui/screens/support_screen.dart';
+import 'package:drup/features/passenger/ui/screens/about_screen.dart';
+import 'package:drup/features/passenger/ui/screens/account_screen.dart';
+import 'package:drup/features/passenger/ui/screens/personal_info_screen.dart';
+import 'package:drup/features/passenger/ui/screens/reviews_screen.dart';
+import 'package:drup/features/passenger/ui/screens/privacy_policy_screen.dart';
+import 'package:drup/features/passenger/ui/screens/delete_account_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drup/features/auth/model/auth.dart';
 
@@ -35,6 +44,15 @@ class AppRoutes {
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
   static const String nigeriaAirportsRoute = '/nigeria-airports';
+  static const String rideHistoryRoute = '/ride-history';
+  static const String messagesRoute = '/messages';
+  static const String supportRoute = '/support';
+  static const String aboutRoute = '/about';
+  static const String accountRoute = '/account';
+  static const String personalInfoRoute = '/personal-info';
+  static const String reviewsRoute = '/reviews';
+  static const String privacyPolicyRoute = '/privacy-policy';
+  static const String deleteAccountRoute = '/delete-account';
 }
 
 class AppScreens {
@@ -210,5 +228,86 @@ class AppScreens {
         child: NigeriaAirportsScreen(isPickupLocation: isPickupLocation),
       );
     },
+  );
+
+  static final rideHistoryRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.rideHistoryRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const RideHistoryScreen(),
+    ),
+  );
+
+  static final messagesRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.messagesRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const MessagesScreen(),
+    ),
+  );
+
+  static final supportRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.supportRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const SupportScreen(),
+    ),
+  );
+
+  static final aboutRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.aboutRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const AboutScreen(),
+    ),
+  );
+
+  static final accountRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.accountRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const AccountScreen(),
+    ),
+  );
+
+  static final personalInfoRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.personalInfoRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const PersonalInfoScreen(),
+    ),
+  );
+
+  static final reviewsRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.reviewsRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const ReviewsScreen(),
+    ),
+  );
+
+  static final privacyPolicyRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.privacyPolicyRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const PrivacyPolicyScreen(),
+    ),
+  );
+
+  static final deleteAccountRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.deleteAccountRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const DeleteAccountScreen(),
+    ),
   );
 }

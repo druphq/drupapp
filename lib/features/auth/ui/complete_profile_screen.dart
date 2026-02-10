@@ -72,13 +72,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          'Complete  Profile',
-          style: TextStyles.t1.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Text('Complete  Profile', style: TextStyles.t1),
         iconTheme: const IconThemeData(color: Colors.white),
         scrolledUnderElevation: 0.0,
       ),

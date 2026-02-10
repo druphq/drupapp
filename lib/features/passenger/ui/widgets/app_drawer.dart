@@ -52,48 +52,53 @@ class AppDrawer extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          // Profile Image Placeholder
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(0.2),
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to profile screen
+                          context.push(AppRoutes.accountRoute);
+                        },
+                        child: Row(
+                          children: [
+                            // Profile Image Placeholder
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.accent.withOpacity(0.1),
+                              ),
+                              child: Icon(
+                                Icons.person,
+                                size: 30,
+                                color: AppColors.grey,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.person,
-                              size: 30,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Gap(14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userName,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyles.t1.copyWith(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
+                            Gap(14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userName,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyles.t1.copyWith(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  'My Account',
-                                  style: TextStyles.t2.copyWith(
-                                    fontSize: FontSizes.s14,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.accent,
+                                  Text(
+                                    'My Account',
+                                    style: TextStyles.t1.copyWith(
+                                      fontSize: FontSizes.s14,
+                                      color: AppColors.accent,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
 
                       Gap(16.0),
@@ -115,8 +120,9 @@ class AppDrawer extends ConsumerWidget {
                           Gap(2.0),
                           Text(
                             '(10 Reviews)',
-                            style: TextStyles.t1.copyWith(
+                            style: TextStyles.h2.copyWith(
                               fontSize: FontSizes.s14,
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -149,10 +155,7 @@ class AppDrawer extends ConsumerWidget {
                               title: 'Ride History',
                               onTap: () {
                                 Navigator.pop(context);
-                                _showMessage(
-                                  context,
-                                  'Ride History - Coming Soon',
-                                );
+                                context.push(AppRoutes.rideHistoryRoute);
                               },
                             ),
                             _buildDrawerItem(
@@ -160,7 +163,7 @@ class AppDrawer extends ConsumerWidget {
                               title: 'Messages',
                               onTap: () {
                                 Navigator.pop(context);
-                                _showMessage(context, 'Messages - Coming Soon');
+                                context.push(AppRoutes.messagesRoute);
                               },
                             ),
                             _buildDrawerItem(
@@ -168,7 +171,7 @@ class AppDrawer extends ConsumerWidget {
                               title: 'Support',
                               onTap: () {
                                 Navigator.pop(context);
-                                _showMessage(context, 'Support - Coming Soon');
+                                context.push(AppRoutes.supportRoute);
                               },
                             ),
                             _buildDrawerItem(
@@ -176,7 +179,7 @@ class AppDrawer extends ConsumerWidget {
                               title: 'About',
                               onTap: () {
                                 Navigator.pop(context);
-                                _showMessage(context, 'About - Coming Soon');
+                                context.push(AppRoutes.aboutRoute);
                               },
                             ),
                             _buildDrawerItem(
@@ -323,7 +326,6 @@ class AppDrawer extends ConsumerWidget {
   //         TextButton(
   //           onPressed: () {
   //             Navigator.pop(context);
-  //             _showMessage(context, 'Delete Account - Coming Soon');
   //           },
   //           style: TextButton.styleFrom(foregroundColor: Colors.red),
   //           child: const Text('Delete'),
@@ -332,10 +334,4 @@ class AppDrawer extends ConsumerWidget {
   //     ),
   //   );
   // }
-
-  void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
 }
