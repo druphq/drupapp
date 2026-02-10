@@ -178,6 +178,8 @@ class VerifyDriverScreen extends ConsumerWidget {
                 },
               ),
 
+              _buildDivider(),
+
               const Gap(40),
 
               // // Continue button

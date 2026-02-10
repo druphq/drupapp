@@ -1,8 +1,11 @@
 import 'package:drup/features/drivers/ui/widgets/driver_app_drawer.dart';
+import 'package:drup/features/passenger/provider/user_notifier.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../provider/driver_notifier.dart';
 import '../../../../theme/app_colors.dart';
@@ -28,6 +31,27 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
         CameraUpdate.newLatLng(driverState.currentLocation!.latLng),
       );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // check if driver is available and fetch pending requests
+      // final driverState = ref.read(driverNotifierProvider);
+      // if (driverState.isAvailable) {
+      //   ref.read(driverNotifierProvider.notifier).fetchPendingRequests();
+      // }
+
+      // check if driver is verified and show verify screen
+      ref.read(userNotifierProvider.notifier).isDriverVerified().then((
+        isVerified,
+      ) {
+        if (!isVerified && mounted) {
+          context.push(AppRoutes.verifyDriverRoute);
+        }
+      });
+    });
   }
 
   @override
