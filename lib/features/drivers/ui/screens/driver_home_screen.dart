@@ -1,5 +1,4 @@
 import 'package:drup/features/drivers/ui/widgets/driver_app_drawer.dart';
-import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,7 +121,7 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
           children: [
             // Google Map
             GoogleMap(
-              mapType: MapType.normal,
+              mapType: MapType.hybrid,
               onMapCreated: _onMapCreated,
               initialCameraPosition: CameraPosition(
                 target:

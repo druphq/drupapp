@@ -1,6 +1,4 @@
-import 'package:drup/di/providers.dart';
 import 'package:drup/features/passenger/provider/user_notifier.dart';
-import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -26,17 +24,12 @@ class RouterRefreshNotifier extends ChangeNotifier {
 }
 
 // Provider for the router - ensures single instance across rebuilds
-final routerProvider = Provider<GoRouter>((ref)  {
+final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = RouterRefreshNotifier(ref);
 
-  //decide initialLocation based on user mode
-  final userMode = await ref.watch(userRepositoryProvider).getUserMode();
-  final initialLocation = userMode == AppStrings.driverMode
-      ? AppRoutes.driverSplashRoute
-      : AppRoutes.splashRoute;
-
+  // Initial location is always splash - it will handle mode-based navigation
   return GoRouter(
-    initialLocation: initialLocation,
+    initialLocation: AppRoutes.splashRoute,
     navigatorKey: rootNavigator,
     refreshListenable: refreshNotifier,
     redirect: (context, state) {

@@ -47,12 +47,13 @@ class AppDrawer extends ConsumerWidget {
                     bottom: Radius.circular(15.0),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 100.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 70, 24, 16),
+                      child: GestureDetector(
                         onTap: () {
                           // Navigate to profile screen
                           context.push(AppRoutes.accountRoute);
@@ -100,35 +101,31 @@ class AppDrawer extends ConsumerWidget {
                           ],
                         ),
                       ),
+                    ),
 
-                      Gap(16.0),
+                    Gap(16.0),
 
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star,
-                            size: 15,
-                            color: AppColors.orange400,
+                    Row(
+                      children: [
+                        Icon(Icons.star, size: 15, color: AppColors.orange400),
+                        Gap(5.0),
+                        Text(
+                          '4.5',
+                          style: TextStyles.t1.copyWith(
+                            fontSize: FontSizes.s16,
                           ),
-                          Gap(5.0),
-                          Text(
-                            '4.5',
-                            style: TextStyles.t1.copyWith(
-                              fontSize: FontSizes.s16,
-                            ),
+                        ),
+                        Gap(2.0),
+                        Text(
+                          '(10 Reviews)',
+                          style: TextStyles.h2.copyWith(
+                            fontSize: FontSizes.s14,
+                            color: AppColors.textSecondary,
                           ),
-                          Gap(2.0),
-                          Text(
-                            '(10 Reviews)',
-                            style: TextStyles.h2.copyWith(
-                              fontSize: FontSizes.s14,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               Gap(10.0),
@@ -218,7 +215,7 @@ class AppDrawer extends ConsumerWidget {
                             final userRepo = ref.read(userRepositoryProvider);
                             userRepo.storeUserMode(AppStrings.driverMode);
 
-                            context.push(AppRoutes.driverSplashRoute);
+                            context.go(AppRoutes.splashRoute);
                           },
                         ),
                       ),

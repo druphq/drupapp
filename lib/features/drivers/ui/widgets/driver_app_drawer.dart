@@ -21,7 +21,7 @@ class DriverAppDrawer extends ConsumerWidget {
     final userState = ref.watch(userNotifierProvider);
     final user = userState.user;
     final userName = (user?.fullName.takeFirst) ?? 'Guest User';
-    final bool isVerified = true;
+    final bool isVerified = false;
 
     return Drawer(
       backgroundColor: AppColors.surface,
@@ -41,6 +41,7 @@ class DriverAppDrawer extends ConsumerWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   //Driver Profile Section
                   Padding(
@@ -97,7 +98,7 @@ class DriverAppDrawer extends ConsumerWidget {
                                   ),
                                   child: Icon(
                                     isVerified
-                                        ? Icons.check
+                                        ? Icons.verified
                                         : Icons.priority_high,
                                     size: 10,
                                     color: Colors.white,
@@ -248,19 +249,6 @@ class DriverAppDrawer extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const Gap(12),
                           Expanded(
                             child: Text(
                               'Verified Driver',
@@ -271,12 +259,10 @@ class DriverAppDrawer extends ConsumerWidget {
                               ),
                             ),
                           ),
-                          Text(
-                            'Active',
-                            style: TextStyles.t2.copyWith(
-                              fontSize: 12,
-                              color: AppColors.success,
-                            ),
+                          const Icon(
+                            Icons.verified,
+                            size: 16,
+                            color: Colors.green,
                           ),
                         ],
                       ),

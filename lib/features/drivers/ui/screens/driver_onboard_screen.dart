@@ -90,7 +90,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
                     child: Text(
                       'Skip',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha:0.8),
                         fontSize: 16,
                       ),
                     ),
@@ -152,7 +152,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
             ),
             child: Icon(page.icon, size: 60, color: Colors.white),
           ),
@@ -177,7 +177,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
             page.description,
             textAlign: TextAlign.center,
             style: TextStyles.t1.copyWith(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 16,
               height: 1.5,
             ),
@@ -196,7 +196,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
       decoration: BoxDecoration(
         color: _currentPage == index
             ? Colors.white
-            : Colors.white.withOpacity(0.4),
+            : Colors.white.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(4),
       ),
     );

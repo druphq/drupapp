@@ -1,7 +1,9 @@
 import 'package:drup/core/animation/drup_animation.dart';
 import 'package:drup/di/providers.dart';
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
+import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +27,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 4));
 
     if (!mounted) return;
 
@@ -45,15 +47,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       // Navigate to appropriate screen
       if (mounted) {
+        // Check for incomplete profile first
         if (updatedUser?.isEmailVerified == false ||
             updatedUser?.isPhoneVerified == false) {
           context.go(AppRoutes.completeProfileRoute);
           return;
         }
 
+        // Handle driver mode navigation
         if (userMode == AppStrings.driverMode || isDriver) {
-          context.go(AppRoutes.driverHomeRoute);
+          await _handleDriverNavigation();
         } else {
+          // Passenger mode
           context.go(AppRoutes.homeRoute);
         }
       }
@@ -65,22 +70,147 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     }
   }
 
+  Future<void> _handleDriverNavigation() async {
+    final userRepo = ref.read(userRepositoryProvider);
+
+    // Check if driver onboarding has been shown
+    final hasSeenOnboarding = await userRepo.getDriverOnboardingShown();
+
+    if (!mounted) return;
+
+    if (!hasSeenOnboarding) {
+      // First time driver mode, show onboarding
+      context.go(AppRoutes.driverOnboardRoute);
+      return;
+    }
+
+    // Check if driver is verified
+    final isVerified = await ref
+        .read(userNotifierProvider.notifier)
+        .isDriverVerified();
+
+    if (!mounted) return;
+
+    if (isVerified) {
+      context.go(AppRoutes.driverHomeRoute);
+    } else {
+      context.go(AppRoutes.verifyDriverRoute);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
-        child: Container(
-          decoration: const BoxDecoration(color: AppColors.splashBg),
-          child: Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [DrupLogoAnimation()],
+        child: FutureBuilder(
+          future: ref.watch(userRepositoryProvider).getUserMode(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                decoration: const BoxDecoration(color: AppColors.splashBg),
+              );
+            } else {
+              final userMode = snapshot.data;
+              if (userMode == AppStrings.driverMode) {
+                // Show driver splash
+                return _buildDriverSplash();
+              } else {
+                // Show passenger splash
+                return Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [Color(0xff253B80), Color(0xff5490D0)],
+                    ),
+                  ),
+                  child: Center(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [DrupLogoAnimation()],
+                    ),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDriverSplash() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Color(0xff253B80),
+            Color(0xff253B80),
+            Color(0xff5490D0),
+            Color(0xff5C9EDC),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ImageIcon(
+                  AssetImage(AppAssets.drupLogoIcon),
+                  size: 70,
+                  color: Colors.white,
+                ),
+                // Animated Drup text logo sliding out from the logo icon
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      AppAssets.drupTextIcon,
+                      height: 50,
+                      width: 120,
+                      fit: BoxFit.fill,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      'Driver',
+                      style: TextStyles.appTitle1.copyWith(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
+        
+        
+        //  Container(
+        //   decoration: const BoxDecoration(color: AppColors.splashBg),
+        //   child: Center(
+        //     child: Stack(
+        //       alignment: Alignment.center,
+        //       children: [DrupLogoAnimation()],
+        //     ),
+        //   ),
+        // ),
+    //   ),
+    // );
+  // }
+// }

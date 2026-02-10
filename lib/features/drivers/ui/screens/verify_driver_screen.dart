@@ -19,9 +19,10 @@ class VerifyDriverScreen extends ConsumerWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
+        scrolledUnderElevation: 0.0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -30,7 +31,6 @@ class VerifyDriverScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Gap(16),
-
               // Illustration
               Center(
                 child: Container(
