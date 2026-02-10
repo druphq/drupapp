@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/providers.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'driver_splash_screen.dart';
 
 class DriverOnboardScreen extends ConsumerStatefulWidget {
   const DriverOnboardScreen({super.key});
@@ -58,10 +58,9 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
 
   void _onGetStarted() {
     // Mark onboarding as shown
-    ref.read(driverOnboardingShownProvider.notifier).state = true;
-
+    ref.read(userRepositoryProvider).storeOnboardingShown(true);
     // Navigate to driver home
-    context.go(AppRoutes.driverHomeRoute);
+    context.go(AppRoutes.verifyDriverRoute);
   }
 
   @override
@@ -76,7 +75,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
               end: Alignment.bottomCenter,
               colors: [
                 _pages[_currentPage].color,
-                _pages[_currentPage].color.withOpacity(0.8),
+                _pages[_currentPage].color.withValues(alpha: 0.8),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -18,181 +19,374 @@ class DriverAppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userNotifierProvider);
-    final userName = userState.user?.displayName ?? 'Guest User';
+    final user = userState.user;
+    final userName = (user?.fullName.takeFirst) ?? 'Guest User';
+    final bool isVerified = true;
 
     return Drawer(
       backgroundColor: AppColors.surface,
-      child: Container(
-        // decoration: BoxDecoration(
-        //   gradient: LinearGradient(
-        //     begin: Alignment.topCenter,
-        //     end: Alignment.bottomCenter,
-        //     colors: [Color(0xff253B80), Color(0xff5490D0)],
-        //   ),
-        // ),
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Column(
-            children: [
-              // Profile Header
-              Container(
-                clipBehavior: Clip.hardEdge,
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(15.0),
-                  ),
+      child: SafeArea(
+        top: false,
+        bottom: false,
+        child: Column(
+          children: [
+            // Drawer Header
+            Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(15.0),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 100.0),
-                  child: Row(
-                    children: [
-                      // Profile Image Placeholder
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black.withOpacity(0.2),
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Gap(14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  //Driver Profile Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 70, 24, 16),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.push(AppRoutes.driverAccountRoute);
+                      },
+                      child: Row(
                         children: [
-                          Text(
-                            userName,
-                            style: TextStyles.t1.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
+                          // Profile Image with status indicator
+                          Stack(
                             children: [
-                              Icon(
-                                Icons.star,
-                                size: 15,
-                                color: AppColors.accent,
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.accent.withOpacity(0.1),
+                                  image: user?.profileImage != null
+                                      ? DecorationImage(
+                                          image: NetworkImage(
+                                            user!.profileImage!,
+                                          ),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: user?.profileImage == null
+                                    ? const Icon(
+                                        Icons.person,
+                                        size: 28,
+                                        color: AppColors.accent,
+                                      )
+                                    : null,
                               ),
-                              Gap(5.0),
-                              Text(
-                                '4.5',
-                                style: TextStyles.t1.copyWith(fontSize: 14),
-                              ),
-                              Gap(2.0),
-                              Text(
-                                '(208)',
-                                style: TextStyles.t1.copyWith(fontSize: 14),
+                              // Online/Verification indicator
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 18,
+                                  height: 18,
+                                  decoration: BoxDecoration(
+                                    color: isVerified
+                                        ? AppColors.success
+                                        : AppColors.warning,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    isVerified
+                                        ? Icons.check
+                                        : Icons.priority_high,
+                                    size: 10,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
+                          const Gap(14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userName,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyles.t1.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const Gap(2),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      size: 16,
+                                      color: AppColors.orange400,
+                                    ),
+                                    const Gap(4),
+                                    Text(
+                                      '4.5',
+                                      style: TextStyles.t1.copyWith(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const Gap(4),
+                                    Text(
+                                      '(50 trips)',
+                                      style: TextStyles.t2.copyWith(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: AppColors.textSecondary,
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              Gap(10.0),
-              // Menu Items
-              Expanded(
-                child: Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(15.0),
                     ),
                   ),
-                  padding: EdgeInsets.only(top: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: ListView(
-                          padding: EdgeInsets.zero,
+
+                  // Verification Status Banner
+                  if (!isVerified)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.push(AppRoutes.verifyDriverRoute);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.warning.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildDrawerItem(
-                              icon: AppAssets.historyIcon,
-                              title: 'Ride History',
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showMessage(
-                                  context,
-                                  'Ride History - Coming Soon',
-                                );
-                              },
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const Gap(12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Complete your profile',
+                                        style: TextStyles.t1.copyWith(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      const Gap(2),
+                                      Text(
+                                        'Verify to start accepting rides',
+                                        style: TextStyles.t2.copyWith(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: AppColors.warning,
+                                ),
+                              ],
                             ),
-                            _buildDrawerItem(
-                              icon: AppAssets.messageIcon,
-                              title: 'Messages',
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showMessage(context, 'Messages - Coming Soon');
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.supportIcon,
-                              title: 'Support',
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showMessage(context, 'Support - Coming Soon');
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.infoIcon,
-                              title: 'About',
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showMessage(context, 'About - Coming Soon');
-                              },
-                            ),
-                            // _buildDrawerItem(
-                            //   icon: AppAssets.exitIcon,
-                            //   title: 'Logout',
-                            //   onTap: () {
-                            //     Navigator.pop(context);
-                            //     _handleLogout(context, ref);
-                            //   },
-                            // ),
-                            // _buildDrawerItem(
-                            //   icon: AppAssets.deleteIcon,
-                            //   title: 'Delete Account',
-                            //   textColor: Colors.red[300],
-                            //   onTap: () {
-                            //     Navigator.pop(context);
-                            //     _showDeleteAccountDialog(context);
-                            //   },
-                            // ),
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: CustomButton(
-                          text: 'Passenger Mode',
-                          onPressed: () {
-                            final userRepo = ref.read(userRepositoryProvider);
-                            userRepo.storeUserMode(AppStrings.passengerMode);
+                    ),
 
-                            context.go(AppRoutes.homeRoute);
-                          },
+                  // Verified badge (shown when verified)
+                  if (isVerified)
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.success.withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
-                      Gap(50.0),
-                    ],
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const Gap(12),
+                          Expanded(
+                            child: Text(
+                              'Verified Driver',
+                              style: TextStyles.t1.copyWith(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            'Active',
+                            style: TextStyles.t2.copyWith(
+                              fontSize: 12,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Gap(10.0),
+            // Menu Items
+            Expanded(
+              child: Container(
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(15.0),
                   ),
                 ),
+                padding: EdgeInsets.only(top: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          _buildDrawerItem(
+                            icon: AppAssets.historyIcon,
+                            title: 'Ride Requests',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showMessage(
+                                context,
+                                'Ride Requests - Coming Soon',
+                              );
+                            },
+                          ),
+                          _buildDrawerItem(
+                            icon: AppAssets.historyIcon,
+                            title: 'Ride History',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showMessage(
+                                context,
+                                'Ride History - Coming Soon',
+                              );
+                            },
+                          ),
+                          _buildDrawerItem(
+                            icon: AppAssets.messageIcon,
+                            title: 'Messages',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showMessage(context, 'Messages - Coming Soon');
+                            },
+                          ),
+                          _buildDrawerItem(
+                            icon: AppAssets.supportIcon,
+                            title: 'Support',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showMessage(context, 'Support - Coming Soon');
+                            },
+                          ),
+                          _buildDrawerItem(
+                            icon: AppAssets.infoIcon,
+                            title: 'About',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _showMessage(context, 'About - Coming Soon');
+                            },
+                          ),
+                          // _buildDrawerItem(
+                          //   icon: AppAssets.exitIcon,
+                          //   title: 'Logout',
+                          //   onTap: () {
+                          //     Navigator.pop(context);
+                          //     _handleLogout(context, ref);
+                          //   },
+                          // ),
+                          // _buildDrawerItem(
+                          //   icon: AppAssets.deleteIcon,
+                          //   title: 'Delete Account',
+                          //   textColor: Colors.red[300],
+                          //   onTap: () {
+                          //     Navigator.pop(context);
+                          //     _showDeleteAccountDialog(context);
+                          //   },
+                          // ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: CustomButton(
+                        text: 'Passenger Mode',
+                        onPressed: () {
+                          final userRepo = ref.read(userRepositoryProvider);
+                          userRepo.storeUserMode(AppStrings.passengerMode);
+
+                          context.go(AppRoutes.homeRoute);
+                        },
+                      ),
+                    ),
+                    Gap(50.0),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

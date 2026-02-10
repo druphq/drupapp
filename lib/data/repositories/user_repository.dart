@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:drup/core/cache/cache_manager.dart';
+import 'package:drup/di/providers.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user.dart';
 import '../api/api_routes.dart';
 import '../api/api_service.dart';
@@ -24,16 +26,7 @@ class UserRepository {
 
   /// Storage keys
   static const String userModeKey = 'user_mode';
-
-  // get current app mode ( driver or passenger )
-  Future<String?> getUserMode() async {
-    return await _cacheManager.getPref(userModeKey);
-  }
-
-  /// Get current user from cache
-  Future<User?> getCurrentUser() async {
-    return await _authRepo.getCurrentUser();
-  }
+  static const String onboardingShownKey = 'driver_onboarding_shown';
 
   /// Fetch user profile from API and update cache
   /// Returns updated User object
@@ -130,7 +123,7 @@ class UserRepository {
       return ApiResponse.failure(message: e.toString());
     }
   }
-
+  
   /// Upload profile photo
   Future<ApiResponse<String>> uploadProfilePhoto(File photoFile) async {
     try {
@@ -598,9 +591,31 @@ class UserRepository {
     }
   }
 
+  // Get locally stored data
+
+  // get current app mode ( driver or passenger )
+  Future<String?> getUserMode() async {
+    return await _cacheManager.getPref(userModeKey);
+  }
+
+  /// Get current user from cache
+  Future<User?> getCurrentUser() async {
+    return await _authRepo.getCurrentUser();
+  }
+
+  /// Get onboarding shown status for driver mode
+  Future<bool> getDriverOnboardingShown() async {
+    return await _cacheManager.getPref(onboardingShownKey) ?? false;
+  }
+
   // store data locally
 
   void storeUserMode(String value) async {
     await _cacheManager.storePref(userModeKey, value);
   }
+
+  void storeOnboardingShown(bool value) async {
+    await _cacheManager.storePref(onboardingShownKey, value);
+  }
+
 }

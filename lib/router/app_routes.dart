@@ -4,6 +4,8 @@ import 'package:drup/features/drivers/ui/screens/driver_main_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_splash_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_onboard_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
+import 'package:drup/features/drivers/ui/screens/verify_driver_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_account_screen.dart';
 import 'package:drup/features/passenger/ui/screens/home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/pick_location_screen.dart';
 import 'package:drup/features/auth/ui/login_screen.dart';
@@ -41,6 +43,8 @@ class AppRoutes {
   static const String driverSplashRoute = '/driver-splash';
   static const String driverOnboardRoute = '/driver-onboard';
   static const String driverHomeRoute = '/driver-home';
+  static const String verifyDriverRoute = '/verify-driver';
+  static const String driverAccountRoute = '/driver-account';
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
   static const String nigeriaAirportsRoute = '/nigeria-airports';
@@ -308,6 +312,24 @@ class AppScreens {
     pageBuilder: (context, state) => slideRightTransitionPage(
       key: state.pageKey,
       child: const DeleteAccountScreen(),
+    ),
+  );
+
+  static final verifyDriverRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.verifyDriverRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const VerifyDriverScreen(),
+    ),
+  );
+
+  static final driverAccountRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.driverAccountRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const DriverAccountScreen(),
     ),
   );
 }

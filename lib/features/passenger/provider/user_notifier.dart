@@ -78,6 +78,10 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
+  Future<bool> isDriverVerified() async {
+    return false;
+  }
+
   /// Clear any messages
   void clearMessages() {
     state = state.copyWith(errorMessage: null, successMessage: null);
