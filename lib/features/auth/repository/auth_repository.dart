@@ -279,8 +279,8 @@ class AuthRepository {
     );
   }
 
-  /// Store authentication data locally ///
-  //!---------------------------------------
+  /// Store authentication data locally
+
   Future<void> _storeAuthData({
     required String accessToken,
     required String refreshToken,

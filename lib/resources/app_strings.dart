@@ -15,6 +15,8 @@ class AppStrings {
   static const resendCodeTxt = 'Resend code';
   static const inTxt = '\tin\t';
   static const continueTxt = 'Continue';
+  static const passengerMode = 'passenger';
+  static const driverMode = 'driver';
 
   // home screen
 

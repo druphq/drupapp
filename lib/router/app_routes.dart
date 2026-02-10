@@ -12,7 +12,7 @@ import 'package:drup/features/auth/ui/email_verification_screen.dart';
 import 'package:drup/features/auth/ui/complete_profile_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_request_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_status_screen.dart';
-import 'package:drup/features/passenger/ui/screens/splash_screen.dart';
+import 'package:drup/features/auth/ui/splash_screen.dart';
 import 'package:drup/features/passenger/ui/screens/user_tracking_screen.dart';
 import 'package:drup/features/passenger/ui/screens/main_screen.dart';
 import 'package:drup/features/passenger/ui/screens/nigeria_airports_screen.dart';

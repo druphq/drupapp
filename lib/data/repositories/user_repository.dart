@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:drup/core/cache/cache_manager.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../api/api_routes.dart';
@@ -11,10 +12,23 @@ import '../../features/auth/repository/auth_repository.dart';
 class UserRepository {
   final AuthRepository _authRepo;
   final ApiService _apiService;
+  final CacheManager _cacheManager;
 
-  UserRepository({AuthRepository? authRepository, ApiService? apiService})
-    : _authRepo = authRepository ?? AuthRepository(),
-      _apiService = apiService ?? ApiService();
+  UserRepository({
+    AuthRepository? authRepository,
+    ApiService? apiService,
+    CacheManager? cacheManager,
+  }) : _authRepo = authRepository ?? AuthRepository(),
+       _apiService = apiService ?? ApiService(),
+       _cacheManager = cacheManager ?? CacheManager.instance;
+
+  /// Storage keys
+  static const String userModeKey = 'user_mode';
+
+  // get current app mode ( driver or passenger )
+  Future<String?> getUserMode() async {
+    return await _cacheManager.getPref(userModeKey);
+  }
 
   /// Get current user from cache
   Future<User?> getCurrentUser() async {
@@ -69,8 +83,9 @@ class UserRepository {
       if (firstName != null) data['firstName'] = firstName;
       if (lastName != null) data['lastName'] = lastName;
       if (email != null) data['email'] = email;
-      if (dateOfBirth != null)
+      if (dateOfBirth != null) {
         data['dateOfBirth'] = dateOfBirth.toIso8601String();
+      }
 
       final response = await _apiService.patch<Map<String, dynamic>>(
         ApiRoutes.updateProfile,
@@ -581,5 +596,11 @@ class UserRepository {
       debugPrint('Error deleting account: $e');
       return ApiResponse.failure(message: e.toString());
     }
+  }
+
+  // store data locally
+
+  void storeUserMode(String value) async {
+    await _cacheManager.storePref(userModeKey, value);
   }
 }

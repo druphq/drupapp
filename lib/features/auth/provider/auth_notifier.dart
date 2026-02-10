@@ -25,7 +25,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   }
 
   /// Login with Google
-  /// Returns GoogleSignInResult for API authentication flow
   Future<GoogleSignInResult?> loginWithGoogle() async {
     state = const AsyncLoading();
 
@@ -39,7 +38,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
         state = const AsyncData(null);
         return null;
       }
-      // Return the result for the UI to continue with phone 
+      // Return the result for the UI to continue with phone
       // verification
       state = const AsyncData(null);
       return result;
@@ -180,6 +179,14 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     state = AsyncData(user);
   }
 }
+
+final isDriverMode = Provider<bool>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+  return authState.maybeWhen(
+    data: (user) => user?.userType == UserType.driver,
+    orElse: () => false,
+  );
+});
 
 // Provider instance
 final authNotifierProvider =

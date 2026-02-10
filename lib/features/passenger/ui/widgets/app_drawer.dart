@@ -1,5 +1,7 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/providers.dart';
 import 'package:drup/resources/app_assets.dart';
+import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -210,6 +212,9 @@ class AppDrawer extends ConsumerWidget {
                         child: CustomButton(
                           text: 'Driver Mode',
                           onPressed: () {
+                            final userRepo = ref.read(userRepositoryProvider);
+                            userRepo.storeUserMode(AppStrings.driverMode);
+
                             context.push(AppRoutes.driverSplashRoute);
                           },
                         ),

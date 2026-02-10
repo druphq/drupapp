@@ -1,12 +1,14 @@
 import 'package:drup/core/animation/drup_animation.dart';
+import 'package:drup/di/providers.dart';
+import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../auth/provider/auth_notifier.dart';
-import '../../provider/user_notifier.dart';
-import '../../../../theme/app_colors.dart';
+import '../provider/auth_notifier.dart';
+import '../../passenger/provider/user_notifier.dart';
+import '../../../theme/app_colors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -30,6 +32,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final currentUser = ref.read(currentUserProvider);
     final isLoggedIn = ref.read(isLoggedInProvider);
     final isDriver = ref.read(isDriverProvider);
+    final userRepo = ref.read(userRepositoryProvider);
+    final userMode = await userRepo.getUserMode();
 
     // Check if user is logged in
     if (isLoggedIn && currentUser != null) {
@@ -47,7 +51,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           return;
         }
 
-        if (isDriver) {
+        if (userMode == AppStrings.driverMode || isDriver) {
           context.go(AppRoutes.driverHomeRoute);
         } else {
           context.go(AppRoutes.homeRoute);
