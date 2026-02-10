@@ -16,8 +16,6 @@ class DriverAccountScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userNotifierProvider);
     final user = userState.user;
-
-    // TODO: Replace with actual driver verification status
     final bool isVerified = false;
 
     return Scaffold(

@@ -83,19 +83,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       context.go(AppRoutes.driverOnboardRoute);
       return;
     }
-
-    // Check if driver is verified
-    final isVerified = await ref
-        .read(userNotifierProvider.notifier)
-        .isDriverVerified();
-
-    if (!mounted) return;
-
-    if (isVerified) {
-      context.go(AppRoutes.driverHomeRoute);
-    } else {
-      context.go(AppRoutes.verifyDriverRoute);
-    }
+    context.go(AppRoutes.driverHomeRoute);
   }
 
   @override

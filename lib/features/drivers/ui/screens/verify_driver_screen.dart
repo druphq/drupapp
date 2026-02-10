@@ -1,4 +1,3 @@
-import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
@@ -140,7 +139,6 @@ class VerifyDriverScreen extends ConsumerWidget {
                 description: 'Keep Drup safe for everyone',
                 isCompleted: false,
                 onTap: () {
-                  // TODO: Navigate to identity verification
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Identity verification coming soon!'),
@@ -149,7 +147,7 @@ class VerifyDriverScreen extends ConsumerWidget {
                 },
               ),
 
-              const Gap(16),
+              _buildDivider(),
 
               _buildVerificationItem(
                 icon: Icons.directions_car_outlined,
@@ -166,7 +164,7 @@ class VerifyDriverScreen extends ConsumerWidget {
                 },
               ),
 
-              const Gap(16),
+              _buildDivider(),
 
               _buildVerificationItem(
                 icon: Icons.credit_card_outlined,
@@ -174,7 +172,6 @@ class VerifyDriverScreen extends ConsumerWidget {
                 description: 'Add your bank details to receive earnings',
                 isCompleted: false,
                 onTap: () {
-                  // TODO: Navigate to payment setup
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Payment setup coming soon!')),
                   );
@@ -183,20 +180,15 @@ class VerifyDriverScreen extends ConsumerWidget {
 
               const Gap(40),
 
-              // Continue button
-              CustomButton(
-                text: 'Continue',
-                onPressed: () {
-                  // TODO: Navigate to first incomplete step
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Verification flow coming soon!'),
-                    ),
-                  );
-                },
-              ),
+              // // Continue button
+              // CustomButton(
+              //   text: 'Continue',
+              //   onPressed: () {
+              //     context.go(AppRoutes.driverHomeRoute);
+              //   },
+              // ),
 
-              const Gap(16),
+              // const Gap(16),
 
               // Do this later text
               Center(
@@ -233,37 +225,37 @@ class VerifyDriverScreen extends ConsumerWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isCompleted
-              ? AppColors.success.withOpacity(0.1)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isCompleted
-                ? AppColors.success.withOpacity(0.3)
-                : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
+        // decoration: BoxDecoration(
+        //   color: isCompleted
+        //       ? AppColors.success.withOpacity(0.1)
+        //       : AppColors.surface,
+        //   borderRadius: BorderRadius.circular(16),
+        //   border: Border.all(
+        //     color: isCompleted
+        //         ? AppColors.success.withOpacity(0.3)
+        //         : Colors.transparent,
+        //     width: 1.5,
+        //   ),
+        // ),
         child: Row(
           children: [
             // Icon container
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: isCompleted
-                    ? AppColors.success
-                    : AppColors.accent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                isCompleted ? Icons.check : icon,
-                color: isCompleted ? Colors.white : AppColors.accent,
-                size: 24,
-              ),
-            ),
-            const Gap(16),
+            // Container(
+            //   width: 50,
+            //   height: 50,
+            //   decoration: BoxDecoration(
+            //     color: isCompleted
+            //         ? AppColors.success
+            //         : AppColors.accent.withOpacity(0.1),
+            //     borderRadius: BorderRadius.circular(12),
+            //   ),
+            //   child: Icon(
+            //     isCompleted ? Icons.check : icon,
+            //     color: isCompleted ? Colors.white : AppColors.accent,
+            //     size: 24,
+            //   ),
+            // ),
+            // const Gap(16),
             // Text content
             Expanded(
               child: Column(
@@ -290,13 +282,18 @@ class VerifyDriverScreen extends ConsumerWidget {
             ),
             // Arrow
             Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: AppColors.textSecondary,
+              // isVerified ? Icons.verified : Icons.priority_high,
+              Icons.warning,
+              size: 24,
+              color: AppColors.warning,
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(height: 1, color: AppColors.divider);
   }
 }

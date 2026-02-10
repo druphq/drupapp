@@ -60,7 +60,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
     // Mark onboarding as shown
     ref.read(userRepositoryProvider).storeOnboardingShown(true);
     // Navigate to driver home
-    context.go(AppRoutes.verifyDriverRoute);
+    context.go(AppRoutes.driverHomeRoute);
   }
 
   @override
@@ -90,7 +90,7 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
                     child: Text(
                       'Skip',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha:0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 16,
                       ),
                     ),
