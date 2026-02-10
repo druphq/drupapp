@@ -45,7 +45,7 @@ class DriverAppDrawer extends ConsumerWidget {
                 children: [
                   //Driver Profile Section
                   Padding(
-                    padding: const EdgeInsets.only(top: 70, right: 24),
+                    padding: const EdgeInsets.fromLTRB(24, 70, 24, 16),
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
