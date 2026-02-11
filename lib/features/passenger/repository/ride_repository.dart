@@ -1,9 +1,9 @@
-import '../models/ride.dart';
-import '../models/ride_request.dart';
-import '../models/driver.dart';
-import '../models/location_model.dart';
-import '../services/ride_service.dart';
-import '../../core/constants/constants.dart';
+import '../model/ride.dart';
+import '../../drivers/model/ride_request.dart';
+import '../../drivers/model/driver.dart';
+import '../model/location_model.dart';
+import '../../../data/services/ride_service.dart';
+import '../../../core/constants/constants.dart';
 
 class RideRepository {
   final RideService _rideService;

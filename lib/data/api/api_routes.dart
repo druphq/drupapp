@@ -46,4 +46,22 @@ class ApiRoutes {
   static const String rideHistory = '/rides/history';
   static String cancelRide(String id) => '/rides/$id/cancel';
   static String rateRide(String id) => '/rides/$id/rate';
+  static const String fareEstimate = '/rides/estimate';
+  static const String availableSlots = '/rides/available-slots';
+  static const String bookRide = '/rides';
+  static const String activeRide = '/rides/active';
+
+  // ============== PAYMENTS ==============
+  static const String initRidePayment = '/payments/ride';
+  static const String payWithSavedCard = '/payments/ride/saved-card';
+  static String verifyPayment(String reference) =>
+      '/payments/verify/$reference';
+  static const String savedCards = '/payments/cards';
+  static String deleteCard(String cardId) => '/payments/cards/$cardId';
+  static String setDefaultCard(String cardId) =>
+      '/payments/cards/$cardId/default';
+  static const String walletBalance = '/payments/wallet';
+  static const String walletTopUp = '/payments/wallet/topup';
+  static const String walletTransactions = '/payments/wallet/transactions';
+  static const String paymentHistory = '/payments/history';
 }

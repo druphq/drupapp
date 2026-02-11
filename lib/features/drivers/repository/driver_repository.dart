@@ -1,7 +1,7 @@
 import 'dart:async';
-import '../models/driver.dart';
-import '../models/location_model.dart';
-import '../../core/utils/location_helper.dart';
+import '../model/driver.dart';
+import '../../passenger/model/location_model.dart';
+import '../../../core/utils/location_helper.dart';
 
 class DriverRepository {
   final List<Driver> _mockDrivers = [];

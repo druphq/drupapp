@@ -1,4 +1,4 @@
-import 'location_model.dart';
+import '../../passenger/model/location_model.dart';
 
 class Driver {
   final String id;

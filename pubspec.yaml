@@ -72,17 +72,29 @@ flutter:
     - assets/others/
 
   fonts:
-    - family: RedHatDisplay
+    # - family: RedHatDisplay
+    #   fonts:
+    #     - asset: fonts/RedHatDisplay-Light.ttf
+    #       weight: 200
+    #     - asset: fonts/RedHatDisplay-Regular.ttf
+    #       weight: 400
+    #     - asset: fonts/RedHatDisplay-SemiBold.ttf
+    #       weight: 500
+    #     - asset: fonts/RedHatDisplay-Medium.ttf
+    #       weight: 600
+    #     - asset: fonts/RedHatDisplay-Bold.ttf
+    #       weight: 700
+    - family: Poppins
       fonts:
-        - asset: fonts/RedHatDisplay-Light.ttf
+        - asset: fonts/Poppins-Light.ttf
           weight: 200
-        - asset: fonts/RedHatDisplay-Regular.ttf
+        - asset: fonts/Poppins-Regular.ttf
           weight: 400
-        - asset: fonts/RedHatDisplay-SemiBold.ttf
+        - asset: fonts/Poppins-SemiBold.ttf
           weight: 500
-        - asset: fonts/RedHatDisplay-Medium.ttf
+        - asset: fonts/Poppins-Medium.ttf
           weight: 600
-        - asset: fonts/RedHatDisplay-Bold.ttf
+        - asset: fonts/Poppins-Bold.ttf
           weight: 700
 
     - family: PlusJakartaSans

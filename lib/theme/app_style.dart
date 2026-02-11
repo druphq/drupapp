@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 
 class Fonts {
-  static const String redHatDisplay = 'RedHatDisplay';
+  // static const String redHatDisplay = 'RedHatDisplay';
   static const String plusJakartaSans = 'PlusJakartaSans';
+  static const String poppins = 'Poppins';
 }
 
 class TextStyles {
@@ -14,7 +15,7 @@ class TextStyles {
   );
 
   static const TextStyle redHatDisplay = TextStyle(
-    fontFamily: Fonts.redHatDisplay,
+    fontFamily: Fonts.poppins,
     fontWeight: FontWeight.w700,
     letterSpacing: .5,
   );

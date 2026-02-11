@@ -4,10 +4,10 @@ import 'package:drup/core/cache/cache_manager.dart';
 import 'package:drup/di/providers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/user.dart';
-import '../api/api_routes.dart';
-import '../api/api_service.dart';
-import '../../features/auth/repository/auth_repository.dart';
+import '../model/user.dart';
+import '../../../data/api/api_routes.dart';
+import '../../../data/api/api_service.dart';
+import '../../auth/repository/auth_repository.dart';
 
 /// Repository for user-related operations
 /// Uses AuthRepository for user data management and caching
@@ -123,7 +123,7 @@ class UserRepository {
       return ApiResponse.failure(message: e.toString());
     }
   }
-  
+
   /// Upload profile photo
   Future<ApiResponse<String>> uploadProfilePhoto(File photoFile) async {
     try {
@@ -617,5 +617,4 @@ class UserRepository {
   void storeOnboardingShown(bool value) async {
     await _cacheManager.storePref(onboardingShownKey, value);
   }
-
 }
