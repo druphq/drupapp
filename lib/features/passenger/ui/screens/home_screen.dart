@@ -67,29 +67,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       setState(() {
         currentLocation = userState.currentLocation;
       });
-      // Update camera to current location
-      if (_mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLng(userState.currentLocation!.latLng),
-        );
-
-        // zoom on the current location
-        _mapController!.animateCamera(
-          CameraUpdate.zoomTo(AppConstants.defaultCameraZoom),
-        );
-      }
+      // Center camera on current location with proper zoom
+      _animateCameraToUserLocation();
     }
+  }
+
+  /// Animate camera to user's current location, centered in visible area
+  Future<void> _animateCameraToUserLocation() async {
+    final userState = ref.read(userNotifierProvider);
+    if (userState.currentLocation == null || _mapController == null) return;
+
+    await _mapController!.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: userState.currentLocation!.latLng,
+          zoom: AppConstants.defaultCameraZoom,
+        ),
+      ),
+    );
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     // Move camera to current location if already available
-    final userState = ref.read(userNotifierProvider);
-    if (userState.currentLocation != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newLatLng(userState.currentLocation!.latLng),
-      );
-    }
+    _animateCameraToUserLocation();
   }
 
   // void _onMapTap(LatLng position) async {
@@ -155,9 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _onMyLocationButtonPressed() async {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation != null && _mapController != null) {
-      await _mapController!.animateCamera(
-        CameraUpdate.newLatLng(userState.currentLocation!.latLng),
-      );
+      await _animateCameraToUserLocation();
       setState(() {
         _isAtUserLocation = true;
       });
@@ -328,14 +327,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (_mapController == null) return;
 
-    // Calculate bounds to show both markers
-    final bounds = MapHelper.calculateBounds([
+    // Include route points for more accurate bounds if available
+    final List<LatLng> allPoints = [
       rideState.pickupLocation!.latLng,
       rideState.destinationLocation!.latLng,
-    ]);
+      ...rideState.routePoints,
+    ];
+
+    // Calculate bounds to show all points
+    final bounds = MapHelper.calculateBounds(allPoints);
+
+    // Padding for the bounds:
+    // - The GoogleMap widget already has bottom padding for the bottomsheet
+    // - Add extra padding for markers and UI elements
+    const double boundsPadding = 80.0;
 
     await _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 100),
+      CameraUpdate.newLatLngBounds(bounds, boundsPadding),
     );
   }
 
@@ -415,15 +423,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         setState(() {
           currentLocation = userState.currentLocation;
         });
-
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLng(userState.currentLocation!.latLng),
-        );
-
-        // zoom on the current location
-        _mapController!.animateCamera(
-          CameraUpdate.zoomTo(AppConstants.defaultCameraZoom),
-        );
+        // Center camera on current location with proper zoom
+        _animateCameraToUserLocation();
       }
     });
   }
