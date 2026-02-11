@@ -52,7 +52,7 @@ class AppDrawer extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 70, right: 24,),
+                      padding: const EdgeInsets.only(top: 70, right: 24),
                       child: GestureDetector(
                         onTap: () {
                           // Navigate to profile screen
@@ -98,6 +98,11 @@ class AppDrawer extends ConsumerWidget {
                                 ],
                               ),
                             ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: AppColors.textSecondary,
+                            ),
                           ],
                         ),
                       ),
@@ -107,20 +112,19 @@ class AppDrawer extends ConsumerWidget {
 
                     Row(
                       children: [
-                        Icon(Icons.star, size: 15, color: AppColors.orange400),
-                        Gap(5.0),
+                        Icon(Icons.star, size: 20, color: AppColors.accent),
+                        Gap(4.0),
                         Text(
                           '4.5',
                           style: TextStyles.t1.copyWith(
                             fontSize: FontSizes.s16,
                           ),
                         ),
-                        Gap(2.0),
+                        Gap(4.0),
                         Text(
-                          '(10 Reviews)',
-                          style: TextStyles.h2.copyWith(
+                          'Rating',
+                          style: TextStyles.t1.copyWith(
                             fontSize: FontSizes.s14,
-                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],

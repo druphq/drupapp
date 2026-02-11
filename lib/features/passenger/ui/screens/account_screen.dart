@@ -114,11 +114,8 @@ class AccountScreen extends ConsumerWidget {
                       ),
                       const Gap(4),
                       Text(
-                        '(10 Reviews)',
-                        style: TextStyles.h2.copyWith(
-                          fontSize: FontSizes.s14,
-                          color: AppColors.textSecondary,
-                        ),
+                        'Rating',
+                        style: TextStyles.t1.copyWith(fontSize: FontSizes.s14),
                       ),
                     ],
                   ),
@@ -135,12 +132,12 @@ class AccountScreen extends ConsumerWidget {
                   title: 'Personal Information',
                   onTap: () => context.push(AppRoutes.personalInfoRoute),
                 ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.star_outline,
-                  title: 'Reviews',
-                  onTap: () => context.push(AppRoutes.reviewsRoute),
-                ),
+                // _buildDivider(),
+                // _buildMenuItem(
+                //   icon: Icons.star_outline,
+                //   title: 'Reviews',
+                //   onTap: () => context.push(AppRoutes.reviewsRoute),
+                // ),
                 _buildDivider(),
                 _buildMenuItem(
                   icon: Icons.privacy_tip_outlined,
