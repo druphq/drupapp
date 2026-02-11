@@ -70,7 +70,7 @@ class AppPhoneField extends StatelessWidget {
               ],
             ),
             hintText: hint,
-            hintStyle: (style ?? TextStyles.h3).copyWith(
+            hintStyle: (style ?? TextStyles.body2).copyWith(
               color: Colors.grey,
               fontWeight: FontWeight.w300,
             ),

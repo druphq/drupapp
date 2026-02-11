@@ -72,14 +72,23 @@ class TextStyles {
     fontSize: FontSizes.s16,
   );
 
-  static TextStyle get body1 =>
-      _createTextStyle(style: plusJakartaSans, fontSize: FontSizes.s14);
+  static TextStyle get body1 => _createTextStyle(
+    style: plusJakartaSans,
+    fontSize: FontSizes.s14,
+    weight: FontWeight.w400,
+  );
 
-  static TextStyle get body2 =>
-      _createTextStyle(style: plusJakartaSans, fontSize: FontSizes.s12);
+  static TextStyle get body2 => _createTextStyle(
+    style: plusJakartaSans,
+    fontSize: FontSizes.s12,
+    weight: FontWeight.w300,
+  );
 
-  static TextStyle get body3 =>
-      _createTextStyle(style: plusJakartaSans, fontSize: FontSizes.s11);
+  static TextStyle get body3 => _createTextStyle(
+    style: plusJakartaSans,
+    fontSize: FontSizes.s11,
+    weight: FontWeight.w300,
+  );
 
   static TextStyle get callout => _createTextStyle(
     style: plusJakartaSans,

@@ -216,7 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   Text(
                     AppStrings.enterPhoneNumberCaptionTxt,
-                    style: TextStyles.body1.copyWith(
+                    style: TextStyles.body2.copyWith(
                       fontSize: FontSizes.s16,
                       color: AppColors.surface600,
                     ),
