@@ -119,7 +119,7 @@ class _LocationPermissionBottomSheetState
             Text(
               'We need your location to show nearby drivers and provide accurate pickup services.',
               textAlign: TextAlign.center,
-              style: TextStyles.t1.copyWith(
+              style: TextStyles.h3.copyWith(
                 color: AppColors.textSecondary,
                 fontSize: 16,
                 height: 1.5,
