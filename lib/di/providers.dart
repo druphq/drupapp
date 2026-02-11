@@ -1,5 +1,4 @@
 import 'package:drup/features/auth/repository/auth_repository.dart';
-import 'package:drup/features/passenger/repository/ride_api_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/location_service.dart';
@@ -45,12 +44,8 @@ final driverRepositoryProvider = Provider<DriverRepository>((ref) {
   return DriverRepository();
 });
 
+/// Provider for ride operations (both local and API)
 final rideRepositoryProvider = Provider<RideRepository>((ref) {
   final rideService = ref.watch(rideServiceProvider);
   return RideRepository(rideService);
-});
-
-/// Provider for ride API operations (booking, payments, etc.)
-final rideApiRepositoryProvider = Provider<RideApiRepository>((ref) {
-  return RideApiRepository();
 });

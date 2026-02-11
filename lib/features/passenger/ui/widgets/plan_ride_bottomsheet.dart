@@ -1,4 +1,4 @@
-import 'package:drup/features/drivers/provider/ride_notifier.dart';
+import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_details_bottom_sheet.dart';
 import 'package:drup/features/passenger/ui/widgets/home_content_widget.dart';
@@ -51,7 +51,8 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
             true => RideDetailsBottomSheet(
               pickupLocation: pickupLocation!.name ?? '',
               destinationLocation: destinationLocation!.name ?? '',
-              rideAmount: rideState.currentRide?.actualFare,
+              isLoading: rideState.isLoading,
+              estimate: rideState.fareEstimates[0],
               onScheduleRide: widget.onScheduleRide,
               onCancelRide: () {
                 ref.read(rideNotifierProvider.notifier).clearRoute();

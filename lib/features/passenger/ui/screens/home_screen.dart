@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../provider/user_notifier.dart';
-import '../../../drivers/provider/ride_notifier.dart';
+import '../../provider/ride_notifier.dart';
 import '../../model/location_model.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/map_helper.dart';
@@ -30,12 +30,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Set<Polyline> polylines = {};
   Set<Marker> markers = {};
   LocationModel? currentLocation;
+  final GlobalKey _bottomSheetKey = GlobalKey();
+  double _bottomSheetHeight = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
+      _measureBottomSheetHeight();
+    });
+  }
+
+  void _measureBottomSheetHeight() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final RenderBox? renderBox =
+          _bottomSheetKey.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final height = renderBox.size.height;
+        if (height != _bottomSheetHeight) {
+          setState(() {
+            _bottomSheetHeight = height;
+          });
+        }
+      }
     });
   }
 
@@ -194,9 +212,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               bottom: 0,
               child: GoogleMap(
                 mapType: MapType.normal,
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.height * 0.2,
-                ),
+                padding: EdgeInsets.only(bottom: _bottomSheetHeight),
                 onMapCreated: _onMapCreated,
                 // onTap: _onMapTap,
                 onCameraMove: _onCameraMove,
@@ -218,7 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (!_isAtUserLocation)
               Positioned(
                 right: 16,
-                bottom: MediaQuery.of(context).size.height * 0.22,
+                bottom: _bottomSheetHeight + 16,
                 child: FloatingActionButton(
                   mini: true,
                   backgroundColor: Colors.white,
@@ -227,22 +243,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
 
-            // Bottom sheet with controls - positioned at bottom
+            // Bottom sheet with controls
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              child: PlanRideBottomsheet(
-                onWhereToTap: () async {
-                  // Navigate to location search screen with slide up transition
-                  final result = await context.push(
-                    AppRoutes.pickLocationRoute,
-                  );
-                  if (result == true) {
-                    _drawDirectionOnMap();
-                  }
+              child: NotificationListener<SizeChangedLayoutNotification>(
+                onNotification: (notification) {
+                  _measureBottomSheetHeight();
+                  return true;
                 },
-                onScheduleRide: _scheduleRideBottomsheet,
+                child: SizeChangedLayoutNotifier(
+                  child: Container(
+                    key: _bottomSheetKey,
+                    child: PlanRideBottomsheet(
+                      onWhereToTap: () async {
+                        // Navigate to location search screen with slide up transition
+                        final result = await context.push(
+                          AppRoutes.pickLocationRoute,
+                        );
+                        if (result == true) {
+                          _drawDirectionOnMap();
+                        }
+                      },
+                      onScheduleRide: _scheduleRideBottomsheet,
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -251,6 +278,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               RideSearchBottomSheet(
                 onClose: () {
                   setState(() {
+                    _clearMapMarkers();
                     _showRideSearchSheet = false;
                   });
                 },
@@ -312,7 +340,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   _drawDirectionOnMap() {
-    final rideState = ref.watch(rideNotifierProvider);
+    final rideState = ref.read(rideNotifierProvider);
 
     final pickupLocation = rideState.pickupLocation;
     final destinationLocation = rideState.destinationLocation;
@@ -324,21 +352,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     }
 
-    if (pickupLocation != null) {
-      markers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
-    }
+    setState(() {
+      // Clear previous markers and polylines
+      _clearMapMarkers();
 
-    if (destinationLocation != null) {
-      markers.add(
-        MapHelper.createDestinationMarker(destinationLocation.latLng),
-      );
-    }
+      if (pickupLocation != null) {
+        markers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
+      }
 
-    if (rideState.routePoints.isNotEmpty) {
-      polylines.add(MapHelper.createRoutePolyline(rideState.routePoints));
-    }
+      if (destinationLocation != null) {
+        markers.add(
+          MapHelper.createDestinationMarker(destinationLocation.latLng),
+        );
+      }
 
-    // Trigger a function that calculates fare estimate based on distance
+      if (rideState.routePoints.isNotEmpty) {
+        polylines.add(MapHelper.createRoutePolyline(rideState.routePoints));
+      }
+    });
+  }
+
+  void _clearMapMarkers() {
+    markers.clear();
+    polylines.clear();
   }
 
   // fill scheduling details bottomsheet

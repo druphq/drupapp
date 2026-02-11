@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../di/providers.dart';
-import '../../../drivers/provider/ride_notifier.dart';
+import '../../provider/ride_notifier.dart';
 import '../../provider/user_notifier.dart';
 import '../../model/location_model.dart';
 
@@ -181,6 +181,7 @@ class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
     if (_pickupController.text.isNotEmpty &&
         _destinationController.text.isNotEmpty) {
       // Both locations selected, pop back to home screen
+      // Fare is automatically calculated when both locations are set
       context.pop(true);
     }
   }

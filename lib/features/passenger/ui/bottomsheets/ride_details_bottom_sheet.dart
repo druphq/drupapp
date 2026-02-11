@@ -1,3 +1,4 @@
+import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -5,11 +6,13 @@ import 'package:drup/features/passenger/ui/widgets/location_dot_widget.dart';
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:shimmer/shimmer.dart';
 
 class RideDetailsBottomSheet extends StatelessWidget {
   final String pickupLocation;
   final String destinationLocation;
-  final double? rideAmount;
+  final VehicleEstimate? estimate;
+  final bool isLoading;
   final VoidCallback? onScheduleRide;
   final VoidCallback? onCancelRide;
 
@@ -17,7 +20,8 @@ class RideDetailsBottomSheet extends StatelessWidget {
     super.key,
     required this.pickupLocation,
     required this.destinationLocation,
-    this.rideAmount = 6000,
+    this.estimate,
+    this.isLoading = false,
     this.onScheduleRide,
     this.onCancelRide,
   });
@@ -35,14 +39,27 @@ class RideDetailsBottomSheet extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '₦${rideAmount?.toStringAsFixed(2) ?? '0.00'}',
-                style: TextStyles.t1.copyWith(
-                  fontSize: FontSizes.s24,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.white,
-                ),
-              ),
+              isLoading && estimate == null
+                  ? Shimmer.fromColors(
+                      baseColor: Colors.grey.withOpacity(0.5),
+                      highlightColor: Colors.grey.withOpacity(0.8),
+                      child: Container(
+                        width: 100,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      '₦${estimate?.fare.baseFare.toStringAsFixed(2) ?? '0.00'}',
+                      style: TextStyles.t1.copyWith(
+                        fontSize: FontSizes.s24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
+                    ),
               TextButton(
                 onPressed: () {
                   onCancelRide?.call();
@@ -130,9 +147,8 @@ class RideDetailsBottomSheet extends StatelessWidget {
         // Schedule Ride Button
         CustomButton(
           text: 'Schedule Ride',
-          // onPressed: rideAmount != null ? onScheduleRide : () {},
-          onPressed: onScheduleRide,
-          isLoading: false,
+          onPressed: estimate != null ? onScheduleRide : () {},
+          // onPressed: onScheduleRide,
           textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
           icon: ImageIcon(
             AssetImage(AppAssets.scheduleIcon),
