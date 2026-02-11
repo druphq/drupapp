@@ -54,6 +54,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _mapController!.animateCamera(
           CameraUpdate.newLatLng(userState.currentLocation!.latLng),
         );
+
+        // zoom on the current location
+        _mapController!.animateCamera(
+          CameraUpdate.zoomTo(AppConstants.defaultCameraZoom),
+        );
       }
     }
   }
@@ -181,7 +186,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         value: SystemUiOverlayStyle.dark,
         child: Stack(
           children: [
-            
             // Google Map - stops at top of collapsed bottom sheet
             Positioned(
               top: 0,
@@ -189,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               right: 0,
               bottom: 0,
               child: GoogleMap(
-                mapType: MapType.hybrid,
+                mapType: MapType.normal,
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).size.height * 0.2,
                 ),
@@ -205,23 +209,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 markers: markers,
                 polylines: polylines,
                 myLocationEnabled: true,
-                myLocationButtonEnabled: _isAtUserLocation ? false : true,
+                myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
               ),
             ),
 
             // Custom My Location Button
-            // if (!_isAtUserLocation)
-            //   Positioned(
-            //     right: 16,
-            //     bottom: MediaQuery.of(context).size.height * 0.22,
-            //     child: FloatingActionButton(
-            //       mini: true,
-            //       backgroundColor: Colors.white,
-            //       onPressed: _onMyLocationButtonPressed,
-            //       child: Icon(Icons.my_location, color: AppColors.primary),
-            //     ),
-            //   ),
+            if (!_isAtUserLocation)
+              Positioned(
+                right: 16,
+                bottom: MediaQuery.of(context).size.height * 0.22,
+                child: FloatingActionButton(
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  onPressed: _onMyLocationButtonPressed,
+                  child: Icon(Icons.my_location, color: AppColors.primary),
+                ),
+              ),
 
             // Bottom sheet with controls - positioned at bottom
             Positioned(
@@ -378,6 +382,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         _mapController!.animateCamera(
           CameraUpdate.newLatLng(userState.currentLocation!.latLng),
+        );
+
+        // zoom on the current location
+        _mapController!.animateCamera(
+          CameraUpdate.zoomTo(AppConstants.defaultCameraZoom),
         );
       }
     });

@@ -145,7 +145,7 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
           children: [
             // Google Map
             GoogleMap(
-              mapType: MapType.hybrid,
+              mapType: MapType.normal,
               onMapCreated: _onMapCreated,
               initialCameraPosition: CameraPosition(
                 target:

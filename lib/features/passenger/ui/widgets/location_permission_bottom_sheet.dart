@@ -108,7 +108,7 @@ class _LocationPermissionBottomSheetState
             Text(
               'Enable Location',
               style: TextStyles.h1.copyWith(
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -121,7 +121,7 @@ class _LocationPermissionBottomSheetState
               textAlign: TextAlign.center,
               style: TextStyles.h3.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 16,
+                fontSize: 14,
                 height: 1.5,
               ),
             ),
