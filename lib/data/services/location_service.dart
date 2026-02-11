@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:async';
-import '../models/location_model.dart';
+import '../../features/passenger/model/location_model.dart';
 
 class LocationService {
   StreamController<LocationModel>? _locationController;

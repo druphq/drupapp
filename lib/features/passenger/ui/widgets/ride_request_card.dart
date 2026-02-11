@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../data/models/ride_request.dart';
+import '../../../drivers/model/ride_request.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../core/utils/location_helper.dart';
 

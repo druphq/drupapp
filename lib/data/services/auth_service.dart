@@ -1,5 +1,5 @@
 import 'package:google_sign_in/google_sign_in.dart';
-import '../models/user.dart';
+import '../../features/passenger/model/user.dart';
 
 /// Google Sign-In result containing user data for API authentication
 class GoogleSignInResult {

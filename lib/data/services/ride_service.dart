@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:uuid/uuid.dart';
-import '../models/ride.dart';
-import '../models/ride_request.dart';
-import '../models/driver.dart';
-import '../models/location_model.dart';
+import '../../features/passenger/model/ride.dart';
+import '../../features/drivers/model/ride_request.dart';
+import '../../features/drivers/model/driver.dart';
+import '../../features/passenger/model/location_model.dart';
 import '../../core/constants/constants.dart';
 import '../../core/utils/location_helper.dart';
 

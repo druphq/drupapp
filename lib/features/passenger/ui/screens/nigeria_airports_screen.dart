@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../di/providers.dart';
 import '../../../drivers/provider/ride_notifier.dart';
-import '../../../../data/models/location_model.dart';
+import '../../model/location_model.dart';
 
 class NigeriaAirportsScreen extends ConsumerStatefulWidget {
   final bool isPickupLocation;

@@ -1,5 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
-import 'package:drup/data/models/user.dart';
+import 'package:drup/features/passenger/model/user.dart';
 import 'package:drup/di/providers.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';

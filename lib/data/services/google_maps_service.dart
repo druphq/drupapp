@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import '../../core/constants/constants.dart';
-import '../models/location_model.dart';
+import '../../features/passenger/model/location_model.dart';
 
 class GoogleMapsService {
   final String _apiKey = AppConstants.googleMapsApiKey;

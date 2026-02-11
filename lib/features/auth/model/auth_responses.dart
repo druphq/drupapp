@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/user.dart';
+import '../../passenger/model/user.dart';
 import 'auth_requests.dart';
 
 /// Response model for OTP request (sign-in)

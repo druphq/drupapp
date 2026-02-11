@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../../data/models/ride.dart';
-import '../../../data/models/ride_request.dart';
-import '../../../data/models/location_model.dart';
+import '../../passenger/model/ride.dart';
+import '../model/ride_request.dart';
+import '../../passenger/model/location_model.dart';
 import '../../../core/constants/constants.dart';
 import '../../../di/providers.dart';
 

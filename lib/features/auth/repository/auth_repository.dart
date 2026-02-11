@@ -1,7 +1,7 @@
 import 'package:drup/core/cache/cache_manager.dart';
 import 'package:drup/data/api/api_routes.dart';
 import 'package:drup/features/auth/model/auth.dart';
-import 'package:drup/data/models/user.dart';
+import 'package:drup/features/passenger/model/user.dart';
 import 'package:drup/data/api/api_service.dart';
 import 'package:flutter/foundation.dart';
 

@@ -12,7 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:the_validator/the_validator.dart';
 import '../provider/auth_notifier.dart';
 import '../../../router/app_routes.dart';
-import '../../../data/models/user.dart';
+import '../../passenger/model/user.dart';
 
 class CompleteProfileScreen extends ConsumerStatefulWidget {
   const CompleteProfileScreen({super.key});

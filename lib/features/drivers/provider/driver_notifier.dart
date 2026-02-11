@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/driver.dart';
-import '../../../data/models/ride.dart';
-import '../../../data/models/ride_request.dart';
-import '../../../data/models/location_model.dart';
+import '../model/driver.dart';
+import '../../passenger/model/ride.dart';
+import '../model/ride_request.dart';
+import '../../passenger/model/location_model.dart';
 import '../../../di/providers.dart';
 
 class DriverState {
