@@ -50,20 +50,21 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDoDD0laqDuDsd0ojcG_2ZtqHo82lSCmm4',
-    appId: '1:346199166720:android:ac18f6a5c85502e489ede5',
-    messagingSenderId: '346199166720',
-    projectId: 'drup-riders-main',
-    storageBucket: 'drup-riders-main.firebasestorage.app',
+    apiKey: 'AIzaSyBn3Vz-24qCeKAudVVXPYjcQDPq94O37Ac',
+    appId: '1:379265156647:android:fba8aff15fe00bb5387002',
+    messagingSenderId: '379265156647',
+    projectId: 'drup-logistics',
+    storageBucket: 'drup-logistics.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyChZpSHuF3IVTamp3p0Peo1EBg29UcjEbw',
-    appId: '1:346199166720:ios:d22c9eee820182c989ede5',
-    messagingSenderId: '346199166720',
-    projectId: 'drup-riders-main',
-    storageBucket: 'drup-riders-main.firebasestorage.app',
-    iosClientId: '346199166720-6mf50ttui961hee07du66g5ve5vmngal.apps.googleusercontent.com',
+    apiKey: 'AIzaSyBDxGLWNCjkVDNk7ast21X9raLXpXyKYHQ',
+    appId: '1:379265156647:ios:cd45c092272bb4ea387002',
+    messagingSenderId: '379265156647',
+    projectId: 'drup-logistics',
+    storageBucket: 'drup-logistics.firebasestorage.app',
+    androidClientId: '379265156647-4jhcumf9ekt6e3e6plbtb16t254lj6qs.apps.googleusercontent.com',
+    iosClientId: '379265156647-4fu0sis6gokcc85tar5h5vl7rv9a5bsi.apps.googleusercontent.com',
     iosBundleId: 'com.drup.app',
   );
 
