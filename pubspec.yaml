@@ -89,26 +89,26 @@ flutter:
         - asset: fonts/Poppins-Light.ttf
           weight: 200
         - asset: fonts/Poppins-Regular.ttf
-          weight: 400
+          weight: 300
         - asset: fonts/Poppins-SemiBold.ttf
-          weight: 500
+          weight: 400
         - asset: fonts/Poppins-Medium.ttf
-          weight: 600
+          weight: 500
         - asset: fonts/Poppins-Bold.ttf
-          weight: 700
+          weight: 600
 
     - family: PlusJakartaSans
       fonts:
         - asset: fonts/PlusJakartaSans-Light.ttf
           weight: 200
         - asset: fonts/PlusJakartaSans-Regular.ttf
+          weight: 300
+        - asset: fonts/PlusJakartaSans-Medium.ttf
           weight: 400
         - asset: fonts/PlusJakartaSans-SemiBold.ttf
           weight: 500
-        - asset: fonts/PlusJakartaSans-Medium.ttf
-          weight: 600
         - asset: fonts/PlusJakartaSans-Bold.ttf
-          weight: 700
+          weight: 600
 
     - family: DrupIcons
       fonts:
