@@ -4,8 +4,50 @@ import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import '../../features/passenger/model/location_model.dart';
 
+/// Location permission status enum
+enum LocationPermissionStatus {
+  /// Permission granted (always or while in use)
+  granted,
+
+  /// Permission denied but can be requested again
+  denied,
+
+  /// Permission denied forever - user must go to settings
+  deniedForever,
+
+  /// Location services are disabled on the device
+  serviceDisabled,
+
+  /// Permission has never been requested
+  notDetermined,
+}
+
 class LocationService {
   StreamController<LocationModel>? _locationController;
+
+  /// Get detailed location permission status
+  Future<LocationPermissionStatus> checkPermissionStatus() async {
+    // First check if location services are enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return LocationPermissionStatus.serviceDisabled;
+    }
+
+    // Then check permission
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    switch (permission) {
+      case LocationPermission.always:
+      case LocationPermission.whileInUse:
+        return LocationPermissionStatus.granted;
+      case LocationPermission.denied:
+        return LocationPermissionStatus.denied;
+      case LocationPermission.deniedForever:
+        return LocationPermissionStatus.deniedForever;
+      case LocationPermission.unableToDetermine:
+        return LocationPermissionStatus.notDetermined;
+    }
+  }
 
   /// Get location permission status
   Future<bool> hasPermission() async {
@@ -24,6 +66,16 @@ class LocationService {
 
     return permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse;
+  }
+
+  /// Open device location settings
+  Future<bool> openLocationSettings() async {
+    return await Geolocator.openLocationSettings();
+  }
+
+  /// Open app settings (for permission denied forever)
+  Future<bool> openAppSettings() async {
+    return await Geolocator.openAppSettings();
   }
 
   /// Get current location

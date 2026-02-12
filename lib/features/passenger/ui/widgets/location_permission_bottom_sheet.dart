@@ -130,7 +130,8 @@ class _LocationPermissionBottomSheetState
 
             // Enable Location Button
             CustomButton(
-              text: _isLoading ? 'Getting Location...' : 'Enable Location',
+              text: 'Enable Location', //_isLoading ? 'Getting Location...' :
+              isLoading: _isLoading,
               onPressed: _isLoading ? () {} : _requestLocation,
             ),
 

@@ -15,6 +15,8 @@ import '../../provider/ride_notifier.dart';
 import '../../model/location_model.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/map_helper.dart';
+import '../../../../di/providers.dart';
+import '../../../../data/services/location_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -58,16 +60,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _initializeLocation() async {
+    final locationService = ref.read(locationServiceProvider);
+    final permissionStatus = await locationService.checkPermissionStatus();
+
+    switch (permissionStatus) {
+      case LocationPermissionStatus.granted:
+        // Permission already granted - silently fetch location
+        await _fetchCurrentLocation();
+        break;
+
+      case LocationPermissionStatus.denied:
+        // Permission denied but can request again - show permission sheet
+        _showLocationPermissionSheet();
+        break;
+
+      case LocationPermissionStatus.deniedForever:
+        // Permission permanently denied - show settings prompt
+        _showOpenSettingsSheet(isAppSettings: true);
+        break;
+
+      case LocationPermissionStatus.serviceDisabled:
+        // Location services OFF - prompt to enable
+        _showOpenSettingsSheet(isAppSettings: false);
+        break;
+
+      case LocationPermissionStatus.notDetermined:
+        // First time - show permission sheet
+        _showLocationPermissionSheet();
+        break;
+    }
+  }
+
+  /// Silently fetch current location when permission is granted
+  Future<void> _fetchCurrentLocation() async {
+    await ref.read(userNotifierProvider.notifier).updateUserLocation();
     final userState = ref.read(userNotifierProvider);
 
-    if (userState.currentLocation == null) {
-      // Show location permission bottom sheet
-      _showLocationPermissionSheet();
-    } else {
+    if (userState.currentLocation != null) {
       setState(() {
         currentLocation = userState.currentLocation;
       });
-      // Center camera on current location with proper zoom
       _animateCameraToUserLocation();
     }
   }
@@ -293,7 +325,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             // Menu button
             Positioned(
-              top: 16,
               left: 16,
               child: SafeArea(
                 child: Container(
@@ -346,8 +377,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bounds = MapHelper.calculateBounds(allPoints);
 
     // Padding for the bounds:
-    // - The GoogleMap widget already has bottom padding for the bottomsheet
-    // - Add extra padding for markers and UI elements
     const double boundsPadding = 80.0;
 
     await _mapController!.animateCamera(
@@ -356,7 +385,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   /// Update map overlays (markers and polylines) based on ride state
-  /// Called from build() when watching rideNotifierProvider
   void _updateMapOverlays(RideState rideState) {
     final pickupLocation = rideState.pickupLocation;
     final destinationLocation = rideState.destinationLocation;
@@ -443,6 +471,125 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _animateCameraToUserLocation();
       }
     });
+  }
+
+  /// Show bottom sheet prompting user to open settings
+  /// [isAppSettings] - true for app settings (permission denied forever),
+  ///                   false for location settings (service disabled)
+  void _showOpenSettingsSheet({required bool isAppSettings}) {
+    final locationService = ref.read(locationServiceProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withOpacity(0.1),
+                ),
+                child: Icon(
+                  isAppSettings ? Icons.settings : Icons.location_off,
+                  size: 40,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Title
+              Text(
+                isAppSettings
+                    ? 'Location Permission Required'
+                    : 'Location Services Disabled',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+
+              // Description
+              Text(
+                isAppSettings
+                    ? 'Location access was denied. Please enable it in your device settings to use Drup.'
+                    : 'Please enable location services on your device to find rides near you.',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Open Settings Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    if (isAppSettings) {
+                      await locationService.openAppSettings();
+                    } else {
+                      await locationService.openLocationSettings();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Open Settings',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Skip Button
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Maybe Later',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override

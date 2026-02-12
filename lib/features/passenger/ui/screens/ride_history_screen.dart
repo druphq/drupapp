@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
+import '../../model/ride_api_models.dart';
+import '../../provider/ride_notifier.dart';
 
 class RideHistoryScreen extends ConsumerStatefulWidget {
   const RideHistoryScreen({super.key});
@@ -20,6 +23,10 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Fetch ride history on screen load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(rideNotifierProvider.notifier).fetchRideHistory();
+    });
   }
 
   @override
@@ -30,6 +37,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final rideState = ref.watch(rideNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
@@ -54,20 +63,32 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildRideList(isCompleted: true),
-          _buildRideList(isCompleted: false),
-        ],
-      ),
+      body: rideState.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildRideList(
+                  rides: rideState.rideHistory
+                      .where((r) => r.status == 'completed')
+                      .toList(),
+                  isCompleted: true,
+                ),
+                _buildRideList(
+                  rides: rideState.rideHistory
+                      .where((r) => r.status == 'cancelled')
+                      .toList(),
+                  isCompleted: false,
+                ),
+              ],
+            ),
     );
   }
 
-  Widget _buildRideList({required bool isCompleted}) {
-    // TODO: Replace with actual ride history data
-    final rides = <Map<String, dynamic>>[];
-
+  Widget _buildRideList({
+    required List<BookedRide> rides,
+    required bool isCompleted,
+  }) {
     if (rides.isEmpty) {
       return Center(
         child: Column(
@@ -101,17 +122,26 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: rides.length,
-      itemBuilder: (context, index) {
-        final ride = rides[index];
-        return _buildRideCard(ride);
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(rideNotifierProvider.notifier).fetchRideHistory();
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: rides.length,
+        itemBuilder: (context, index) {
+          final ride = rides[index];
+          return _buildRideCard(ride);
+        },
+      ),
     );
   }
 
-  Widget _buildRideCard(Map<String, dynamic> ride) {
+  Widget _buildRideCard(BookedRide ride) {
+    final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
+    final formattedDate = dateFormat.format(ride.createdAt);
+    final formattedFare = '₦${ride.fare.totalFare.toStringAsFixed(0)}';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -124,14 +154,14 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  ride['date'] ?? '',
+                  formattedDate,
                   style: TextStyles.t2.copyWith(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 Text(
-                  ride['fare'] ?? '',
+                  formattedFare,
                   style: TextStyles.t1.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -142,7 +172,9 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
             const Gap(12),
             _buildLocationRow(
               Icons.circle,
-              ride['pickup'] ?? '',
+              ride.pickup.name.isNotEmpty
+                  ? ride.pickup.name
+                  : ride.pickup.address,
               AppColors.pickupMarker,
             ),
             Container(
@@ -153,8 +185,30 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
             ),
             _buildLocationRow(
               Icons.location_on,
-              ride['destination'] ?? '',
+              ride.dropoff.name.isNotEmpty
+                  ? ride.dropoff.name
+                  : ride.dropoff.address,
               AppColors.destinationMarker,
+            ),
+            const Gap(12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  ride.vehicleType.toUpperCase(),
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
