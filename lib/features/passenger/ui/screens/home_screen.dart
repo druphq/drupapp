@@ -165,6 +165,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch ride state to update map when route changes
+    final rideState = ref.watch(rideNotifierProvider);
+
+    // Update markers and polylines when route data changes
+    _updateMapOverlays(rideState);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
@@ -262,7 +268,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           AppRoutes.pickLocationRoute,
                         );
                         if (result == true) {
-                          _drawDirectionOnMap();
+                          // Animate camera to show route after returning
+                          _animateCameraToRoute();
                         }
                       },
                       onScheduleRide: _scheduleRideBottomsheet,
@@ -280,6 +287,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _clearMapMarkers();
                     _showRideSearchSheet = false;
                   });
+                  _onMyLocationButtonPressed();
                 },
               ),
 
@@ -347,42 +355,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  _drawDirectionOnMap() {
-    final rideState = ref.read(rideNotifierProvider);
-
+  /// Update map overlays (markers and polylines) based on ride state
+  /// Called from build() when watching rideNotifierProvider
+  void _updateMapOverlays(RideState rideState) {
     final pickupLocation = rideState.pickupLocation;
     final destinationLocation = rideState.destinationLocation;
+    final routePoints = rideState.routePoints;
 
-    // Check if both locations are set and show ride details
-    if (pickupLocation != null && destinationLocation != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _animateCameraToRoute();
-      });
+    // Build new markers set
+    final newMarkers = <Marker>{};
+    if (pickupLocation != null) {
+      newMarkers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
+    }
+    if (destinationLocation != null) {
+      newMarkers.add(
+        MapHelper.createDestinationMarker(destinationLocation.latLng),
+      );
     }
 
-    setState(() {
-      // Clear previous markers and polylines
-      _clearMapMarkers();
+    // Build new polylines set
+    final newPolylines = <Polyline>{};
+    if (routePoints.isNotEmpty) {
+      newPolylines.add(MapHelper.createRoutePolyline(routePoints));
+    }
 
-      if (pickupLocation != null) {
-        markers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
-      }
+    // Only update if changed to avoid unnecessary rebuilds
+    if (!_setEquals(markers, newMarkers) ||
+        !_setEquals(polylines, newPolylines)) {
+      markers = newMarkers;
+      polylines = newPolylines;
+    }
+  }
 
-      if (destinationLocation != null) {
-        markers.add(
-          MapHelper.createDestinationMarker(destinationLocation.latLng),
-        );
-      }
-
-      if (rideState.routePoints.isNotEmpty) {
-        polylines.add(MapHelper.createRoutePolyline(rideState.routePoints));
-      }
-    });
+  /// Helper to compare sets
+  bool _setEquals<T>(Set<T> a, Set<T> b) {
+    if (a.length != b.length) return false;
+    for (final item in a) {
+      if (!b.contains(item)) return false;
+    }
+    return true;
   }
 
   void _clearMapMarkers() {
-    markers.clear();
-    polylines.clear();
+    markers = {};
+    polylines = {};
   }
 
   // fill scheduling details bottomsheet

@@ -15,18 +15,18 @@ import '../../provider/ride_notifier.dart';
 import '../../provider/user_notifier.dart';
 import '../../model/location_model.dart';
 
-class PickLocationRoute extends ConsumerStatefulWidget {
-  const PickLocationRoute({super.key});
+class PickLocationScreen extends ConsumerStatefulWidget {
+  const PickLocationScreen({super.key});
 
   @override
-  ConsumerState<PickLocationRoute> createState() =>
-      _LocationSearchScreenState();
+  ConsumerState<PickLocationScreen> createState() => _PickLocationScreenState();
 }
 
-class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
+class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
   final _pickupController = TextEditingController();
   final _destinationController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
+  List<LocationModel> _recentLocations = [];
   bool _isSearching = false;
   bool _isCurrentLocationField = false;
   Timer? _debounceTimer;
@@ -40,7 +40,21 @@ class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setCurrentLocationBtnVisiblity();
       _setCurrentLocation();
+      _loadRecentLocations();
     });
+  }
+
+  Future<void> _loadRecentLocations() async {
+    final recentLocationsService = ref.read(recentLocationsServiceProvider);
+    final locations = await recentLocationsService.getRecentLocations();
+    setState(() {
+      _recentLocations = locations;
+    });
+  }
+
+  Future<void> _saveRecentLocation(LocationModel location) async {
+    final recentLocationsService = ref.read(recentLocationsServiceProvider);
+    await recentLocationsService.addRecentLocation(location);
   }
 
   void _setCurrentLocationBtnVisiblity() {
@@ -160,6 +174,9 @@ class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
       address: place['address'],
     );
 
+    // Save to recent locations
+    _saveRecentLocation(location);
+
     // Update the text field with selected address
     if (_isCurrentLocationField) {
       _pickupController.text = place['name'];
@@ -177,11 +194,23 @@ class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
     _checkAndPopIfBothLocationsSelected();
   }
 
+  void _selectRecentLocation(LocationModel location) {
+    // Update the text field with selected address
+    if (_isCurrentLocationField || focusNode1.hasFocus) {
+      _pickupController.text = location.name ?? location.address ?? '';
+      ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
+    } else {
+      _destinationController.text = location.name ?? location.address ?? '';
+      ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+    }
+
+    // Check if both locations are selected, then pop back to home
+    _checkAndPopIfBothLocationsSelected();
+  }
+
   void _checkAndPopIfBothLocationsSelected() {
     if (_pickupController.text.isNotEmpty &&
         _destinationController.text.isNotEmpty) {
-      // Both locations selected, pop back to home screen
-      // Fare is automatically calculated when both locations are set
       context.pop(true);
     }
   }
@@ -208,426 +237,435 @@ class _LocationSearchScreenState extends ConsumerState<PickLocationRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        // decoration: const BoxDecoration(
-        //   gradient: LinearGradient(
-        //     begin: Alignment.bottomCenter,
-        //     end: Alignment.topCenter,
-        //     colors: [
-        //       Color(0xff253B80),
-        //       Color(0xff253B80),
-        //       Color(0xff5490D0),
-        //       Color(0xff5C9EDC),
-        //     ],
-        //   ),
-        // ),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              // Header with back button
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.accent),
-                      onPressed: () => context.pop(),
-                    ),
-                    Expanded(
-                      child: Text(
-                        AppStrings.scheduleYourRideTitleTxt,
-                        textAlign: TextAlign.center,
-                        style: TextStyles.t1.copyWith(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const Gap(48),
-                  ],
-                ),
-              ),
-
-              // Current Location TextField
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Corners.hMd),
-                    color: AppColors.surface,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Header with back button
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.accent),
+                    onPressed: () => context.pop(),
                   ),
-                  height: Sizes.tfieldHeight,
-                  alignment: Alignment.center,
-                  child: TextField(
-                    controller: _pickupController,
-                    focusNode: focusNode1,
-                    onChanged: (value) {
-                      setState(() {
-                        _isCurrentLocationField = true;
-                      });
-                      _onSearchChanged(value);
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Corners.hMd),
-                        borderSide: BorderSide(color: AppColors.grey),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Corners.hMd),
-                        borderSide: BorderSide(
-                          color: AppColors.accent,
-                          width: 2,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Corners.hMd),
-                        borderSide: BorderSide(
-                          color: AppColors.accent,
-                          width: 2,
-                        ),
-                      ),
-                      prefixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Gap(16.0),
-                          LocationDotWidget(
-                            bgColor: AppColors.green400,
-                            isActive: _pickupController.text.isNotEmpty,
-                          ),
-                        ],
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                      hintText: 'Pickup Location',
-                      hintStyle: TextStyles.t2.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: FontSizes.s16,
-                      ),
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (_pickupController.text.isNotEmpty &&
-                              focusNode1.hasFocus)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.cancel,
-                                color: AppColors.textSecondary,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                _pickupController.clear();
-                                setState(() {
-                                  _searchResults = [];
-                                });
-                              },
-                            ),
-                          IconButton(
-                            onPressed: () => _navigateToAirports(true),
-                            icon: ImageIcon(
-                              AssetImage(AppAssets.flightIcon),
-                              color: AppColors.accent,
-                              size: 18,
-                            ),
-                          ),
-                        ],
+                  Expanded(
+                    child: Text(
+                      AppStrings.scheduleYourRideTitleTxt,
+                      textAlign: TextAlign.center,
+                      style: TextStyles.t1.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    style: TextStyles.t2.copyWith(
-                      color: AppColors.onAccent,
+                  ),
+                  const Gap(48),
+                ],
+              ),
+            ),
+
+            // Current Location TextField
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(Corners.hMd),
+                  color: AppColors.surface,
+                ),
+                height: Sizes.tfieldHeight,
+                alignment: Alignment.center,
+                child: TextField(
+                  controller: _pickupController,
+                  focusNode: focusNode1,
+                  onChanged: (value) {
+                    setState(() {
+                      _isCurrentLocationField = true;
+                    });
+                    _onSearchChanged(value);
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderSide: BorderSide(color: AppColors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderSide: BorderSide(color: AppColors.accent, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderSide: BorderSide(color: AppColors.accent, width: 2),
+                    ),
+                    prefixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Gap(16.0),
+                        LocationDotWidget(
+                          bgColor: AppColors.green400,
+                          isActive: _pickupController.text.isNotEmpty,
+                        ),
+                      ],
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    hintText: 'Pickup Location',
+                    hintStyle: TextStyles.t2.copyWith(
+                      color: AppColors.textSecondary,
                       fontSize: FontSizes.s16,
-                      fontWeight: FontWeight.w600,
                     ),
-                  ),
-                ),
-              ),
-
-              const Gap(16),
-
-              // Destination TextField
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Corners.hMd),
-                    color: AppColors.surface,
-                  ),
-                  height: Sizes.tfieldHeight,
-                  alignment: Alignment.center,
-                  child: TextField(
-                    controller: _destinationController,
-                    focusNode: focusNode2,
-                    autofocus: true,
-                    autocorrect: false,
-                    keyboardType: TextInputType.streetAddress,
-                    textInputAction: TextInputAction.done,
-                    textCapitalization: TextCapitalization.sentences,
-                    onChanged: (value) {
-                      setState(() {
-                        _isCurrentLocationField = false;
-                      });
-                      _onSearchChanged(value);
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Corners.hMd),
-                        borderSide: BorderSide(color: AppColors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Corners.hMd),
-                        borderSide: BorderSide(
-                          color: AppColors.accent,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                      hintText: 'Where to?',
-                      hintStyle: TextStyles.t2.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: FontSizes.s16,
-                      ),
-                      prefixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Gap(16.0),
-                          LocationDotWidget(
-                            bgColor: AppColors.accent,
-                            isActive: _destinationController.text.isNotEmpty,
-                          ),
-                        ],
-                      ),
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (_destinationController.text.isNotEmpty &&
-                              focusNode2.hasFocus)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.cancel,
-                                color: AppColors.textSecondary,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                _destinationController.clear();
-                                setState(() {
-                                  _searchResults = [];
-                                });
-                              },
-                            ),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (_pickupController.text.isNotEmpty &&
+                            focusNode1.hasFocus)
                           IconButton(
-                            onPressed: () => _navigateToAirports(false),
-                            icon: ImageIcon(
-                              AssetImage(AppAssets.flightIcon),
-                              color: AppColors.accent,
-                              size: 18,
+                            icon: const Icon(
+                              Icons.cancel,
+                              color: AppColors.textSecondary,
+                              size: 20,
                             ),
+                            onPressed: () {
+                              _pickupController.clear();
+                              setState(() {
+                                _searchResults = [];
+                              });
+                            },
                           ),
-                        ],
-                      ),
+                        IconButton(
+                          onPressed: () => _navigateToAirports(true),
+                          icon: ImageIcon(
+                            AssetImage(AppAssets.flightIcon),
+                            color: AppColors.accent,
+                            size: 18,
+                          ),
+                        ),
+                      ],
                     ),
-                    style: TextStyles.t2.copyWith(
-                      color: AppColors.onAccent,
-                      fontSize: FontSizes.s16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  ),
+                  style: TextStyles.t2.copyWith(
+                    color: AppColors.onAccent,
+                    fontSize: FontSizes.s16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
+            ),
 
-              const Gap(16),
+            const Gap(16),
 
-              // Search results section
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    _isSearching
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 30.0),
-                            child: Align(
-                              alignment: Alignment.topCenter,
-                              child: SizedBox.square(
-                                dimension: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.grey,
-                                ),
+            // Destination TextField
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(Corners.hMd),
+                  color: AppColors.surface,
+                ),
+                height: Sizes.tfieldHeight,
+                alignment: Alignment.center,
+                child: TextField(
+                  controller: _destinationController,
+                  focusNode: focusNode2,
+                  autofocus: true,
+                  autocorrect: false,
+                  keyboardType: TextInputType.streetAddress,
+                  textInputAction: TextInputAction.done,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (value) {
+                    setState(() {
+                      _isCurrentLocationField = false;
+                    });
+                    _onSearchChanged(value);
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderSide: BorderSide(color: AppColors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderSide: BorderSide(color: AppColors.accent, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    hintText: 'Where to?',
+                    hintStyle: TextStyles.t2.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: FontSizes.s16,
+                    ),
+                    prefixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Gap(16.0),
+                        LocationDotWidget(
+                          bgColor: AppColors.accent,
+                          isActive: _destinationController.text.isNotEmpty,
+                        ),
+                      ],
+                    ),
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (_destinationController.text.isNotEmpty &&
+                            focusNode2.hasFocus)
+                          IconButton(
+                            icon: const Icon(
+                              Icons.cancel,
+                              color: AppColors.textSecondary,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _destinationController.clear();
+                              setState(() {
+                                _searchResults = [];
+                              });
+                            },
+                          ),
+                        IconButton(
+                          onPressed: () => _navigateToAirports(false),
+                          icon: ImageIcon(
+                            AssetImage(AppAssets.flightIcon),
+                            color: AppColors.accent,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  style: TextStyles.t2.copyWith(
+                    color: AppColors.onAccent,
+                    fontSize: FontSizes.s16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+
+            const Gap(16),
+
+            // Search results section
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  _isSearching
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 30.0),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.grey,
                               ),
                             ),
-                          )
-                        : _searchResults.isEmpty
-                        ? SizedBox.shrink()
-                        : SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                // ListView.separated(
-                                //   padding: EdgeInsets.zero,
-                                //   separatorBuilder: (_, __) => const Divider(),
-                                //   itemCount: _searchResults.length,
-                                //   shrinkWrap: true,
-                                //   physics: const NeverScrollableScrollPhysics(),
-                                //   itemBuilder: (_, index) {
-                                //     final place = _searchResults[index];
-                                //     return ListTile(
-                                //       leading: ImageIcon(
-                                //         place['type']?.toLowerCase() ==
-                                //                 'airport'
-                                //             ? const AssetImage(
-                                //                 AppAssets.flightIcon,
-                                //               )
-                                //             : const AssetImage(
-                                //                 AppAssets.locationIcon,
-                                //               ),
-                                //         color: AppColors.greyStrong,
-                                //         size: 18,
-                                //       ),
-                                //       title: Text(
-                                //         place['name'] ?? '',
-                                //         style: TextStyles.t2.copyWith(
-                                //           fontSize: FontSizes.s15,
-                                //           fontWeight: FontWeight.w600,
-                                //         ),
-                                //       ),
-                                //       subtitle: Text(
-                                //         place['address'] ?? '',
-                                //         style: TextStyles.t2.copyWith(
-                                //           fontSize: FontSizes.s13,
-                                //         ),
-                                //       ),
-                                //       onTap: () => _selectLocation(place),
-                                //     );
-                                //   },
-                                // ),
-                                ...ListTile.divideTiles(
-                                  color: Colors.grey.shade400,
-                                  tiles: [
-                                    ...List.generate(_searchResults.length, (
-                                      index,
-                                    ) {
-                                      final place = _searchResults[index];
-                                      return ListTile(
+                          ),
+                        )
+                      : _searchResults.isEmpty
+                      ? SizedBox.shrink()
+                      : SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              // ListView.separated(
+                              //   padding: EdgeInsets.zero,
+                              //   separatorBuilder: (_, __) => const Divider(),
+                              //   itemCount: _searchResults.length,
+                              //   shrinkWrap: true,
+                              //   physics: const NeverScrollableScrollPhysics(),
+                              //   itemBuilder: (_, index) {
+                              //     final place = _searchResults[index];
+                              //     return ListTile(
+                              //       leading: ImageIcon(
+                              //         place['type']?.toLowerCase() ==
+                              //                 'airport'
+                              //             ? const AssetImage(
+                              //                 AppAssets.flightIcon,
+                              //               )
+                              //             : const AssetImage(
+                              //                 AppAssets.locationIcon,
+                              //               ),
+                              //         color: AppColors.greyStrong,
+                              //         size: 18,
+                              //       ),
+                              //       title: Text(
+                              //         place['name'] ?? '',
+                              //         style: TextStyles.t2.copyWith(
+                              //           fontSize: FontSizes.s15,
+                              //           fontWeight: FontWeight.w600,
+                              //         ),
+                              //       ),
+                              //       subtitle: Text(
+                              //         place['address'] ?? '',
+                              //         style: TextStyles.t2.copyWith(
+                              //           fontSize: FontSizes.s13,
+                              //         ),
+                              //       ),
+                              //       onTap: () => _selectLocation(place),
+                              //     );
+                              //   },
+                              // ),
+                              ...ListTile.divideTiles(
+                                color: Colors.grey.shade400,
+                                tiles: [
+                                  ...List.generate(_searchResults.length, (
+                                    index,
+                                  ) {
+                                    final place = _searchResults[index];
+                                    return ListTile(
+                                      leading: ImageIcon(
+                                        place['type']?.toLowerCase() ==
+                                                'airport'
+                                            ? const AssetImage(
+                                                AppAssets.flightIcon,
+                                              )
+                                            : const AssetImage(
+                                                AppAssets.locationIcon,
+                                              ),
+                                        color: AppColors.greyStrong,
+                                        size: 18,
+                                      ),
+                                      title: Text(
+                                        place['name'] ?? '',
+                                        style: TextStyles.t2.copyWith(
+                                          fontSize: FontSizes.s15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        place['address'] ?? '',
+                                        style: TextStyles.t2.copyWith(
+                                          fontSize: FontSizes.s13,
+                                        ),
+                                      ),
+                                      onTap: () => _selectLocation(place),
+                                    );
+                                  }),
+
+                                  // Show Cached Recent locations if there are any
+                                  if (_searchResults.isEmpty &&
+                                      _recentLocations.isNotEmpty)
+                                    ..._recentLocations.map(
+                                      (location) => ListTile(
                                         leading: ImageIcon(
-                                          place['type']?.toLowerCase() ==
-                                                  'airport'
-                                              ? const AssetImage(
-                                                  AppAssets.flightIcon,
-                                                )
-                                              : const AssetImage(
-                                                  AppAssets.locationIcon,
-                                                ),
+                                          const AssetImage(
+                                            AppAssets.locationIcon,
+                                          ),
                                           color: AppColors.greyStrong,
                                           size: 18,
                                         ),
                                         title: Text(
-                                          place['name'] ?? '',
+                                          location.name ?? 'Unknown',
                                           style: TextStyles.t2.copyWith(
                                             fontSize: FontSizes.s15,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                         subtitle: Text(
-                                          place['address'] ?? '',
+                                          location.address ?? '',
                                           style: TextStyles.t2.copyWith(
                                             fontSize: FontSizes.s13,
                                           ),
                                         ),
-                                        onTap: () => _selectLocation(place),
-                                      );
-                                    }),
-                                    // show current location button
-                                    if (_showCurrentLocationBtn)
-                                      Material(
-                                        clipBehavior: Clip.hardEdge,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            Corners.md,
-                                          ),
+                                        // trailing: Icon(
+                                        //   Icons.history,
+                                        //   color: AppColors.greyStrong,
+                                        //   size: 18,
+                                        // ),
+                                        onTap: () =>
+                                            _selectRecentLocation(location),
+                                      ),
+                                    ),
+
+                                  // show current location button
+                                  if (_showCurrentLocationBtn)
+                                    Material(
+                                      clipBehavior: Clip.hardEdge,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          Corners.md,
                                         ),
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          onTap: () {
-                                            final userState = ref.read(
-                                              userNotifierProvider,
-                                            );
-                                            if (userState.currentLocation !=
-                                                null) {
-                                              final address =
-                                                  userState
-                                                      .currentLocation!
-                                                      .name ??
-                                                  'Current Location';
+                                      ),
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          final userState = ref.read(
+                                            userNotifierProvider,
+                                          );
+                                          if (userState.currentLocation !=
+                                              null) {
+                                            final address =
+                                                userState
+                                                    .currentLocation!
+                                                    .name ??
+                                                'Current Location';
 
-                                              if (focusNode1.hasFocus) {
-                                                _pickupController.text =
-                                                    address;
+                                            if (focusNode1.hasFocus) {
+                                              _pickupController.text = address;
 
-                                                ref
-                                                    .read(
-                                                      rideNotifierProvider
-                                                          .notifier,
-                                                    )
-                                                    .setPickupLocation(
-                                                      userState
-                                                          .currentLocation!,
-                                                    );
-                                              } else if (focusNode2.hasFocus) {
-                                                _destinationController.text =
-                                                    address;
-                                                ref
-                                                    .read(
-                                                      rideNotifierProvider
-                                                          .notifier,
-                                                    )
-                                                    .setDestinationLocation(
-                                                      userState
-                                                          .currentLocation!,
-                                                    );
-                                              }
-
-                                              // Check if both locations are selected
-                                              _checkAndPopIfBothLocationsSelected();
+                                              ref
+                                                  .read(
+                                                    rideNotifierProvider
+                                                        .notifier,
+                                                  )
+                                                  .setPickupLocation(
+                                                    userState.currentLocation!,
+                                                  );
+                                            } else if (focusNode2.hasFocus) {
+                                              _destinationController.text =
+                                                  address;
+                                              ref
+                                                  .read(
+                                                    rideNotifierProvider
+                                                        .notifier,
+                                                  )
+                                                  .setDestinationLocation(
+                                                    userState.currentLocation!,
+                                                  );
                                             }
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: AppColors.accent
-                                                        .withValues(alpha: 0.1),
-                                                  ),
-                                                  padding: EdgeInsets.all(4),
-                                                  child: Icon(
-                                                    Icons.my_location,
-                                                    size: 24,
-                                                    color: AppColors.accent,
-                                                  ),
+                                            // Check if both locations are selected
+                                            _checkAndPopIfBothLocationsSelected();
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: AppColors.accent
+                                                      .withValues(alpha: 0.1),
                                                 ),
-                                                Gap(10.0),
-                                                Text(
-                                                  'Current location',
-                                                  style: TextStyles.t1.copyWith(
-                                                    fontSize: 16.0,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
+                                                padding: EdgeInsets.all(4),
+                                                child: Icon(
+                                                  Icons.my_location,
+                                                  size: 24,
+                                                  color: AppColors.accent,
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                              Gap(10.0),
+                                              Text(
+                                                'Current location',
+                                                style: TextStyles.t1.copyWith(
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                    ),
+                                ],
+                              ),
+                            ],
                           ),
-                  ],
-                ),
+                        ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

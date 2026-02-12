@@ -1,5 +1,6 @@
 import 'package:drup/features/auth/repository/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/cache/cache_manager.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/location_service.dart';
 import '../data/services/google_maps_service.dart';
@@ -7,6 +8,7 @@ import '../data/services/ride_service.dart';
 import '../features/passenger/repository/user_repository.dart';
 import '../features/drivers/repository/driver_repository.dart';
 import '../features/passenger/repository/ride_repository.dart';
+import '../features/passenger/service/recent_locations_service.dart';
 
 // ============================================================================
 // Service Providers (Singletons)
@@ -26,6 +28,10 @@ final googleMapsServiceProvider = Provider<GoogleMapsService>((ref) {
 
 final rideServiceProvider = Provider<RideService>((ref) {
   return RideService();
+});
+
+final recentLocationsServiceProvider = Provider<RecentLocationsService>((ref) {
+  return RecentLocationsService(CacheManager.instance);
 });
 
 // ============================================================================

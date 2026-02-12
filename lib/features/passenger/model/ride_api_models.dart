@@ -6,22 +6,26 @@ import 'package:equatable/equatable.dart';
 
 /// Location object for ride requests
 class RideLocation extends Equatable {
+  final String name;
   final String address;
   final RideCoordinates coordinates;
   final String? placeId;
-  final String? city;
-  final String? state;
+  ////////////////
+  String? city = '';
+  String? state = '';
 
-  const RideLocation({
+  RideLocation({
     required this.address,
+    required this.name,
     required this.coordinates,
     this.placeId,
-    this.city,
-    this.state,
-  });
+  }) : city = address.split(',').length > 1 ? address.split(',')[1].trim() : '',
+       state = address.split(',').length > 2
+           ? address.split(',')[2].trim()
+           : '';
 
   Map<String, dynamic> toJson() => {
-    'address': address,
+    'address': name,
     'coordinates': coordinates.toJson(),
     if (placeId != null) 'placeId': placeId,
     if (city != null) 'city': city,
@@ -49,11 +53,12 @@ class RideLocation extends Equatable {
     }
 
     return RideLocation(
-      address: json['address'] as String? ?? '',
+      name: json['address'] as String? ?? '',
       coordinates: coordinates,
       placeId: json['placeId'] as String?,
-      city: json['city'] as String?,
-      state: json['state'] as String?,
+      address: '${json['city'] ?? ''}, ${json['state'] ?? ''}'
+          .trim()
+          .replaceAll(RegExp(r'^,|,$'), ''),
     );
   }
 
@@ -363,22 +368,16 @@ class BookRideRequest extends Equatable {
   final RideLocation pickup;
   final RideLocation dropoff;
   final String? slotId; // For shared rides
-  final String vehicleType;
-  final String paymentMethod;
+  final String rideType;
   final DateTime? scheduledTime;
-  final String? promoCode;
-  final String? userNotes;
   final List<RideLocation>? stops;
 
   const BookRideRequest({
     required this.pickup,
     required this.dropoff,
     this.slotId,
-    required this.vehicleType,
-    required this.paymentMethod,
+    required this.rideType,
     this.scheduledTime,
-    this.promoCode,
-    this.userNotes,
     this.stops,
   });
 
@@ -386,12 +385,9 @@ class BookRideRequest extends Equatable {
     'pickup': pickup.toJson(),
     'dropoff': dropoff.toJson(),
     if (slotId != null) 'slotId': slotId,
-    'vehicleType': vehicleType,
-    'paymentMethod': paymentMethod,
+    'rideType': rideType,
     if (scheduledTime != null)
       'scheduledTime': scheduledTime!.toIso8601String(),
-    if (promoCode != null) 'promoCode': promoCode,
-    if (userNotes != null) 'userNotes': userNotes,
     if (stops != null && stops!.isNotEmpty)
       'stops': stops!.map((s) => {'location': s.toJson()}).toList(),
   };
@@ -401,11 +397,8 @@ class BookRideRequest extends Equatable {
     pickup,
     dropoff,
     slotId,
-    vehicleType,
-    paymentMethod,
+    rideType,
     scheduledTime,
-    promoCode,
-    userNotes,
     stops,
   ];
 }

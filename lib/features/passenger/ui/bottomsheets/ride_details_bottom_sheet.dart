@@ -145,10 +145,20 @@ class RideDetailsBottomSheet extends StatelessWidget {
         Gap(30),
 
         // Schedule Ride Button
+        // CustomButton(
+        //   text: 'Schedule Ride',
+        //   onPressed: estimate != null ? onScheduleRide : () {},
+        //   // onPressed: onScheduleRide,
+        //   textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
+        //   icon: ImageIcon(
+        //     AssetImage(AppAssets.scheduleIcon),
+        //     size: 20,
+        //     color: AppColors.white,
+        //   ),
+        // ),
         CustomButton(
-          text: 'Schedule Ride',
-          onPressed: estimate != null ? onScheduleRide : () {},
-          // onPressed: onScheduleRide,
+          text: 'Calculate Estimate',
+          onPressed: onScheduleRide,
           textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
           icon: ImageIcon(
             AssetImage(AppAssets.scheduleIcon),

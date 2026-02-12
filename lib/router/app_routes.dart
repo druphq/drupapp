@@ -218,7 +218,7 @@ class AppScreens {
     path: AppRoutes.pickLocationRoute,
     pageBuilder: (context, state) => slideUpTransitionPage(
       key: state.pageKey,
-      child: const PickLocationRoute(),
+      child: const PickLocationScreen(),
     ),
   );
 

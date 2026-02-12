@@ -52,8 +52,14 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
               pickupLocation: pickupLocation!.name ?? '',
               destinationLocation: destinationLocation!.name ?? '',
               isLoading: rideState.isLoading,
-              estimate: rideState.fareEstimates[0],
-              onScheduleRide: widget.onScheduleRide,
+              estimate: rideState.fareEstimates.isNotEmpty
+                  ? rideState.fareEstimates[0]
+                  : null,
+              // onScheduleRide: widget.onScheduleRide,
+              onScheduleRide: () {
+                ref.read(rideNotifierProvider.notifier).calculateFare();
+              },
+
               onCancelRide: () {
                 ref.read(rideNotifierProvider.notifier).clearRoute();
               },

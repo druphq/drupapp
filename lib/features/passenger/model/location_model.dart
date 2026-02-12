@@ -6,10 +6,12 @@ class LocationModel extends Equatable {
   final double longitude;
   final String? name;
   final String? address;
+  final String? placeId;
 
   const LocationModel({
     required this.latitude,
     required this.longitude,
+    this.placeId,
     this.name,
     this.address,
   });
@@ -20,6 +22,7 @@ class LocationModel extends Equatable {
     return {
       'latitude': latitude,
       'longitude': longitude,
+      'placeId': placeId,
       'name': name,
       'address': address,
     };
@@ -29,6 +32,7 @@ class LocationModel extends Equatable {
     return LocationModel(
       latitude: json['latitude'] as double,
       longitude: json['longitude'] as double,
+      placeId: json['placeId'] as String?,
       name: json['name'] as String?,
       address: json['address'] as String?,
     );
@@ -38,16 +42,18 @@ class LocationModel extends Equatable {
     double? latitude,
     double? longitude,
     String? address,
+    String? placeId,
     String? name,
   }) {
     return LocationModel(
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       address: address ?? this.address,
+      placeId: placeId ?? this.placeId,
       name: name ?? this.name,
     );
   }
 
   @override
-  List<Object?> get props => [latitude, longitude, name, address];
+  List<Object?> get props => [latitude, longitude, name, address, placeId];
 }

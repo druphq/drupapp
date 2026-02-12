@@ -67,7 +67,8 @@ class DioClient {
     _dio.interceptors.add(ErrorInterceptor());
 
     // 2. Connectivity check - fails fast if no network
-    _dio.interceptors.add(ConnectivityInterceptor());
+    // TODO: Re-enable after testing - can give false negatives on simulators
+    // _dio.interceptors.add(ConnectivityInterceptor());
 
     // 3. Auth interceptor - adds authentication token
     _dio.interceptors.add(AuthInterceptor(cacheManager: _cacheManager));
