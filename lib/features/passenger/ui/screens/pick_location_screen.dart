@@ -442,8 +442,6 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
               ),
             ),
 
-            const Gap(16),
-
             // Search results section
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -462,49 +460,10 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                             ),
                           ),
                         )
-                      : _searchResults.isEmpty
-                      ? SizedBox.shrink()
                       : SingleChildScrollView(
+                          padding: EdgeInsets.only(top: 16.0),
                           child: Column(
                             children: [
-                              // ListView.separated(
-                              //   padding: EdgeInsets.zero,
-                              //   separatorBuilder: (_, __) => const Divider(),
-                              //   itemCount: _searchResults.length,
-                              //   shrinkWrap: true,
-                              //   physics: const NeverScrollableScrollPhysics(),
-                              //   itemBuilder: (_, index) {
-                              //     final place = _searchResults[index];
-                              //     return ListTile(
-                              //       leading: ImageIcon(
-                              //         place['type']?.toLowerCase() ==
-                              //                 'airport'
-                              //             ? const AssetImage(
-                              //                 AppAssets.flightIcon,
-                              //               )
-                              //             : const AssetImage(
-                              //                 AppAssets.locationIcon,
-                              //               ),
-                              //         color: AppColors.greyStrong,
-                              //         size: 18,
-                              //       ),
-                              //       title: Text(
-                              //         place['name'] ?? '',
-                              //         style: TextStyles.t2.copyWith(
-                              //           fontSize: FontSizes.s15,
-                              //           fontWeight: FontWeight.w600,
-                              //         ),
-                              //       ),
-                              //       subtitle: Text(
-                              //         place['address'] ?? '',
-                              //         style: TextStyles.t2.copyWith(
-                              //           fontSize: FontSizes.s13,
-                              //         ),
-                              //       ),
-                              //       onTap: () => _selectLocation(place),
-                              //     );
-                              //   },
-                              // ),
                               ...ListTile.divideTiles(
                                 color: Colors.grey.shade400,
                                 tiles: [
