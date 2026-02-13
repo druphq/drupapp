@@ -304,6 +304,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           _animateCameraToRoute();
                         }
                       },
+                      onCancelRide: _onMyLocationButtonPressed,
                       onScheduleRide: _scheduleRideBottomsheet,
                     ),
                   ),
@@ -316,10 +317,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               RideSearchBottomSheet(
                 onClose: () {
                   setState(() {
-                    _clearMapMarkers();
                     _showRideSearchSheet = false;
                   });
-                  _onMyLocationButtonPressed();
                 },
               ),
 

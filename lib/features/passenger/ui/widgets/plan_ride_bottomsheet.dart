@@ -9,10 +9,12 @@ import 'package:gap/gap.dart';
 class PlanRideBottomsheet extends ConsumerStatefulWidget {
   final VoidCallback? onWhereToTap;
   final VoidCallback? onScheduleRide;
+  final VoidCallback? onCancelRide;
   const PlanRideBottomsheet({
     super.key,
     this.onWhereToTap,
     this.onScheduleRide,
+    this.onCancelRide,
   });
 
   @override
@@ -61,6 +63,7 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
               },
 
               onCancelRide: () {
+                widget.onCancelRide?.call();
                 ref.read(rideNotifierProvider.notifier).clearRoute();
               },
             ),
