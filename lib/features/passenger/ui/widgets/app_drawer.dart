@@ -9,9 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:drup/router/app_router.dart';
 import '../../provider/user_notifier.dart';
-import '../../../auth/provider/auth_notifier.dart';
 import 'package:drup/utils/extension.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -24,212 +22,198 @@ class AppDrawer extends ConsumerWidget {
 
     return Drawer(
       backgroundColor: AppColors.surface,
-      child: Container(
-        // decoration: BoxDecoration(
-        //   gradient: LinearGradient(
-        //     begin: Alignment.topCenter,
-        //     end: Alignment.bottomCenter,
-        //     colors: [Color(0xff253B80), Color(0xff5490D0)],
-        //   ),
-        // ),
-        child: SafeArea(
-          top: false,
-          bottom: false,
-          child: Column(
-            children: [
-              // Profile Header
-              Container(
+      child: SafeArea(
+        top: false,
+        bottom: false,
+        child: Column(
+          children: [
+            // Profile Header
+            Container(
+              clipBehavior: Clip.hardEdge,
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(15.0),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 70, right: 24),
+                    child: GestureDetector(
+                      onTap: () {
+                        // Navigate to profile screen
+                        context.push(AppRoutes.accountRoute);
+                      },
+                      child: Row(
+                        children: [
+                          // Profile Image Placeholder
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.accent.withOpacity(0.1),
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: AppColors.grey,
+                            ),
+                          ),
+                          Gap(14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userName,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyles.t1.copyWith(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  'My Account',
+                                  style: TextStyles.t1.copyWith(
+                                    fontSize: FontSizes.s14,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Gap(16.0),
+
+                  Row(
+                    children: [
+                      Icon(Icons.star, size: 20, color: AppColors.accent),
+                      Gap(4.0),
+                      Text(
+                        '4.5',
+                        style: TextStyles.t1.copyWith(fontSize: FontSizes.s16),
+                      ),
+                      Gap(4.0),
+                      Text(
+                        'Rating',
+                        style: TextStyles.t1.copyWith(fontSize: FontSizes.s14),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Gap(10.0),
+            // Menu Items
+            Expanded(
+              child: Container(
                 clipBehavior: Clip.hardEdge,
-                padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(15.0),
+                    top: Radius.circular(15.0),
                   ),
                 ),
+                padding: EdgeInsets.only(top: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 70, right: 24),
-                      child: GestureDetector(
-                        onTap: () {
-                          // Navigate to profile screen
-                          context.push(AppRoutes.accountRoute);
-                        },
-                        child: Row(
-                          children: [
-                            // Profile Image Placeholder
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.accent.withOpacity(0.1),
-                              ),
-                              child: Icon(
-                                Icons.person,
-                                size: 30,
-                                color: AppColors.grey,
-                              ),
-                            ),
-                            Gap(14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    userName,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: TextStyles.t1.copyWith(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  Text(
-                                    'My Account',
-                                    style: TextStyles.t1.copyWith(
-                                      fontSize: FontSizes.s14,
-                                      color: AppColors.accent,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                          ],
-                        ),
+                    Expanded(
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          _buildDrawerItem(
+                            icon: AppAssets.scheduleIcon,
+                            title: 'My Rides',
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.push(AppRoutes.rideHistoryRoute);
+                            },
+                          ),
+                          _buildDrawerItem(
+                            icon: AppAssets.messageIcon,
+                            title: 'Messages',
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.push(AppRoutes.messagesRoute);
+                            },
+                          ),
+
+                          _buildDrawerItem(
+                            icon: AppAssets.walletIcon,
+                            title: 'Payments',
+                            onTap: () {
+                              Navigator.pop(context);
+                              // context.push(AppRoutes.paymentsRoute);
+                            },
+                          ),
+
+                          _buildDrawerItem(
+                            icon: AppAssets.supportIcon,
+                            title: 'Support',
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.push(AppRoutes.supportRoute);
+                            },
+                          ),
+                          _buildDrawerItem(
+                            icon: AppAssets.infoIcon,
+                            title: 'About',
+                            onTap: () {
+                              Navigator.pop(context);
+                              context.push(AppRoutes.aboutRoute);
+                            },
+                          ),
+                          // _buildDrawerItem(
+                          //   icon: AppAssets.exitIcon,
+                          //   title: 'Logout',
+                          //   onTap: () {
+                          //     // Capture auth notifier before closing drawer
+                          //     final authNotifier = ref.read(
+                          //       authNotifierProvider.notifier,
+                          //     );
+                          //   },
+                          // ),
+                          // _buildDrawerItem(
+                          //   icon: AppAssets.deleteIcon,
+                          //   title: 'Delete Account',
+                          //   textColor: Colors.red[300],
+                          //   onTap: () {
+                          //     Navigator.pop(context);
+                          //     _showDeleteAccountDialog(context);
+                          //   },
+                          // ),
+                        ],
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: CustomButton(
+                        text: 'Driver Mode',
+                        onPressed: () {
+                          final userRepo = ref.read(userRepositoryProvider);
+                          userRepo.storeUserMode(AppStrings.driverMode);
 
-                    Gap(16.0),
-
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 20, color: AppColors.accent),
-                        Gap(4.0),
-                        Text(
-                          '4.5',
-                          style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s16,
-                          ),
-                        ),
-                        Gap(4.0),
-                        Text(
-                          'Rating',
-                          style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s14,
-                          ),
-                        ),
-                      ],
+                          context.go(AppRoutes.splashRoute);
+                        },
+                      ),
                     ),
+                    Gap(50.0),
                   ],
                 ),
               ),
-              Gap(10.0),
-              // Menu Items
-              Expanded(
-                child: Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(15.0),
-                    ),
-                  ),
-                  padding: EdgeInsets.only(top: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: ListView(
-                          padding: EdgeInsets.zero,
-                          children: [
-                            _buildDrawerItem(
-                              icon: AppAssets.historyIcon,
-                              title: 'Ride History',
-                              onTap: () {
-                                Navigator.pop(context);
-                                context.push(AppRoutes.rideHistoryRoute);
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.messageIcon,
-                              title: 'Messages',
-                              onTap: () {
-                                Navigator.pop(context);
-                                context.push(AppRoutes.messagesRoute);
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.supportIcon,
-                              title: 'Support',
-                              onTap: () {
-                                Navigator.pop(context);
-                                context.push(AppRoutes.supportRoute);
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.infoIcon,
-                              title: 'About',
-                              onTap: () {
-                                Navigator.pop(context);
-                                context.push(AppRoutes.aboutRoute);
-                              },
-                            ),
-                            _buildDrawerItem(
-                              icon: AppAssets.exitIcon,
-                              title: 'Logout',
-                              onTap: () {
-                                // Capture auth notifier before closing drawer
-                                final authNotifier = ref.read(
-                                  authNotifierProvider.notifier,
-                                );
-
-                                // Close drawer first
-                                Navigator.pop(context);
-
-                                // Show confirmation and handle logout
-                                _handleLogout(context, authNotifier);
-                              },
-                            ),
-                            // _buildDrawerItem(
-                            //   icon: AppAssets.deleteIcon,
-                            //   title: 'Delete Account',
-                            //   textColor: Colors.red[300],
-                            //   onTap: () {
-                            //     Navigator.pop(context);
-                            //     _showDeleteAccountDialog(context);
-                            //   },
-                            // ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: CustomButton(
-                          text: 'Driver Mode',
-                          onPressed: () {
-                            final userRepo = ref.read(userRepositoryProvider);
-                            userRepo.storeUserMode(AppStrings.driverMode);
-
-                            context.go(AppRoutes.splashRoute);
-                          },
-                        ),
-                      ),
-                      Gap(50.0),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -245,70 +229,18 @@ class AppDrawer extends ConsumerWidget {
       leading: Image.asset(
         icon,
         color: textColor ?? AppColors.accent,
-        width: 24,
-        height: 24,
+        width: 18,
+        height: 18,
       ),
-      title: Text(title, style: TextStyles.h3.copyWith(fontSize: 18)),
+      title: Text(
+        title,
+        style: TextStyles.t2.copyWith(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
       onTap: onTap,
     );
-  }
-
-  void _handleLogout(BuildContext context, AuthNotifier authNotifier) async {
-    // Show confirmation dialog
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          'Logout',
-          style: TextStyles.t3.copyWith(
-            fontSize: FontSizes.s20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: TextStyles.h3.copyWith(
-            fontSize: FontSizes.s14,
-            color: AppColors.surface500,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(
-              'Cancel',
-              style: TextStyles.t2.copyWith(
-                fontSize: FontSizes.s16,
-                color: AppColors.accentLight,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(
-              'Logout',
-              style: TextStyles.t2.copyWith(
-                fontSize: FontSizes.s16,
-                color: AppColors.accentLight,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    // Check if user confirmed logout
-    if (shouldLogout == true) {
-      // Perform logout using the captured notifier
-      authNotifier.logout();
-
-      // Use root navigator context for navigation
-      final navigatorContext = rootNavigator.currentContext;
-      if (navigatorContext != null && navigatorContext.mounted) {
-        // Navigate to login screen
-        Navigator.popUntil(navigatorContext, (route) => route.isFirst);
-      }
-    }
   }
 
   // void _showDeleteAccountDialog(BuildContext context) {

@@ -1,3 +1,4 @@
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -23,7 +24,6 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -33,9 +33,10 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
+        scrolledUnderElevation: 0.0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           children: [
             // App Logo and Info
@@ -44,16 +45,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
                 color: AppColors.accent,
-                shape: BoxShape.circle,
+                shape: BoxShape.rectangle,
               ),
-              child: Text(
-                AppStrings.appNameTxt.substring(0, 1).toUpperCase(),
-                style: TextStyles.t1.copyWith(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              child: Image.asset(AppAssets.drupLogoIcon, width: 60, height: 60),
             ),
             const Gap(16),
             Text(
@@ -73,7 +67,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
             ),
             const Gap(8),
             Text(
-              'Your reliable ride-hailing companion',
+              'Your reliable airports ride booking companion',
               style: TextStyles.t2.copyWith(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -92,11 +86,14 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
             const Gap(16),
 
             // Legal Section
-            Text(
-              'Legal',
-              style: TextStyles.t1.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Legal',
+                style: TextStyles.t1.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const Gap(12),
@@ -111,6 +108,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 );
               },
             ),
+
+            _buildDivider(),
+
             _buildLinkTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
@@ -120,6 +120,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 );
               },
             ),
+
+            _buildDivider(),
+
             _buildLinkTile(
               icon: Icons.gavel_outlined,
               title: 'Licenses',
@@ -131,17 +134,24 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 );
               },
             ),
+
+            _buildDivider(),
+
             const Gap(24),
 
             // Connect Section
-            Text(
-              'Connect With Us',
-              style: TextStyles.t1.copyWith(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Connect With Us',
+                style: TextStyles.t1.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const Gap(12),
+
             _buildLinkTile(
               icon: Icons.language_outlined,
               title: 'Website',
@@ -151,6 +161,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 );
               },
             ),
+
+            _buildDivider(),
+
             _buildLinkTile(
               icon: Icons.star_outline,
               title: 'Rate Us on App Store',
@@ -160,6 +173,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 ).showSnackBar(const SnackBar(content: Text('Coming soon!')));
               },
             ),
+
+            _buildDivider(),
+
             _buildLinkTile(
               icon: Icons.share_outlined,
               title: 'Share App',
@@ -179,14 +195,6 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 color: AppColors.textLight,
               ),
             ),
-            const Gap(4),
-            Text(
-              'Made with ❤️ in Nigeria',
-              style: TextStyles.t2.copyWith(
-                fontSize: 12,
-                color: AppColors.textLight,
-              ),
-            ),
             const Gap(20),
           ],
         ),
@@ -195,36 +203,31 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
   }
 
   Widget _buildInfoCard({required String title, required String content}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyles.t1.copyWith(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyles.t1.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
-          const Gap(8),
-          Text(
-            content,
-            style: TextStyles.t2.copyWith(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
+        ),
+        const Gap(8),
+        Text(
+          content,
+          style: TextStyles.t2.copyWith(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            height: 1.5,
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(height: 1, color: AppColors.divider);
   }
 
   Widget _buildLinkTile({
@@ -232,37 +235,22 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
     required String title,
     required VoidCallback onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(icon, color: AppColors.accent, size: 20),
+      title: Text(
+        title,
+        style: TextStyles.t1.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.accent.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.accent, size: 20),
-        ),
-        title: Text(
-          title,
-          style: TextStyles.t1.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: AppColors.textSecondary,
-        ),
-        onTap: onTap,
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: AppColors.textSecondary,
       ),
+      onTap: onTap,
     );
   }
 }

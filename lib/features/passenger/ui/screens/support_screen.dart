@@ -13,7 +13,6 @@ class SupportScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -23,6 +22,7 @@ class SupportScreen extends ConsumerWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
+        scrolledUnderElevation: 0.0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -94,18 +94,27 @@ class SupportScreen extends ConsumerWidget {
               'Enter your pickup and destination locations on the home screen, '
                   'select your preferred vehicle type, and confirm your booking.',
             ),
+
+            _buildDivider(),
+
             _buildFAQItem(
               context,
               'How do I cancel a ride?',
               'You can cancel a ride from the ride status screen. '
                   'Note that cancellation fees may apply depending on the timing.',
             ),
+
+            _buildDivider(),
+
             _buildFAQItem(
               context,
               'What payment methods are accepted?',
               'We currently accept cash payments. Card payments and mobile wallets '
                   'are coming soon.',
             ),
+
+            _buildDivider(),
+
             _buildFAQItem(
               context,
               'How do I become a driver?',
@@ -137,6 +146,9 @@ class SupportScreen extends ConsumerWidget {
                 );
               },
             ),
+
+            _buildDivider(),
+
             _buildContactTile(
               context: context,
               icon: Icons.phone_outlined,
@@ -151,17 +163,7 @@ class SupportScreen extends ConsumerWidget {
                 );
               },
             ),
-            _buildContactTile(
-              context: context,
-              icon: Icons.chat_outlined,
-              title: 'Live Chat',
-              subtitle: 'Chat with our support team',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Live chat coming soon!')),
-                );
-              },
-            ),
+
             const Gap(24),
 
             // Social Media
@@ -183,40 +185,38 @@ class SupportScreen extends ConsumerWidget {
                 _buildSocialButton(Icons.close, () {}), // X (Twitter)
               ],
             ),
+            Gap(30.0),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildDivider() {
+    return const Divider(height: 1, color: AppColors.divider);
+  }
+
   Widget _buildFAQItem(BuildContext context, String question, String answer) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+    return ExpansionTile(
+      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+       
+      title: Text(
+        question,
+        style: TextStyles.t2.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        title: Text(
-          question,
+      children: [
+        Text(
+          answer,
           style: TextStyles.t2.copyWith(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
           ),
         ),
-        children: [
-          Text(
-            answer,
-            style: TextStyles.t2.copyWith(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -227,44 +227,29 @@ class SupportScreen extends ConsumerWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(icon, color: AppColors.accent),
+      title: Text(
+        title,
+        style: TextStyles.t1.copyWith(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.accent.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.accent),
-        ),
-        title: Text(
-          title,
-          style: TextStyles.t1.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyles.t2.copyWith(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
+      subtitle: Text(
+        subtitle,
+        style: TextStyles.t2.copyWith(
+          fontSize: 12,
           color: AppColors.textSecondary,
         ),
-        onTap: onTap,
       ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: AppColors.textSecondary,
+      ),
+      onTap: onTap,
     );
   }
 

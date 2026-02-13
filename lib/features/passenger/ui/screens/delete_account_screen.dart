@@ -42,10 +42,8 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -55,6 +53,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
+        scrolledUnderElevation: 0.0,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -63,12 +62,6 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(20),
-                ),
-              ),
               child: Column(
                 children: [
                   Container(
@@ -150,64 +143,58 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             const Gap(16),
 
             // Reason Selection
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Reason for leaving',
-                      style: TextStyles.t1.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+            
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Reason for leaving',
+                    style: TextStyles.t1.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const Gap(4),
-                    Text(
-                      'Please select a reason (required)',
-                      style: TextStyles.t2.copyWith(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
+                  ),
+                  const Gap(4),
+                  Text(
+                    'Please select a reason (required)',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
                     ),
-                    const Gap(16),
-                    ..._reasons.map((reason) => _buildReasonOption(reason)),
-                    if (_selectedReason == 'Other') ...[
-                      const Gap(12),
-                      TextFormField(
-                        controller: _otherReasonController,
-                        maxLines: 3,
-                        style: TextStyles.t2.copyWith(fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: 'Please tell us more...',
-                          hintStyle: TextStyles.t2.copyWith(
-                            fontSize: 14,
-                            color: AppColors.textLight,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.surface,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.accent,
-                            ),
+                  ),
+                  const Gap(16),
+                  ..._reasons.map((reason) => _buildReasonOption(reason)),
+                  if (_selectedReason == 'Other') ...[
+                    const Gap(12),
+                    TextFormField(
+                      controller: _otherReasonController,
+                      maxLines: 3,
+                      style: TextStyles.t2.copyWith(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Please tell us more...',
+                        hintStyle: TextStyles.t2.copyWith(
+                          fontSize: 14,
+                          color: AppColors.textLight,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.accent,
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
             ),
             const Gap(24),

@@ -1,3 +1,4 @@
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -114,8 +115,8 @@ class DriverAccountScreen extends ConsumerWidget {
                   Text(
                     user?.fullName ?? 'Guest User',
                     style: TextStyles.t1.copyWith(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
 
@@ -125,7 +126,7 @@ class DriverAccountScreen extends ConsumerWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.star, size: 20, color: AppColors.orange400),
+                      Icon(Icons.star, size: 20, color: AppColors.accent),
                       const Gap(4),
                       Text(
                         '4.5',
@@ -197,21 +198,17 @@ class DriverAccountScreen extends ConsumerWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.accent, AppColors.accentLight],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: AppColors.accent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
+                          color: AppColors.accent,
+                          shape: BoxShape.circle,
                         ),
+                        padding: const EdgeInsets.all(8),
                         child: const Icon(
                           Icons.verified_user_outlined,
                           color: Colors.white,
@@ -228,25 +225,17 @@ class DriverAccountScreen extends ConsumerWidget {
                               style: TextStyles.t1.copyWith(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
                               ),
                             ),
                             const Gap(2),
                             Text(
                               'Verify your identity to start driving',
-                              style: TextStyles.t2.copyWith(
-                                fontSize: 12,
-                                color: Colors.white.withOpacity(0.8),
-                              ),
+                              style: TextStyles.t2.copyWith(fontSize: 12),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: Colors.white,
-                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 16),
                     ],
                   ),
                 ),
@@ -258,14 +247,14 @@ class DriverAccountScreen extends ConsumerWidget {
             Column(
               children: [
                 _buildMenuItem(
-                  icon: Icons.person_outline,
-                  title: 'Personal Information',
+                  icon: AppAssets.personIcon,
+                  title: 'Personal Info',
                   onTap: () => context.push(AppRoutes.personalInfoRoute),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.directions_car_outlined,
-                  title: 'Vehicle Information',
+                  icon: AppAssets.vehicleIcon,
+                  title: 'Vehicle Info',
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -276,7 +265,7 @@ class DriverAccountScreen extends ConsumerWidget {
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.description_outlined,
+                  icon: AppAssets.fileIcon,
                   title: 'Documents',
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -286,7 +275,7 @@ class DriverAccountScreen extends ConsumerWidget {
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.account_balance_outlined,
+                  icon: AppAssets.bankIcon,
                   title: 'Bank Details',
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -298,25 +287,25 @@ class DriverAccountScreen extends ConsumerWidget {
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.star_outline,
+                  icon: AppAssets.starIcon,
                   title: 'Reviews',
                   onTap: () => context.push(AppRoutes.reviewsRoute),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.privacy_tip_outlined,
+                  icon: AppAssets.privacyIcon,
                   title: 'Privacy Policy',
                   onTap: () => context.push(AppRoutes.privacyPolicyRoute),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.logout,
+                  icon: AppAssets.exitIcon,
                   title: 'Logout',
                   onTap: () => _handleLogout(context, ref),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.delete_outline,
+                  icon: AppAssets.deleteIcon,
                   title: 'Delete Account',
                   onTap: () => context.push(AppRoutes.deleteAccountRoute),
                 ),
@@ -330,21 +319,26 @@ class DriverAccountScreen extends ConsumerWidget {
   }
 
   Widget _buildMenuItem({
-    required IconData icon,
+    required String icon,
     required String title,
     required VoidCallback onTap,
     Color? iconColor,
-    Color? textColor,
   }) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      leading: Icon(icon, color: iconColor ?? AppColors.accent),
-      title: Text(title, style: TextStyles.h3.copyWith(fontSize: 18)),
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: textColor ?? AppColors.textSecondary,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      leading: ImageIcon(
+        AssetImage(icon),
+        color: iconColor ?? AppColors.accent,
+        size: 18.0,
       ),
+      title: Text(
+        title,
+        style: TextStyles.h3.copyWith(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+
       onTap: onTap,
     );
   }
@@ -352,7 +346,7 @@ class DriverAccountScreen extends ConsumerWidget {
   Widget _buildDivider() {
     return const Divider(
       height: 1,
-      indent: 70,
+      indent: 20,
       endIndent: 20,
       color: AppColors.divider,
     );

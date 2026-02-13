@@ -1,3 +1,5 @@
+import 'package:drup/resources/app_assets.dart';
+import 'package:drup/router/app_router.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -93,7 +95,7 @@ class AccountScreen extends ConsumerWidget {
                     user?.fullName ?? 'Guest User',
                     style: TextStyles.t1.copyWith(
                       fontSize: 24,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
 
@@ -103,11 +105,11 @@ class AccountScreen extends ConsumerWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.star, size: 20, color: AppColors.orange400),
+                      Icon(Icons.star, size: 20, color: AppColors.accent),
                       const Gap(4),
                       Text(
                         '4.5',
-                        style: TextStyles.t1.copyWith(
+                        style: TextStyles.h2.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -115,7 +117,7 @@ class AccountScreen extends ConsumerWidget {
                       const Gap(4),
                       Text(
                         'Rating',
-                        style: TextStyles.t1.copyWith(fontSize: FontSizes.s14),
+                        style: TextStyles.t2.copyWith(fontSize: FontSizes.s14),
                       ),
                     ],
                   ),
@@ -128,19 +130,13 @@ class AccountScreen extends ConsumerWidget {
             Column(
               children: [
                 _buildMenuItem(
-                  icon: Icons.person_outline,
-                  title: 'Personal Information',
+                  iconImage: AppAssets.personIcon,
+                  title: 'Personal Info',
                   onTap: () => context.push(AppRoutes.personalInfoRoute),
                 ),
-                // _buildDivider(),
-                // _buildMenuItem(
-                //   icon: Icons.star_outline,
-                //   title: 'Reviews',
-                //   onTap: () => context.push(AppRoutes.reviewsRoute),
-                // ),
                 _buildDivider(),
                 _buildMenuItem(
-                  icon: Icons.privacy_tip_outlined,
+                  iconImage: AppAssets.privacyIcon,
                   title: 'Privacy Policy',
                   onTap: () => context.push(AppRoutes.privacyPolicyRoute),
                 ),
@@ -148,15 +144,18 @@ class AccountScreen extends ConsumerWidget {
                 _buildDivider(),
 
                 _buildMenuItem(
-                  icon: Icons.logout,
+                  iconImage: AppAssets.exitIcon,
                   title: 'Logout',
-                  onTap: () => _handleLogout(context, ref),
+                  onTap: () => _handleLogout(
+                    context,
+                    ref.read(authNotifierProvider.notifier),
+                  ),
                 ),
 
                 _buildDivider(),
 
                 _buildMenuItem(
-                  icon: Icons.delete_outline,
+                  iconImage: AppAssets.deleteIcon,
                   title: 'Delete Account',
                   onTap: () => context.push(AppRoutes.deleteAccountRoute),
                 ),
@@ -170,21 +169,20 @@ class AccountScreen extends ConsumerWidget {
   }
 
   Widget _buildMenuItem({
-    required IconData icon,
+    required String iconImage,
     required String title,
     required VoidCallback onTap,
     Color? iconColor,
     Color? textColor,
   }) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      leading: Icon(icon, color: iconColor ?? AppColors.accent),
-      title: Text(title, style: TextStyles.h3.copyWith(fontSize: 18)),
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: textColor ?? AppColors.textSecondary,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      leading: ImageIcon(
+        AssetImage(iconImage),
+        color: iconColor ?? AppColors.accent,
+        size: 18,
       ),
+      title: Text(title, style: TextStyles.h3.copyWith(fontSize: 16)),
       onTap: onTap,
     );
   }
@@ -192,49 +190,67 @@ class AccountScreen extends ConsumerWidget {
   Widget _buildDivider() {
     return const Divider(
       height: 1,
-      indent: 70,
+      indent: 20,
       endIndent: 20,
       color: AppColors.divider,
     );
   }
 
-  void _handleLogout(BuildContext context, WidgetRef ref) {
-    showDialog(
+  void _handleLogout(BuildContext context, AuthNotifier authNotifier) async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder: (dialogContext) => AlertDialog(
         title: Text(
           'Logout',
-          style: TextStyles.t1.copyWith(
-            fontSize: 20,
+          style: TextStyles.t3.copyWith(
+            fontSize: FontSizes.s20,
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
           'Are you sure you want to logout?',
-          style: TextStyles.t2.copyWith(fontSize: 14),
+          style: TextStyles.h3.copyWith(
+            fontSize: FontSizes.s14,
+            color: AppColors.surface500,
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancel',
-              style: TextStyles.t2.copyWith(color: AppColors.textSecondary),
+              style: TextStyles.t2.copyWith(
+                fontSize: FontSizes.s16,
+                color: AppColors.accent,
+              ),
             ),
           ),
           TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref.read(authNotifierProvider.notifier).logout();
-              if (context.mounted) {
-                context.go(AppRoutes.loginRoute);
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.warning),
-            child: const Text('Logout'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              'Logout',
+              style: TextStyles.t2.copyWith(
+                fontSize: FontSizes.s16,
+                color: AppColors.accent,
+              ),
+            ),
           ),
         ],
       ),
     );
+
+    // Check if user confirmed logout
+    if (shouldLogout == true) {
+      // Perform logout using the captured notifier
+      authNotifier.logout();
+
+      // Use root navigator context for navigation
+      final navigatorContext = rootNavigator.currentContext;
+      if (navigatorContext != null && navigatorContext.mounted) {
+        // Navigate to login screen
+        Navigator.popUntil(navigatorContext, (route) => route.isFirst);
+      }
+    }
   }
 }

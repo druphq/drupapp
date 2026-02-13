@@ -161,7 +161,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
           onPressed: onScheduleRide,
           textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
           icon: ImageIcon(
-            AssetImage(AppAssets.scheduleIcon),
+            AssetImage(AppAssets.calendarIcon),
             size: 20,
             color: AppColors.white,
           ),

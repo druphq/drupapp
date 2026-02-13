@@ -219,7 +219,6 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
 
             // Menu button
             Positioned(
-              top: 16,
               left: 16,
               right: 16,
               child: SafeArea(

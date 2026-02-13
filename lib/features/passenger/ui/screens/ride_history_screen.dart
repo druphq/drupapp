@@ -22,7 +22,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     // Fetch ride history on screen load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(rideNotifierProvider.notifier).fetchRideHistory();
@@ -38,6 +38,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   @override
   Widget build(BuildContext context) {
     final rideState = ref.watch(rideNotifierProvider);
+    final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,7 +47,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Ride History',
+          'My Ride',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -58,27 +59,49 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.accent,
           tabs: const [
+            Tab(text: 'Upcoming'),
             Tab(text: 'Completed'),
             Tab(text: 'Cancelled'),
           ],
         ),
       ),
       body: rideState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Padding(
+              padding: EdgeInsets.only(top: height * 0.2),
+              child: const Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox.square(
+                  dimension: 30,
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            )
           : TabBarView(
               controller: _tabController,
               children: [
                 _buildRideList(
                   rides: rideState.rideHistory
+                      .where((r) => r.isScheduled && r.status == 'pending')
+                      .toList(),
+                  emptyIcon: Icons.schedule,
+                  emptyTitle: 'No upcoming rides',
+                  emptySubtitle: 'Scheduled rides will appear here',
+                ),
+                _buildRideList(
+                  rides: rideState.rideHistory
                       .where((r) => r.status == 'completed')
                       .toList(),
-                  isCompleted: true,
+                  emptyIcon: Icons.history,
+                  emptyTitle: 'No completed rides yet',
+                  emptySubtitle: 'Your ride history will appear here',
                 ),
                 _buildRideList(
                   rides: rideState.rideHistory
                       .where((r) => r.status == 'cancelled')
                       .toList(),
-                  isCompleted: false,
+                  emptyIcon: Icons.cancel_outlined,
+                  emptyTitle: 'No cancelled rides',
+                  emptySubtitle: 'Cancelled rides will appear here',
                 ),
               ],
             ),
@@ -87,37 +110,37 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
 
   Widget _buildRideList({
     required List<BookedRide> rides,
-    required bool isCompleted,
+    required IconData emptyIcon,
+    required String emptyTitle,
+    required String emptySubtitle,
   }) {
+    final height = MediaQuery.of(context).size.height;
     if (rides.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isCompleted ? Icons.history : Icons.cancel_outlined,
-              size: 80,
-              color: AppColors.textLight,
-            ),
-            const Gap(16),
-            Text(
-              isCompleted ? 'No completed rides yet' : 'No cancelled rides',
-              style: TextStyles.t2.copyWith(
-                fontSize: 16,
-                color: AppColors.textSecondary,
+      return Padding(
+        padding: EdgeInsets.only(top: height * 0.2),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(emptyIcon, size: 80, color: AppColors.textLight),
+              const Gap(16),
+              Text(
+                emptyTitle,
+                style: TextStyles.t2.copyWith(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
-            ),
-            const Gap(8),
-            Text(
-              isCompleted
-                  ? 'Your ride history will appear here'
-                  : 'Cancelled rides will appear here',
-              style: TextStyles.t2.copyWith(
-                fontSize: 14,
-                color: AppColors.textLight,
+              const Gap(8),
+              Text(
+                emptySubtitle,
+                style: TextStyles.t2.copyWith(
+                  fontSize: 14,
+                  color: AppColors.textLight,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }

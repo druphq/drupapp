@@ -46,10 +46,8 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     final user = userState.user;
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -205,43 +203,6 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             ),
             const Gap(24),
 
-            // Account Status
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Account Status',
-                    style: TextStyles.t1.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Gap(16),
-                  _buildStatusRow(
-                    'Email Verified',
-                    user?.isEmailVerified == true,
-                  ),
-                  const Gap(12),
-                  _buildStatusRow(
-                    'Phone Verified',
-                    user?.isPhoneVerified == true,
-                  ),
-                  const Gap(12),
-                  _buildStatusRow(
-                    'Profile Complete',
-                    user?.isProfileComplete ?? false,
-                  ),
-                ],
-              ),
-            ),
-            const Gap(24),
-
             // Save Button
             if (_isEditing)
               CustomButton(text: 'Save Changes', onPressed: _saveChanges),
@@ -295,49 +256,6 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusRow(String label, bool isVerified) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyles.t2.copyWith(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: isVerified
-                ? AppColors.success.withOpacity(0.1)
-                : AppColors.warning.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isVerified ? Icons.check_circle : Icons.pending,
-                size: 16,
-                color: isVerified ? AppColors.success : AppColors.warning,
-              ),
-              const Gap(4),
-              Text(
-                isVerified ? 'Verified' : 'Pending',
-                style: TextStyles.t2.copyWith(
-                  fontSize: 12,
-                  color: isVerified ? AppColors.success : AppColors.warning,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
           ),
         ),
       ],

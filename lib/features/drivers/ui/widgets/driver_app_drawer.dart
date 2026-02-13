@@ -150,11 +150,6 @@ class DriverAppDrawer extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                            color: AppColors.textSecondary,
-                          ),
                         ],
                       ),
                     ),
@@ -290,7 +285,7 @@ class DriverAppDrawer extends ConsumerWidget {
                         padding: EdgeInsets.zero,
                         children: [
                           _buildDrawerItem(
-                            icon: AppAssets.historyIcon,
+                            icon: AppAssets.scheduleIcon,
                             title: 'Ride Requests',
                             onTap: () {
                               Navigator.pop(context);
@@ -385,13 +380,18 @@ class DriverAppDrawer extends ConsumerWidget {
     Color? textColor,
   }) {
     return ListTile(
-      leading: Image.asset(
-        icon,
+      leading: ImageIcon(
+        AssetImage(icon),
         color: textColor ?? AppColors.accent,
-        width: 24,
-        height: 24,
+        size: 18,
       ),
-      title: Text(title, style: TextStyles.h3.copyWith(fontSize: 18)),
+      title: Text(
+        title,
+        style: TextStyles.h3.copyWith(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
       onTap: onTap,
     );
   }
