@@ -38,16 +38,6 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.hMd)),
         color: AppColors.accent500,
-        // gradient: LinearGradient(
-        //   begin: Alignment.bottomCenter,
-        //   end: Alignment.topCenter,
-        //   colors: [
-            // Color(0xff253B80),
-            // Color(0xff253B80),
-            // Color(0xff5490D0),
-            // Color(0xff5C9EDC),
-        //   ],
-        // ),
       ),
       child: Column(
         children: [

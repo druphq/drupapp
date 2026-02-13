@@ -136,6 +136,50 @@ class RideNotifier extends StateNotifier<RideState> {
     }
   }
 
+  void clearPickupLocation() {
+    state = RideState(
+      currentRide: state.currentRide,
+      bookedRide: state.bookedRide,
+      currentRequest: state.currentRequest,
+      routePoints: state.routePoints,
+      pickupLocation: null,
+      destinationLocation: state.destinationLocation,
+      scheduledDate: state.scheduledDate,
+      isLoading: state.isLoading,
+      errorMessage: state.errorMessage,
+      estimatedDistance: state.estimatedDistance,
+      estimatedDuration: state.estimatedDuration,
+      estimatedFare: state.estimatedFare,
+      driverLocation: state.driverLocation,
+      fareEstimates: state.fareEstimates,
+      savedCards: state.savedCards,
+      walletBalance: state.walletBalance,
+      rideHistory: state.rideHistory,
+    );
+  }
+
+  void clearDestinationLocation() {
+    state = RideState(
+      currentRide: state.currentRide,
+      bookedRide: state.bookedRide,
+      currentRequest: state.currentRequest,
+      routePoints: state.routePoints,
+      pickupLocation: state.pickupLocation,
+      destinationLocation: null,
+      scheduledDate: state.scheduledDate,
+      isLoading: state.isLoading,
+      errorMessage: state.errorMessage,
+      estimatedDistance: state.estimatedDistance,
+      estimatedDuration: state.estimatedDuration,
+      estimatedFare: state.estimatedFare,
+      driverLocation: state.driverLocation,
+      fareEstimates: state.fareEstimates,
+      savedCards: state.savedCards,
+      walletBalance: state.walletBalance,
+      rideHistory: state.rideHistory,
+    );
+  }
+
   // ===========================================================================
   // ROUTE CALCULATION
   // ===========================================================================

@@ -87,6 +87,32 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
     });
   }
 
+  // If the selected location matches either pickup or destination, we want to hide it from recent locations list.
+  void hideLocationFromRecent(LocationModel location) {
+    setState(() {
+      _recentLocations.removeWhere(
+        (loc) =>
+            loc.latitude == location.latitude &&
+            loc.longitude == location.longitude,
+      );
+    });
+  }
+
+  // Restore a location back to the recent locations list when the field is cleared
+  void restoreLocationToRecent(LocationModel location) {
+    // Check if location already exists in the list to avoid duplicates
+    final exists = _recentLocations.any(
+      (loc) =>
+          loc.latitude == location.latitude &&
+          loc.longitude == location.longitude,
+    );
+    if (!exists) {
+      setState(() {
+        _recentLocations.insert(0, location);
+      });
+    }
+  }
+
   void _setCurrentLocation() {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation != null) {
@@ -203,6 +229,9 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
       _destinationController.text = location.name ?? location.address ?? '';
       ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
     }
+
+    // Hide the selected location from recent locations list
+    hideLocationFromRecent(location);
 
     // Check if both locations are selected, then pop back to home
     _checkAndPopIfBothLocationsSelected();
@@ -326,6 +355,16 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                               size: 20,
                             ),
                             onPressed: () {
+                              // Restore the pickup location to recent list before clearing
+                              final rideState = ref.read(rideNotifierProvider);
+                              if (rideState.pickupLocation != null) {
+                                restoreLocationToRecent(
+                                  rideState.pickupLocation!,
+                                );
+                                ref
+                                    .read(rideNotifierProvider.notifier)
+                                    .clearPickupLocation();
+                              }
                               _pickupController.clear();
                               setState(() {
                                 _searchResults = [];
@@ -416,6 +455,16 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                               size: 20,
                             ),
                             onPressed: () {
+                              // Restore the destination location to recent list before clearing
+                              final rideState = ref.read(rideNotifierProvider);
+                              if (rideState.destinationLocation != null) {
+                                restoreLocationToRecent(
+                                  rideState.destinationLocation!,
+                                );
+                                ref
+                                    .read(rideNotifierProvider.notifier)
+                                    .clearDestinationLocation();
+                              }
                               _destinationController.clear();
                               setState(() {
                                 _searchResults = [];
@@ -526,11 +575,6 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                                             fontSize: FontSizes.s13,
                                           ),
                                         ),
-                                        // trailing: Icon(
-                                        //   Icons.history,
-                                        //   color: AppColors.greyStrong,
-                                        //   size: 18,
-                                        // ),
                                         onTap: () =>
                                             _selectRecentLocation(location),
                                       ),

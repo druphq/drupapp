@@ -155,16 +155,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
             color: AppColors.white,
           ),
         ),
-        // CustomButton(
-        //   text: 'Calculate Estimate',
-        //   onPressed: onScheduleRide,
-        //   textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
-        //   icon: ImageIcon(
-        //     AssetImage(AppAssets.calendarIcon),
-        //     size: 20,
-        //     color: AppColors.white,
-        //   ),
-        // ),
+       
       ],
     );
   }
