@@ -2,6 +2,7 @@ import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_details_bottom_sheet.dart';
 import 'package:drup/features/passenger/ui/widgets/home_content_widget.dart';
+import 'package:drup/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -36,16 +37,17 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.hMd)),
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [
-            Color(0xff253B80),
-            Color(0xff253B80),
-            Color(0xff5490D0),
-            Color(0xff5C9EDC),
-          ],
-        ),
+        color: AppColors.accent500,
+        // gradient: LinearGradient(
+        //   begin: Alignment.bottomCenter,
+        //   end: Alignment.topCenter,
+        //   colors: [
+            // Color(0xff253B80),
+            // Color(0xff253B80),
+            // Color(0xff5490D0),
+            // Color(0xff5C9EDC),
+        //   ],
+        // ),
       ),
       child: Column(
         children: [
@@ -57,11 +59,9 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
               estimate: rideState.fareEstimates.isNotEmpty
                   ? rideState.fareEstimates[0]
                   : null,
-              // onScheduleRide: widget.onScheduleRide,
               onScheduleRide: () {
                 ref.read(rideNotifierProvider.notifier).calculateFare();
               },
-
               onCancelRide: () {
                 widget.onCancelRide?.call();
                 ref.read(rideNotifierProvider.notifier).clearRoute();

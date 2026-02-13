@@ -36,7 +36,11 @@ class ExternalAuthService {
       // Sign out first to ensure account picker is shown
       await _googleSignIn.signOut();
 
+      print('+++++++Signing with Google++++++++++++++');
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      print('+++++++Account selected++++++++++++++');
 
       if (googleUser == null) {
         // User cancelled the sign-in
@@ -72,6 +76,8 @@ class ExternalAuthService {
         profileImage: googleUser.photoUrl,
       );
     } catch (e) {
+      print('+++++++error $e++++++++++++++');
+
       return null;
     }
   }

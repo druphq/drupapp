@@ -44,6 +44,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       return result;
     } catch (e, stack) {
       state = AsyncError(e, stack);
+      print('error------>${e}. stackstrack ----> $stack');
       return null;
     }
   }
