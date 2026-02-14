@@ -1,26 +1,30 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
+import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/features/passenger/ui/widgets/driver_info_card.dart';
-import 'package:drup/features/passenger/ui/widgets/location_dot_widget.dart';
 import 'package:drup/features/passenger/ui/widgets/ride_map_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 
-class RideDetailBottomsheet extends StatelessWidget {
+class RideDetailBottomsheet extends ConsumerWidget {
   const RideDetailBottomsheet({super.key, required this.bookedRide});
   final BookedRide? bookedRide;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (bookedRide == null) {
       return SizedBox.shrink();
     }
 
     final ride = bookedRide!;
+    final rideState = ref.watch(rideNotifierProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -93,76 +97,6 @@ class RideDetailBottomsheet extends StatelessWidget {
                   ),
                 ),
                 Gap(12),
-                // Row(
-                //   crossAxisAlignment: CrossAxisAlignment.center,
-                //   children: [
-                //     LocationDotWidget(
-                //       bgColor: AppColors.green400,
-                //       isActive: true,
-                //       size: 12,
-                //     ),
-                //     Gap(12),
-                //     Expanded(
-                //       child: Column(
-                //         mainAxisSize: MainAxisSize.min,
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: [
-                //           Text(
-                //             'Pickup',
-                //             style: TextStyles.t2.copyWith(
-                //               fontSize: FontSizes.s14,
-                //               color: AppColors.textSecondary,
-                //               height: 1.4,
-                //             ),
-                //           ),
-                //           Gap(4.0),
-                //           Text(
-                //             ride.pickup.name,
-                //             style: TextStyles.t2.copyWith(
-                //               fontSize: FontSizes.s16,
-                //               color: AppColors.onAccent,
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // Gap(20),
-                // Row(
-                //   crossAxisAlignment: CrossAxisAlignment.start,
-                //   children: [
-                //     LocationDotWidget(
-                //       bgColor: AppColors.accent,
-                //       isActive: true,
-                //       size: 12,
-                //     ),
-                //     Gap(12),
-                //     Expanded(
-                //       child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         mainAxisSize: MainAxisSize.min,
-                //         children: [
-                //           Text(
-                //             'Dropoff',
-                //             style: TextStyles.t2.copyWith(
-                //               fontSize: FontSizes.s14,
-                //               color: AppColors.textSecondary,
-                //             ),
-                //           ),
-                //           Gap(5.0),
-                //           Text(
-                //             ride.dropoff.name,
-                //             style: TextStyles.t2.copyWith(
-                //               fontSize: FontSizes.s16,
-                //               color: AppColors.onAccent,
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   ],
-                // ),
                 RideMapWidget(ride: ride),
                 Gap(16),
                 Divider(color: AppColors.greyStrong),
@@ -209,7 +143,39 @@ class RideDetailBottomsheet extends StatelessWidget {
           Gap(24),
 
           // Make Payment Button
-          CustomButton(text: 'Make Payment', onPressed: () {}),
+          CustomButton(
+            text: 'Make Payment',
+            isLoading: rideState.isLoading,
+            onPressed: () async {
+              final result = await ref
+                  .read(rideNotifierProvider.notifier)
+                  .initializePayment(rideId: ride.id, paymentMethod: 'card');
+
+              if (!context.mounted) return;
+
+              if (result?.authorizationUrl != null) {
+                context.push(
+                  AppRoutes.paymentWebViewRoute,
+                  extra: {
+                    'authorizationUrl': result!.authorizationUrl!,
+                    'onPaymentComplete': () {
+                      // Pop webview and navigate to ride details
+                      context.pop();
+                      context.push(AppRoutes.rideDetailsRoute, extra: ride);
+                    },
+                  },
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Failed to initialize payment. Please try again.',
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
     );

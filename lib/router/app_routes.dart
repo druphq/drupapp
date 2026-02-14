@@ -27,6 +27,9 @@ import 'package:drup/features/passenger/ui/screens/personal_info_screen.dart';
 import 'package:drup/features/passenger/ui/screens/reviews_screen.dart';
 import 'package:drup/features/passenger/ui/screens/privacy_policy_screen.dart';
 import 'package:drup/features/passenger/ui/screens/delete_account_screen.dart';
+import 'package:drup/features/passenger/ui/screens/ride_details_screen.dart';
+import 'package:drup/features/passenger/ui/screens/payment_webview_screen.dart';
+import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drup/features/auth/model/auth.dart';
 
@@ -57,6 +60,8 @@ class AppRoutes {
   static const String reviewsRoute = '/reviews';
   static const String privacyPolicyRoute = '/privacy-policy';
   static const String deleteAccountRoute = '/delete-account';
+  static const String rideDetailsRoute = '/ride-details';
+  static const String paymentWebViewRoute = '/payment-webview';
 }
 
 class AppScreens {
@@ -331,5 +336,34 @@ class AppScreens {
       key: state.pageKey,
       child: const DriverAccountScreen(),
     ),
+  );
+
+  static final rideDetailsRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.rideDetailsRoute,
+    pageBuilder: (context, state) {
+      final ride = state.extra as BookedRide;
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: RideDetailsScreen(bookedRide: ride),
+      );
+    },
+  );
+
+  static final paymentWebViewRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.paymentWebViewRoute,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>;
+      final authorizationUrl = extra['authorizationUrl'] as String;
+      final onPaymentComplete = extra['onPaymentComplete'] as void Function();
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: PaymentWebViewScreen(
+          authorizationUrl: authorizationUrl,
+          onPaymentComplete: onPaymentComplete,
+        ),
+      );
+    },
   );
 }

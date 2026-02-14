@@ -143,6 +143,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
             ),
           ],
         ),
+
         Gap(30),
 
         // Schedule Ride Button

@@ -24,9 +24,28 @@ class RideBookingBottomsheet extends ConsumerStatefulWidget {
 
 class _RideBookingBottomsheetState
     extends ConsumerState<RideBookingBottomsheet> {
+  final _sheetController = DraggableScrollableController();
+
+  @override
+  void dispose() {
+    _sheetController.dispose();
+    super.dispose();
+  }
+
+  void _expandSheet() {
+    if (_sheetController.isAttached && _sheetController.size < 0.85) {
+      _sheetController.animateTo(
+        0.85,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
+      controller: _sheetController,
       initialChildSize: 0.5,
       minChildSize: 0.45,
       maxChildSize: 1.0,
@@ -92,6 +111,7 @@ class _RideBookingBottomsheetState
           rideSlots: rideState.rideSlots,
         );
       case RideScheduleState.rideBooked:
+        WidgetsBinding.instance.addPostFrameCallback((_) => _expandSheet());
         return RideDetailBottomsheet(bookedRide: rideState.bookedRide);
       case RideScheduleState
           .connectingDriver: // connectingDriver and driverMatched are not used

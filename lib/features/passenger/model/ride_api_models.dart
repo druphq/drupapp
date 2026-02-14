@@ -456,7 +456,6 @@ class AvailableSlotsResponse extends Equatable {
         }
       });
       return AvailableSlotsResponse(slots: slots);
-      
     } else {
       final slotsList = json['slots'] as List? ?? [];
       return AvailableSlotsResponse(
@@ -826,31 +825,28 @@ class InitPaymentRequest extends Equatable {
   List<Object?> get props => [rideId, paymentMethod];
 }
 
-/// Ride info in payment response
-class PaymentRideInfo extends Equatable {
-  final String id;
+/// Payment info in payment response
+class PaymentInfo extends Equatable {
+  final String reference;
+  final double amount;
   final String status;
-  final String paymentStatus;
-  final String? paymentMethod;
 
-  const PaymentRideInfo({
-    required this.id,
+  const PaymentInfo({
+    required this.reference,
+    required this.amount,
     required this.status,
-    required this.paymentStatus,
-    this.paymentMethod,
   });
 
-  factory PaymentRideInfo.fromJson(Map<String, dynamic> json) {
-    return PaymentRideInfo(
-      id: json['id'] as String? ?? json['_id'] as String? ?? '',
-      status: json['status'] as String? ?? '',
-      paymentStatus: json['paymentStatus'] as String? ?? '',
-      paymentMethod: json['paymentMethod'] as String?,
+  factory PaymentInfo.fromJson(Map<String, dynamic> json) {
+    return PaymentInfo(
+      reference: json['reference'] as String? ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      status: json['status'] as String? ?? 'pending',
     );
   }
 
   @override
-  List<Object?> get props => [id, status, paymentStatus, paymentMethod];
+  List<Object?> get props => [reference, amount, status];
 }
 
 /// Response model for payment initialization
@@ -858,21 +854,26 @@ class InitPaymentResponse extends Equatable {
   final String? paymentReference;
   final String? authorizationUrl;
   final String? accessCode;
-  final PaymentRideInfo ride;
+  final String? paymentMethod;
+  final PaymentInfo? payment;
 
   const InitPaymentResponse({
     this.paymentReference,
     this.authorizationUrl,
     this.accessCode,
-    required this.ride,
+    this.paymentMethod,
+    this.payment,
   });
 
   factory InitPaymentResponse.fromJson(Map<String, dynamic> json) {
     return InitPaymentResponse(
-      paymentReference: json['paymentReference'] as String?,
+      paymentReference: json['reference'] as String?,
       authorizationUrl: json['authorizationUrl'] as String?,
       accessCode: json['accessCode'] as String?,
-      ride: PaymentRideInfo.fromJson(json['ride'] as Map<String, dynamic>),
+      paymentMethod: json['paymentMethod'] as String?,
+      payment: json['payment'] != null
+          ? PaymentInfo.fromJson(json['payment'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -884,7 +885,8 @@ class InitPaymentResponse extends Equatable {
     paymentReference,
     authorizationUrl,
     accessCode,
-    ride,
+    paymentMethod,
+    payment,
   ];
 }
 
