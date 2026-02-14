@@ -47,9 +47,12 @@ class AuthRepository {
   Future<ApiResponse<VerifyOtpResponse>> verifyOtp(
     VerifyOtpRequest request,
   ) async {
+    final fcmToken = await _apiService.getFcmToken();
+
     final response = await _apiService.post<Map<String, dynamic>>(
       ApiRoutes.verifyOtp,
-      data: request.toJson(),
+      data: request.toJson()
+        ..addAll({if (fcmToken != null) 'fcmToken': fcmToken}),
     );
 
     if (response.success && response.data != null) {
@@ -82,9 +85,12 @@ class AuthRepository {
   Future<ApiResponse<GoogleSignInResponse>> googleSignIn(
     GoogleSignInRequest request,
   ) async {
+    final fcmToken = await _apiService.getFcmToken();
+
     final response = await _apiService.post<Map<String, dynamic>>(
       ApiRoutes.googleSignIn,
-      data: request.toJson(),
+      data: request.toJson()
+        ..addAll({if (fcmToken != null) 'deviceToken': fcmToken}),
     );
 
     if (response.success && response.data != null) {
@@ -108,9 +114,12 @@ class AuthRepository {
   Future<ApiResponse<GoogleCompleteResponse>> googleComplete(
     GoogleCompleteRequest request,
   ) async {
+    final fcmToken = await _apiService.getFcmToken();
+
     final response = await _apiService.post<Map<String, dynamic>>(
       ApiRoutes.googleComplete,
-      data: request.toJson(),
+      data: request.toJson()
+        ..addAll({if (fcmToken != null) 'deviceToken': fcmToken}),
     );
 
     if (response.success && response.data != null) {

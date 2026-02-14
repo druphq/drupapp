@@ -384,11 +384,7 @@ class RideNotifier extends StateNotifier<RideState> {
       return false;
     }
 
-    state = state.copyWith(
-      isLoading: true,
-      rideScheduleState: RideScheduleState.searching,
-      errorMessage: null,
-    );
+    state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       final request = BookRideRequest(

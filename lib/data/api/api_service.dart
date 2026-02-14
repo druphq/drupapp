@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../core/network/dio_client.dart';
@@ -18,6 +19,18 @@ class ApiService {
 
   /// Create ApiService with custom Dio instance
   ApiService.withDio(this._dio);
+
+  // Get FCM token from Firebase Cloud Messaging
+  Future<String?> getFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      debugPrint('FCM Token: $token');
+      return token;
+    } catch (e) {
+      debugPrint('Error getting FCM token: $e');
+      return null;
+    }
+  }
 
   /// GET request
   Future<ApiResponse<T>> get<T>(

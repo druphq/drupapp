@@ -8,6 +8,22 @@ String formatThousand(double number) {
       );
 }
 
+// format duration to something like 1h 30m or 30m
+String formatDuration(Duration duration) {
+  final hours = duration.inHours;
+  final minutes = duration.inMinutes.remainder(60);
+  if (hours > 0) {
+    return '${hours}h ${minutes}m';
+  } else {
+    return '${minutes}m';
+  }
+}
+
+// format distance to something like 1.5 km just km
+String formatDistance(double distance) {
+  return '${(distance / 1000).toStringAsFixed(1)} km';
+}
+
 // Format ride type,eg individual or shared_3
 // capitalize first letter and replace _ with space
 String formatRideType(String rideType) {
@@ -56,6 +72,7 @@ String formatTime(DateTime dateTime) {
   return _formatTimeOfDay(dateTime);
 }
 
+// format pickup window to something like 10:00 AM
 String _formatTimeOfDay(DateTime dateTime) {
   final hour = dateTime.hour;
   final minute = dateTime.minute;

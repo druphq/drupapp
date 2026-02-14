@@ -14,7 +14,7 @@ class SearchRideWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children:  [
           Row(
             children: [
               Expanded(

@@ -42,6 +42,16 @@ class _RideBookingBottomsheetState
     }
   }
 
+  void _collapseSheet() {
+    if (_sheetController.isAttached && _sheetController.size > 0.35) {
+      _sheetController.animateTo(
+        0.35,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -99,14 +109,21 @@ class _RideBookingBottomsheetState
   Widget _buildContent(ScrollController scrollController) {
     final rideState = ref.watch(rideNotifierProvider);
 
+    if (rideState.errorMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => showErrorSnackbar(rideState.errorMessage!),
+      );
+    }
+
     switch (rideState.rideScheduleState) {
       case RideScheduleState.searching:
+        WidgetsBinding.instance.addPostFrameCallback((_) => _collapseSheet());
         return SearchRideWidget(
           isSlotSelected: rideState.selectedRideSlot != null,
         );
       case RideScheduleState.availableRides:
         return _buildAvailableRidesState(
-          scrollController,
+          ride: rideState,
           selectedRideSlot: rideState.selectedRideSlot,
           rideSlots: rideState.rideSlots,
         );
@@ -123,8 +140,8 @@ class _RideBookingBottomsheetState
     }
   }
 
-  Widget _buildAvailableRidesState(
-    ScrollController scrollController, {
+  Widget _buildAvailableRidesState({
+    required RideState ride,
     RideSlot? selectedRideSlot,
     List<RideSlot> rideSlots = const [],
   }) {
@@ -135,7 +152,6 @@ class _RideBookingBottomsheetState
         children: [
           Expanded(
             child: ListView.separated(
-              controller: scrollController,
               padding: EdgeInsets.zero,
               itemBuilder: (context, index) {
                 final rideSlot = rideSlots[index];
@@ -152,7 +168,7 @@ class _RideBookingBottomsheetState
               },
               separatorBuilder: (context, index) => Divider(
                 height: 1,
-                color: AppColors.textSecondary.withOpacity(0.2),
+                color: AppColors.textSecondary.withValues(alpha: 0.2),
                 thickness: 0.5,
               ),
               itemCount: rideSlots.length,
@@ -171,14 +187,22 @@ class _RideBookingBottomsheetState
                         .bookRide(rideType: selectedRideSlot.rideType!);
                   }
                 : () {},
+            isLoading: ride.isLoading,
             backgroundColor: selectedRideSlot != null
                 ? AppColors.accent
-                : AppColors.accentLighter.withOpacity(0.5),
+                : AppColors.accentLighter,
             textStyle: TextStyles.btnStyle.copyWith(color: AppColors.white),
           ),
           Gap(30.0),
         ],
       ),
     );
+  }
+
+  // show action snackbar for errors
+  void showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message, style: TextStyles.body2)));
   }
 }

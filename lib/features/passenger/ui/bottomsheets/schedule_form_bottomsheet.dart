@@ -345,8 +345,9 @@ class _ScheduleDetailBottomSheetState
                   : null,
               backgroundColor: _canConfirm
                   ? AppColors.accent
-                  : AppColors.accentLight,
-              isLoading: rideState.isLoading,
+                  : AppColors.accentLighter,
+              isLoading:
+                  rideState.rideScheduleState == RideScheduleState.searching,
             ),
 
             Gap(24),
