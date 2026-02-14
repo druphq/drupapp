@@ -1,23 +1,26 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 
-class ScheduleDetailBottomSheet extends StatefulWidget {
+class ScheduleFormBottomsheet extends ConsumerStatefulWidget {
   final VoidCallback? onConfirm;
 
-  const ScheduleDetailBottomSheet({super.key, this.onConfirm});
+  const ScheduleFormBottomsheet({super.key, this.onConfirm});
 
   @override
-  State<ScheduleDetailBottomSheet> createState() =>
+  ConsumerState<ScheduleFormBottomsheet> createState() =>
       _ScheduleDetailBottomSheetState();
 }
 
-class _ScheduleDetailBottomSheetState extends State<ScheduleDetailBottomSheet> {
+class _ScheduleDetailBottomSheetState
+    extends ConsumerState<ScheduleFormBottomsheet> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
@@ -139,6 +142,8 @@ class _ScheduleDetailBottomSheetState extends State<ScheduleDetailBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final rideState = ref.watch(rideNotifierProvider);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -319,9 +324,29 @@ class _ScheduleDetailBottomSheetState extends State<ScheduleDetailBottomSheet> {
               onPressed: _canConfirm
                   ? () {
                       widget.onConfirm?.call();
+
+                      // Get the available slots
+                      final rideState = ref.read(rideNotifierProvider.notifier);
+
+                      rideState.setScheduledDate(
+                        DateTime(
+                          _selectedDate!.year,
+                          _selectedDate!.month,
+                          _selectedDate!.day,
+                          _selectedTime!.hour,
+                          _selectedTime!.minute,
+                        ),
+                      );
+
+                      rideState.ref
+                          .read(rideNotifierProvider.notifier)
+                          .getAvailableSlots();
                     }
-                  : () {},
-              isLoading: false,
+                  : null,
+              backgroundColor: _canConfirm
+                  ? AppColors.accent
+                  : AppColors.accentLight,
+              isLoading: rideState.isLoading,
             ),
 
             Gap(24),
@@ -336,14 +361,14 @@ class _ScheduleDetailBottomSheetState extends State<ScheduleDetailBottomSheet> {
                       text:
                           'By ordering a scheduled ride, you confirm that you have read and accepted',
                       style: TextStyles.t1.copyWith(
-                        fontSize: FontSizes.s16,
+                        fontSize: FontSizes.s14,
                         color: AppColors.greyStrong,
                       ),
                       children: [
                         TextSpan(
                           text: '\tthe terms of scheduled rides.',
                           style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s16,
+                            fontSize: FontSizes.s14,
                             decoration: TextDecoration.underline,
                             decorationColor: AppColors.greyStrong,
                           ),

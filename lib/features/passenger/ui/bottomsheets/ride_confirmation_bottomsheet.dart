@@ -4,11 +4,12 @@ import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/features/passenger/ui/widgets/location_dot_widget.dart';
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:shimmer/shimmer.dart';
 
-class RideDetailsBottomSheet extends StatelessWidget {
+class RideConfirmationBottomSheet extends StatelessWidget {
   final String pickupLocation;
   final String destinationLocation;
   final VehicleEstimate? estimate;
@@ -16,7 +17,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
   final VoidCallback? onScheduleRide;
   final VoidCallback? onCancelRide;
 
-  const RideDetailsBottomSheet({
+  const RideConfirmationBottomSheet({
     super.key,
     required this.pickupLocation,
     required this.destinationLocation,
@@ -53,7 +54,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
                       ),
                     )
                   : Text(
-                      '₦${estimate?.fare.baseFare.toStringAsFixed(2) ?? '0.00'}',
+                      '₦${formatThousand(estimate?.fare.totalFare ?? 0)}',
                       style: TextStyles.t1.copyWith(
                         fontSize: FontSizes.s24,
                         fontWeight: FontWeight.w700,
@@ -115,7 +116,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LocationDotWidget(bgColor: AppColors.accent, isActive: true),
+            LocationDotWidget(bgColor: AppColors.accentLight, isActive: true),
             Gap(16),
             Expanded(
               child: Column(
@@ -148,14 +149,16 @@ class RideDetailsBottomSheet extends StatelessWidget {
         CustomButton(
           text: 'Schedule Ride',
           onPressed: estimate != null ? onScheduleRide : () {},
-          textStyle: TextStyles.btnStyle.copyWith(color: Colors.white),
+          backgroundColor: estimate != null
+              ? AppColors.white
+              : AppColors.white.withOpacity(0.2),
+          textStyle: TextStyles.btnStyle.copyWith(color: AppColors.onAccent),
           icon: ImageIcon(
             AssetImage(AppAssets.scheduleIcon),
             size: 20,
-            color: AppColors.white,
+            color: AppColors.onAccent,
           ),
         ),
-       
       ],
     );
   }

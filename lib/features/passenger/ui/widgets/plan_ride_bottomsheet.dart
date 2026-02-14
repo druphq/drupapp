@@ -1,6 +1,6 @@
 import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
-import 'package:drup/features/passenger/ui/bottomsheets/ride_details_bottom_sheet.dart';
+import 'package:drup/features/passenger/ui/bottomsheets/ride_confirmation_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/home_content_widget.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -42,16 +42,14 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
       child: Column(
         children: [
           switch (showRideDetails) {
-            true => RideDetailsBottomSheet(
+            true => RideConfirmationBottomSheet(
               pickupLocation: pickupLocation!.name ?? '',
               destinationLocation: destinationLocation!.name ?? '',
               isLoading: rideState.isLoading,
               estimate: rideState.fareEstimates.isNotEmpty
                   ? rideState.fareEstimates[0]
                   : null,
-              onScheduleRide: () {
-                ref.read(rideNotifierProvider.notifier).calculateFare();
-              },
+              onScheduleRide: widget.onScheduleRide,
               onCancelRide: () {
                 widget.onCancelRide?.call();
                 ref.read(rideNotifierProvider.notifier).clearRoute();

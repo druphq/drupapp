@@ -123,8 +123,7 @@ class _UserTrackingScreenState extends ConsumerState<UserTrackingScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DriverInfoCard(driver: driver, eta: eta, distance: distance),
-
+                  // DriverInfoCard(driver: ),
                   Container(
                     padding: const EdgeInsets.all(16),
                     color: Colors.white,

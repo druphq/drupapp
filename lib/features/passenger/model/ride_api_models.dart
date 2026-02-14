@@ -19,10 +19,16 @@ class RideLocation extends Equatable {
     required this.name,
     required this.coordinates,
     this.placeId,
-  }) : city = address.split(',').length > 1 ? address.split(',')[1].trim() : '',
-       state = address.split(',').length > 2
-           ? address.split(',')[2].trim()
-           : '';
+  }) {
+    final parts = address.split(',').map((e) => e.trim()).toList();
+    if (parts.length >= 2) {
+      city = parts[0];
+      state = parts[1];
+    } else if (parts.isNotEmpty) {
+      city = parts[0];
+      state = '';
+    }
+  }
 
   Map<String, dynamic> toJson() => {
     'address': name,
@@ -242,22 +248,22 @@ class FareEstimateResponse extends Equatable {
 class AvailableSlotsRequest extends Equatable {
   final RideLocation pickup;
   final RideLocation dropoff;
-  final DateTime scheduleDate;
+  final DateTime scheduledTime;
 
   const AvailableSlotsRequest({
     required this.pickup,
     required this.dropoff,
-    required this.scheduleDate,
+    required this.scheduledTime,
   });
 
   Map<String, dynamic> toJson() => {
     'pickup': pickup.toJson(),
     'dropoff': dropoff.toJson(),
-    'date': scheduleDate.toIso8601String(),
+    'scheduledTime': scheduledTime.toUtc().toIso8601String(),
   };
 
   @override
-  List<Object?> get props => [pickup, dropoff, scheduleDate];
+  List<Object?> get props => [pickup, dropoff, scheduledTime];
 }
 
 /// Pickup window for scheduled rides
@@ -281,46 +287,66 @@ class PickupWindow extends Equatable {
 /// Available slot for shared rides
 class RideSlot extends Equatable {
   final String slotId;
-  final DateTime date;
-  final String departureTime;
-  final DateTime departureDateTime;
-  final String rideType;
-  final int availableSeats;
-  final int totalSeats;
-  final double price;
-  final int luggageAllowance;
-  final PickupWindow pickupWindow;
-  final String currency;
+  final DateTime? date;
+  final String? departureTime;
+  final DateTime? departureDateTime;
+  final String? rideType;
+  final int? availableSeats;
+  final int? totalSeats;
+  final double? price;
+  final int? luggageAllowance;
+  final PickupWindow? pickupWindow;
+  final String? currency;
+  final List<ExistingRides> existingRides;
 
   const RideSlot({
     required this.slotId,
-    required this.date,
-    required this.departureTime,
-    required this.departureDateTime,
-    required this.rideType,
-    required this.availableSeats,
-    required this.totalSeats,
-    required this.price,
-    required this.luggageAllowance,
-    required this.pickupWindow,
-    required this.currency,
+    this.date,
+    this.departureTime,
+    this.departureDateTime,
+    this.rideType,
+    this.availableSeats,
+    this.totalSeats,
+    this.price,
+    this.luggageAllowance,
+    this.pickupWindow,
+    this.currency,
+    this.existingRides = const [],
   });
 
   factory RideSlot.fromJson(Map<String, dynamic> json) {
+    final existingRidesList = json['existingRides'] as List? ?? [];
+
+    // Handle price from either 'price' field or nested 'fare.totalFare'
+    double? price;
+    if (json.containsKey('price')) {
+      price = (json['price'] as num?)?.toDouble();
+    } else if (json.containsKey('fare')) {
+      final fare = json['fare'] as Map<String, dynamic>;
+      price = (fare['totalFare'] as num?)?.toDouble();
+    }
+
     return RideSlot(
       slotId: json['slotId'] as String,
-      date: DateTime.parse(json['date'] as String),
-      departureTime: json['departureTime'] as String,
-      departureDateTime: DateTime.parse(json['departureDateTime'] as String),
-      rideType: json['rideType'] as String,
-      availableSeats: json['availableSeats'] as int,
-      totalSeats: json['totalSeats'] as int,
-      price: (json['price'] as num).toDouble(),
+      date: json['date'] != null
+          ? DateTime.parse(json['date'] as String)
+          : null,
+      departureTime: json['departureTime'] as String?,
+      departureDateTime: json['departureDateTime'] != null
+          ? DateTime.parse(json['departureDateTime'] as String)
+          : null,
+      rideType: json['rideType'] as String?,
+      availableSeats: json['availableSeats'] as int?,
+      totalSeats: json['totalSeats'] as int?,
+      price: price,
       luggageAllowance: json['luggageAllowance'] as int? ?? 0,
-      pickupWindow: PickupWindow.fromJson(
-        json['pickupWindow'] as Map<String, dynamic>,
-      ),
+      pickupWindow: json['pickupWindow'] != null
+          ? PickupWindow.fromJson(json['pickupWindow'] as Map<String, dynamic>)
+          : null,
       currency: json['currency'] as String? ?? 'NGN',
+      existingRides: existingRidesList
+          .map((e) => ExistingRides.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -337,6 +363,52 @@ class RideSlot extends Equatable {
     luggageAllowance,
     pickupWindow,
     currency,
+    existingRides,
+  ];
+}
+
+class ExistingRides extends Equatable {
+  final String rideId;
+  final DateTime scheduledTime;
+  final int bookedSeats;
+  final int availableSeats;
+  final String pickupAddress;
+  final String dropoffAddress;
+  final PickupWindow pickupWindow;
+
+  const ExistingRides({
+    required this.rideId,
+    required this.scheduledTime,
+    required this.bookedSeats,
+    required this.availableSeats,
+    required this.pickupAddress,
+    required this.dropoffAddress,
+    required this.pickupWindow,
+  });
+
+  factory ExistingRides.fromJson(Map<String, dynamic> json) {
+    return ExistingRides(
+      rideId: json['rideId'] as String,
+      scheduledTime: DateTime.parse(json['scheduledTime'] as String),
+      bookedSeats: json['bookedSeats'] as int,
+      availableSeats: json['availableSeats'] as int,
+      pickupAddress: json['pickupAddress'] as String,
+      dropoffAddress: json['dropoffAddress'] as String,
+      pickupWindow: PickupWindow.fromJson(
+        json['pickupWindow'] as Map<String, dynamic>,
+      ),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    rideId,
+    scheduledTime,
+    bookedSeats,
+    availableSeats,
+    pickupAddress,
+    dropoffAddress,
+    pickupWindow,
   ];
 }
 
@@ -347,12 +419,52 @@ class AvailableSlotsResponse extends Equatable {
   const AvailableSlotsResponse({required this.slots});
 
   factory AvailableSlotsResponse.fromJson(Map<String, dynamic> json) {
-    final slotsList = json['slots'] as List? ?? [];
-    return AvailableSlotsResponse(
-      slots: slotsList
-          .map((e) => RideSlot.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
+    // Handle both "slots" array and "options" object format
+    if (json.containsKey('options')) {
+      // New format: options object with individual, shared2, shared3
+      final options = json['options'] as Map<String, dynamic>;
+      final slots = <RideSlot>[];
+
+      options.forEach((key, value) {
+        if (value is Map<String, dynamic>) {
+          // Generate a slotId from the ride type
+          final rideType = value['rideType'] as String? ?? key;
+          final modifiedValue = Map<String, dynamic>.from(value);
+          modifiedValue['slotId'] = 'slot_$rideType';
+
+          // Set default values for optional fields
+          if (!modifiedValue.containsKey('date')) {
+            modifiedValue['date'] = DateTime.now().toIso8601String();
+          }
+          if (!modifiedValue.containsKey('departureTime')) {
+            modifiedValue['departureTime'] = 'now';
+          }
+          if (!modifiedValue.containsKey('departureDateTime')) {
+            modifiedValue['departureDateTime'] = DateTime.now()
+                .toIso8601String();
+          }
+          if (!modifiedValue.containsKey('pickupWindow')) {
+            modifiedValue['pickupWindow'] = {
+              'start': DateTime.now().toIso8601String(),
+              'end': DateTime.now()
+                  .add(Duration(minutes: 30))
+                  .toIso8601String(),
+            };
+          }
+
+          slots.add(RideSlot.fromJson(modifiedValue));
+        }
+      });
+      return AvailableSlotsResponse(slots: slots);
+      
+    } else {
+      final slotsList = json['slots'] as List? ?? [];
+      return AvailableSlotsResponse(
+        slots: slotsList
+            .map((e) => RideSlot.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+    }
   }
 
   @override
@@ -367,16 +479,18 @@ class AvailableSlotsResponse extends Equatable {
 class BookRideRequest extends Equatable {
   final RideLocation pickup;
   final RideLocation dropoff;
-  final String? slotId; // For shared rides
-  final String rideType;
+  final String? joinRideId; // For shared rides
+  final String? rideType;
+  final String? vehicleType; // for individual rides
   final DateTime? scheduledTime;
   final List<RideLocation>? stops;
 
   const BookRideRequest({
     required this.pickup,
     required this.dropoff,
-    this.slotId,
-    required this.rideType,
+    this.joinRideId,
+    this.rideType,
+    this.vehicleType,
     this.scheduledTime,
     this.stops,
   });
@@ -384,10 +498,11 @@ class BookRideRequest extends Equatable {
   Map<String, dynamic> toJson() => {
     'pickup': pickup.toJson(),
     'dropoff': dropoff.toJson(),
-    if (slotId != null) 'slotId': slotId,
-    'rideType': rideType,
+    if (rideType != null) 'rideType': rideType,
+    if (rideType != null) 'vehicleType': 'sedan',
+    if (joinRideId != null) 'joinRideId': joinRideId,
     if (scheduledTime != null)
-      'scheduledTime': scheduledTime!.toIso8601String(),
+      'scheduledTime': scheduledTime!.toUtc().toIso8601String(),
     if (stops != null && stops!.isNotEmpty)
       'stops': stops!.map((s) => {'location': s.toJson()}).toList(),
   };
@@ -396,7 +511,7 @@ class BookRideRequest extends Equatable {
   List<Object?> get props => [
     pickup,
     dropoff,
-    slotId,
+    joinRideId,
     rideType,
     scheduledTime,
     stops,

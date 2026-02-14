@@ -1,7 +1,7 @@
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
-import 'package:drup/features/passenger/ui/bottomsheets/schedule_detail_bottomsheet.dart';
-import 'package:drup/features/passenger/ui/bottomsheets/ride_search_bottomsheet.dart';
+import 'package:drup/features/passenger/ui/bottomsheets/schedule_form_bottomsheet.dart';
+import 'package:drup/features/passenger/ui/bottomsheets/ride_booking_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/plan_ride_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/app_drawer.dart';
 import 'package:drup/features/passenger/ui/widgets/location_permission_bottom_sheet.dart';
@@ -314,12 +314,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             // Ride Search Draggable Bottom Sheet with backdrop
             if (_showRideSearchSheet)
-              RideSearchBottomSheet(
-                onClose: () {
-                  setState(() {
-                    _showRideSearchSheet = false;
-                  });
+              NotificationListener<SizeChangedLayoutNotification>(
+                onNotification: (notification) {
+                  _measureBottomSheetHeight();
+                  return true;
                 },
+                child: RideBookingBottomsheet(
+                  onClose: () {
+                    setState(() {
+                      _showRideSearchSheet = false;
+                    });
+                  },
+                ),
               ),
 
             // Menu button
@@ -434,7 +440,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ScheduleDetailBottomSheet(
+      builder: (context) => ScheduleFormBottomsheet(
         onConfirm: () {
           // Close schedule detail sheet
           Navigator.of(context).pop();

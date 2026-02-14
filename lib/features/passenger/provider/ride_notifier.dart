@@ -15,17 +15,20 @@ class RideState {
   final List<LatLng> routePoints;
   final LocationModel? pickupLocation;
   final LocationModel? destinationLocation;
-  final DateTime? scheduledDate;
+  final DateTime? scheduleTime;
   final bool isLoading;
   final String? errorMessage;
   final double? estimatedDistance;
   final int? estimatedDuration;
+  final RideScheduleState rideScheduleState;
   final double? estimatedFare;
   final LocationModel? driverLocation;
+  final RideSlot? selectedRideSlot;
   final List<VehicleEstimate> fareEstimates;
   final List<SavedCard> savedCards;
   final WalletBalanceResponse? walletBalance;
   final List<BookedRide> rideHistory;
+  final List<RideSlot> rideSlots;
 
   RideState({
     this.currentRide,
@@ -34,17 +37,20 @@ class RideState {
     this.routePoints = const [],
     this.pickupLocation,
     this.destinationLocation,
-    this.scheduledDate,
+    this.scheduleTime,
     this.isLoading = false,
     this.errorMessage,
     this.estimatedDistance,
     this.estimatedDuration,
     this.estimatedFare,
     this.driverLocation,
+    this.selectedRideSlot,
     this.fareEstimates = const [],
     this.savedCards = const [],
     this.walletBalance,
     this.rideHistory = const [],
+    this.rideSlots = const [],
+    this.rideScheduleState = RideScheduleState.none,
   });
 
   RideState copyWith({
@@ -54,7 +60,7 @@ class RideState {
     List<LatLng>? routePoints,
     LocationModel? pickupLocation,
     LocationModel? destinationLocation,
-    DateTime? scheduledTime,
+    DateTime? scheduleTime,
     bool? isLoading,
     String? errorMessage,
     double? estimatedDistance,
@@ -65,6 +71,9 @@ class RideState {
     List<SavedCard>? savedCards,
     WalletBalanceResponse? walletBalance,
     List<BookedRide>? rideHistory,
+    RideSlot? selectedRideSlot,
+    List<RideSlot>? rideSlots,
+    RideScheduleState? rideScheduleState,
   }) {
     return RideState(
       currentRide: currentRide ?? this.currentRide,
@@ -73,7 +82,7 @@ class RideState {
       routePoints: routePoints ?? this.routePoints,
       pickupLocation: pickupLocation ?? this.pickupLocation,
       destinationLocation: destinationLocation ?? this.destinationLocation,
-      scheduledDate: scheduledTime ?? this.scheduledDate,
+      scheduleTime: scheduleTime ?? this.scheduleTime,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       estimatedDistance: estimatedDistance ?? this.estimatedDistance,
@@ -82,12 +91,24 @@ class RideState {
       driverLocation: driverLocation ?? this.driverLocation,
       fareEstimates: fareEstimates ?? this.fareEstimates,
       savedCards: savedCards ?? this.savedCards,
+      selectedRideSlot: selectedRideSlot ?? this.selectedRideSlot,
       walletBalance: walletBalance ?? this.walletBalance,
       rideHistory: rideHistory ?? this.rideHistory,
+      rideSlots: rideSlots ?? this.rideSlots,
+      rideScheduleState: rideScheduleState ?? this.rideScheduleState,
     );
   }
 
   bool get hasActiveRide => currentRide != null || bookedRide != null;
+}
+
+enum RideScheduleState {
+  searching,
+  availableRides,
+  rideBooked,
+  connectingDriver,
+  driverMatched,
+  none,
 }
 
 class RideNotifier extends StateNotifier<RideState> {
@@ -118,6 +139,18 @@ class RideNotifier extends StateNotifier<RideState> {
     });
   }
 
+  void setScheduledDate(DateTime date) async {
+    state = state.copyWith(scheduleTime: date);
+  }
+
+  void setRideScheduleState(RideScheduleState scheduleState) {
+    state = state.copyWith(rideScheduleState: scheduleState);
+  }
+
+  void setSelectedRideSlot(RideSlot? slot) {
+    state = state.copyWith(selectedRideSlot: slot);
+  }
+
   // ===========================================================================
   // LOCATION MANAGEMENT
   // ===========================================================================
@@ -144,7 +177,7 @@ class RideNotifier extends StateNotifier<RideState> {
       routePoints: state.routePoints,
       pickupLocation: null,
       destinationLocation: state.destinationLocation,
-      scheduledDate: state.scheduledDate,
+      scheduleTime: state.scheduleTime,
       isLoading: state.isLoading,
       errorMessage: state.errorMessage,
       estimatedDistance: state.estimatedDistance,
@@ -166,7 +199,7 @@ class RideNotifier extends StateNotifier<RideState> {
       routePoints: state.routePoints,
       pickupLocation: state.pickupLocation,
       destinationLocation: null,
-      scheduledDate: state.scheduledDate,
+      scheduleTime: state.scheduleTime,
       isLoading: state.isLoading,
       errorMessage: state.errorMessage,
       estimatedDistance: state.estimatedDistance,
@@ -284,17 +317,21 @@ class RideNotifier extends StateNotifier<RideState> {
   // ===========================================================================
 
   /// Get available slots for shared rides on a specific date
-  Future<List<RideSlot>> getAvailableSlots() async {
+  Future<void> getAvailableSlots() async {
     if (state.pickupLocation == null ||
         state.destinationLocation == null ||
-        state.scheduledDate == null) {
+        state.scheduleTime == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup, destination, and date',
       );
-      return [];
+      return;
     }
 
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      rideScheduleState: RideScheduleState.searching,
+      errorMessage: null,
+    );
 
     try {
       final response = await _repository.getAvailableSlots(
@@ -315,38 +352,43 @@ class RideNotifier extends StateNotifier<RideState> {
               longitude: state.destinationLocation!.longitude,
             ),
           ),
-          scheduleDate: state.scheduledDate ?? DateTime.now(),
+          scheduledTime: state.scheduleTime ?? DateTime.now(),
         ),
       );
 
       state = state.copyWith(isLoading: false);
 
       if (response.success && response.data != null) {
-        return response.data!.slots;
+        state = state.copyWith(
+          rideSlots: response.data!.slots,
+          rideScheduleState: RideScheduleState.availableRides,
+        );
       } else {
         state = state.copyWith(
           errorMessage: response.message ?? 'Failed to get available slots',
         );
-        return [];
       }
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
-      return [];
     }
   }
 
   /// Book a ride with selected vehicle type
-  Future<bool> bookRide({required String rideType}) async {
+  Future<bool> bookRide({String? rideType, String? joinRideId}) async {
     if (state.pickupLocation == null ||
         state.destinationLocation == null ||
-        state.scheduledDate == null) {
+        state.scheduleTime == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup, destination, and date',
       );
       return false;
     }
 
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      rideScheduleState: RideScheduleState.searching,
+      errorMessage: null,
+    );
 
     try {
       final request = BookRideRequest(
@@ -367,7 +409,8 @@ class RideNotifier extends StateNotifier<RideState> {
           ),
         ),
         rideType: rideType,
-        scheduledTime: state.scheduledDate,
+        joinRideId: joinRideId,
+        scheduledTime: state.scheduleTime,
       );
 
       final response = await _repository.bookRide(request);
@@ -375,6 +418,7 @@ class RideNotifier extends StateNotifier<RideState> {
       if (response.success && response.data != null) {
         state = state.copyWith(
           bookedRide: response.data!.ride,
+          rideScheduleState: RideScheduleState.rideBooked,
           isLoading: false,
         );
         return true;

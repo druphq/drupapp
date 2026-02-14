@@ -1,18 +1,11 @@
+import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:flutter/material.dart';
-import '../../../drivers/model/driver.dart';
 import '../../../../theme/app_colors.dart';
 
 class DriverInfoCard extends StatelessWidget {
-  final Driver driver;
-  final String? eta;
-  final String? distance;
+  final DriverInfo driver;
 
-  const DriverInfoCard({
-    super.key,
-    required this.driver,
-    this.eta,
-    this.distance,
-  });
+  const DriverInfoCard({super.key, required this.driver});
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +18,10 @@ class DriverInfoCard extends StatelessWidget {
             CircleAvatar(
               radius: 30,
               backgroundColor: AppColors.primary,
-              child: driver.photoUrl != null
+              child: driver.profilePhoto != null
                   ? ClipOval(
                       child: Image.network(
-                        driver.photoUrl!,
+                        driver.profilePhoto!,
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
@@ -48,7 +41,7 @@ class DriverInfoCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    driver.name,
+                    driver.firstName,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -60,69 +53,69 @@ class DriverInfoCard extends StatelessWidget {
                       const Icon(Icons.star, size: 16, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text(
-                        driver.rating.toStringAsFixed(1),
+                        driver.rating.average.toStringAsFixed(1),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${driver.totalRides} trips)',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
+                      // const SizedBox(width: 4),
+                      // Text(
+                      //   '(${driver.totalRides} trips)',
+                      //   style: const TextStyle(
+                      //     fontSize: 12,
+                      //     color: AppColors.textSecondary,
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${driver.vehicleModel} • ${driver.vehicleNumber}',
+                    '${driver.vehicle.model} • ${driver.vehicle.licensePlate}',
                     style: const TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  if (eta != null || distance != null) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        if (distance != null) ...[
-                          const Icon(
-                            Icons.directions_car,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            distance!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                        if (distance != null && eta != null)
-                          const SizedBox(width: 12),
-                        if (eta != null) ...[
-                          const Icon(
-                            Icons.access_time,
-                            size: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            eta!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+                  // if (eta != null || distance != null) ...[
+                  //   const SizedBox(height: 8),
+                  //   Row(
+                  //     children: [
+                  //       if (distance != null) ...[
+                  //         const Icon(
+                  //           Icons.directions_car,
+                  //           size: 14,
+                  //           color: AppColors.textSecondary,
+                  //         ),
+                  //         const SizedBox(width: 4),
+                  //         Text(
+                  //           distance!,
+                  //           style: const TextStyle(
+                  //             fontSize: 12,
+                  //             color: AppColors.textSecondary,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //       if (distance != null && eta != null)
+                  //         const SizedBox(width: 12),
+                  //       if (eta != null) ...[
+                  //         const Icon(
+                  //           Icons.access_time,
+                  //           size: 14,
+                  //           color: AppColors.textSecondary,
+                  //         ),
+                  //         const SizedBox(width: 4),
+                  //         Text(
+                  //           eta!,
+                  //           style: const TextStyle(
+                  //             fontSize: 12,
+                  //             color: AppColors.textSecondary,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ],
+                  //   ),
+                  // ],
                 ],
               ),
             ),
