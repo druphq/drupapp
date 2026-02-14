@@ -98,6 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       AppScreens.driverAccountRoute,
       AppScreens.rideRequestRoute,
       AppScreens.userTrackingRoute,
+      AppScreens.paymentsRoute,
       AppScreens.rideDetailsRoute,
       AppScreens.paymentWebViewRoute,
     ],

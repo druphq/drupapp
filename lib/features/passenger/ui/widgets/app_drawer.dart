@@ -154,7 +154,7 @@ class AppDrawer extends ConsumerWidget {
                             title: 'Payments',
                             onTap: () {
                               Navigator.pop(context);
-                              // context.push(AppRoutes.paymentsRoute);
+                              context.push(AppRoutes.paymentsRoute);
                             },
                           ),
 

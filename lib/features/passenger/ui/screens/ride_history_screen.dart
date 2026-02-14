@@ -7,6 +7,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import '../../model/ride_api_models.dart';
 import '../../provider/ride_notifier.dart';
+import '../../../../di/providers.dart';
 
 class RideHistoryScreen extends ConsumerStatefulWidget {
   const RideHistoryScreen({super.key});
@@ -19,13 +20,47 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  bool _isLoadingUpcoming = true;
+  bool _isLoadingHistory = true;
+  List<BookedRide> _upcomingRides = [];
+  List<BookedRide> _historyRides = [];
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Fetch ride history on screen load
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(rideNotifierProvider.notifier).fetchRideHistory();
+      _fetchAllData();
+    });
+  }
+
+  Future<void> _fetchAllData() async {
+    await Future.wait([_fetchUpcomingRides(), _fetchRideHistory()]);
+  }
+
+  Future<void> _fetchUpcomingRides() async {
+    setState(() => _isLoadingUpcoming = true);
+
+    final rideRepo = ref.read(rideRepositoryProvider);
+    final response = await rideRepo.getActiveRideFromApi();
+
+    setState(() {
+      _upcomingRides = response.success && response.data?.ride != null
+          ? [response.data!.ride!]
+          : [];
+      _isLoadingUpcoming = false;
+    });
+  }
+
+  Future<void> _fetchRideHistory() async {
+    setState(() => _isLoadingHistory = true);
+
+    await ref.read(rideNotifierProvider.notifier).fetchRideHistory();
+    final rideState = ref.read(rideNotifierProvider);
+
+    setState(() {
+      _historyRides = rideState.rideHistory;
+      _isLoadingHistory = false;
     });
   }
 
@@ -37,13 +72,9 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final rideState = ref.watch(rideNotifierProvider);
-    final height = MediaQuery.of(context).size.height;
-
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -65,46 +96,67 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
           ],
         ),
       ),
-      body: rideState.isLoading
-          ? Padding(
-              padding: EdgeInsets.only(top: height * 0.2),
-              child: const Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox.square(
-                  dimension: 30,
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildRideList(
-                  rides: rideState.rideHistory
-                      .where((r) => r.isScheduled && r.status == 'pending')
-                      .toList(),
-                  emptyIcon: Icons.schedule,
-                  emptyTitle: 'No upcoming rides',
-                  emptySubtitle: 'Scheduled rides will appear here',
-                ),
-                _buildRideList(
-                  rides: rideState.rideHistory
-                      .where((r) => r.status == 'completed')
-                      .toList(),
-                  emptyIcon: Icons.history,
-                  emptyTitle: 'No completed rides yet',
-                  emptySubtitle: 'Your ride history will appear here',
-                ),
-                _buildRideList(
-                  rides: rideState.rideHistory
-                      .where((r) => r.status == 'cancelled')
-                      .toList(),
-                  emptyIcon: Icons.cancel_outlined,
-                  emptyTitle: 'No cancelled rides',
-                  emptySubtitle: 'Cancelled rides will appear here',
-                ),
-              ],
-            ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildTab(
+            isLoading: _isLoadingUpcoming,
+            rides: _upcomingRides,
+            emptyIcon: Icons.schedule,
+            emptyTitle: 'No upcoming rides',
+            emptySubtitle: 'Scheduled rides will appear here',
+            onRefresh: _fetchUpcomingRides,
+          ),
+          _buildTab(
+            isLoading: _isLoadingHistory,
+            rides: _historyRides.where((r) => r.status == 'completed').toList(),
+            emptyIcon: Icons.history,
+            emptyTitle: 'No completed rides yet',
+            emptySubtitle: 'Your ride history will appear here',
+            onRefresh: _fetchRideHistory,
+          ),
+          _buildTab(
+            isLoading: _isLoadingHistory,
+            rides: _historyRides.where((r) => r.status == 'cancelled').toList(),
+            emptyIcon: Icons.cancel_outlined,
+            emptyTitle: 'No cancelled rides',
+            emptySubtitle: 'Cancelled rides will appear here',
+            onRefresh: _fetchRideHistory,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab({
+    required bool isLoading,
+    required List<BookedRide> rides,
+    required IconData emptyIcon,
+    required String emptyTitle,
+    required String emptySubtitle,
+    required Future<void> Function() onRefresh,
+  }) {
+    final height = MediaQuery.of(context).size.height;
+
+    if (isLoading) {
+      return Padding(
+        padding: EdgeInsets.only(top: height * 0.2),
+        child: const Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox.square(
+            dimension: 30,
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
+    return _buildRideList(
+      rides: rides,
+      emptyIcon: emptyIcon,
+      emptyTitle: emptyTitle,
+      emptySubtitle: emptySubtitle,
+      onRefresh: onRefresh,
     );
   }
 
@@ -113,6 +165,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     required IconData emptyIcon,
     required String emptyTitle,
     required String emptySubtitle,
+    required Future<void> Function() onRefresh,
   }) {
     final height = MediaQuery.of(context).size.height;
     if (rides.isEmpty) {
@@ -146,16 +199,15 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        await ref.read(rideNotifierProvider.notifier).fetchRideHistory();
-      },
-      child: ListView.builder(
+      onRefresh: onRefresh,
+      child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: rides.length,
         itemBuilder: (context, index) {
           final ride = rides[index];
           return _buildRideCard(ride);
         },
+        separatorBuilder: (context, index) => _buildDivider(),
       ),
     );
   }
@@ -166,8 +218,10 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     final formattedFare = '₦${ride.fare.totalFare.toStringAsFixed(0)}';
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.transparent,
+      elevation: 0.0,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -217,13 +271,21 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  ride.vehicleType.toUpperCase(),
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.drive_eta, size: 20, color: AppColors.accent),
+                    Gap(4.0),
+                    Text(
+                      ride.vehicleType.toUpperCase(),
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
+
                 Text(
                   '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
                   style: TextStyles.t2.copyWith(
@@ -237,6 +299,10 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(height: 1, color: AppColors.divider);
   }
 
   Widget _buildLocationRow(IconData icon, String address, Color color) {

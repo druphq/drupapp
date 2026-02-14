@@ -11,10 +11,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -24,6 +22,7 @@ class PrivacyPolicyScreen extends ConsumerWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
+        scrolledUnderElevation: 0.0,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -33,7 +32,6 @@ class PrivacyPolicyScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(20),
                 ),
@@ -90,6 +88,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         '• Location data when you use our services\n'
                         '• Device information and usage data',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.settings_outlined,
                     title: 'How We Use Your Information',
@@ -101,6 +101,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         '• Respond to your comments, questions, and requests\n'
                         '• Monitor and analyze trends, usage, and activities',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.share_outlined,
                     title: 'Information Sharing',
@@ -111,6 +113,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         '• When required by law or to protect our rights\n'
                         '• In connection with a merger, acquisition, or sale of assets',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.security_outlined,
                     title: 'Data Security',
@@ -122,6 +126,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         '• Regular security assessments\n'
                         '• Access controls and authentication',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.storage_outlined,
                     title: 'Data Retention',
@@ -133,6 +139,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         'personal information within 30 days, unless we need to retain '
                         'it for legal purposes.',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.gavel_outlined,
                     title: 'Your Rights',
@@ -145,6 +153,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         '• Opt out of certain data collection\n'
                         '• Data portability',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.cookie_outlined,
                     title: 'Cookies & Tracking',
@@ -155,6 +165,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         'We also use analytics services to help us understand how '
                         'users interact with our services.',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.child_care_outlined,
                     title: "Children's Privacy",
@@ -164,6 +176,8 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         'If we learn that we have collected personal information from a '
                         'child, we will take steps to delete that information.',
                   ),
+                  _buildDivider(),
+
                   _buildPolicyCard(
                     icon: Icons.update_outlined,
                     title: 'Policy Updates',
@@ -173,6 +187,7 @@ class PrivacyPolicyScreen extends ConsumerWidget {
                         'page and updating the "Last updated" date.\n\n'
                         'We encourage you to review this policy periodically for any changes.',
                   ),
+                  _buildDivider(),
                   _buildPolicyCard(
                     icon: Icons.contact_mail_outlined,
                     title: 'Contact Us',
@@ -193,6 +208,10 @@ class PrivacyPolicyScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildDivider() {
+    return const Divider(height: 1, color: AppColors.divider);
+  }
+
   Widget _buildPolicyCard({
     required IconData icon,
     required String title,
@@ -200,23 +219,20 @@ class PrivacyPolicyScreen extends ConsumerWidget {
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
       child: Theme(
         data: ThemeData().copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 20,),
           childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          leading: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: AppColors.accent, size: 24),
-          ),
+          // leading: Container(
+          //   padding: const EdgeInsets.all(10),
+          //   decoration: BoxDecoration(
+          //     color: AppColors.accent.withOpacity(0.1),
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          //   child: Icon(icon, color: AppColors.accent, size: 24),
+          // ),
           title: Text(
             title,
             style: TextStyles.t1.copyWith(
