@@ -11,6 +11,7 @@ class CustomButton extends StatelessWidget {
   final double? height;
   final Widget? icon;
   final TextStyle? textStyle;
+  final Color? progressColor;
 
   const CustomButton({
     super.key,
@@ -23,6 +24,7 @@ class CustomButton extends StatelessWidget {
     this.height,
     this.icon,
     this.textStyle,
+    this.progressColor,
   });
 
   @override
@@ -43,12 +45,14 @@ class CustomButton extends StatelessWidget {
           ),
         ),
         child: isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    progressColor ?? Colors.white,
+                  ),
                 ),
               )
             : Row(

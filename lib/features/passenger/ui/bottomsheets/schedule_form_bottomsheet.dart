@@ -321,28 +321,30 @@ class _ScheduleDetailBottomSheetState
             // Confirm Button
             CustomButton(
               text: 'Confirm',
-              onPressed: _canConfirm
-                  ? () {
-                      widget.onConfirm?.call();
+              onPressed: () {
+                if (_canConfirm == false) {
+                  return;
+                }
 
-                      // Get the available slots
-                      final rideState = ref.read(rideNotifierProvider.notifier);
+                widget.onConfirm?.call();
 
-                      rideState.setScheduledDate(
-                        DateTime(
-                          _selectedDate!.year,
-                          _selectedDate!.month,
-                          _selectedDate!.day,
-                          _selectedTime!.hour,
-                          _selectedTime!.minute,
-                        ),
-                      );
+                // Get the available slots
+                final rideState = ref.read(rideNotifierProvider.notifier);
 
-                      rideState.ref
-                          .read(rideNotifierProvider.notifier)
-                          .getAvailableSlots();
-                    }
-                  : null,
+                rideState.setScheduledDate(
+                  DateTime(
+                    _selectedDate!.year,
+                    _selectedDate!.month,
+                    _selectedDate!.day,
+                    _selectedTime!.hour,
+                    _selectedTime!.minute,
+                  ),
+                );
+
+                rideState.ref
+                    .read(rideNotifierProvider.notifier)
+                    .getAvailableSlots();
+              },
               backgroundColor: _canConfirm
                   ? AppColors.accent
                   : AppColors.accentLighter,

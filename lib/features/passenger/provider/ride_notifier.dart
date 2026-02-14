@@ -99,6 +99,9 @@ class RideState {
     );
   }
 
+  bool get hasActiveRoutes =>
+      pickupLocation != null && destinationLocation != null;
+
   bool get hasActiveRide => currentRide != null || bookedRide != null;
 }
 

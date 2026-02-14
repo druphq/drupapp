@@ -15,7 +15,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
   final VehicleEstimate? estimate;
   final bool isLoading;
   final VoidCallback? onScheduleRide;
-  final VoidCallback? onCancelRide;
+  final VoidCallback? onEditRide;
 
   const RideConfirmationBottomSheet({
     super.key,
@@ -24,7 +24,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
     this.estimate,
     this.isLoading = false,
     this.onScheduleRide,
-    this.onCancelRide,
+    this.onEditRide,
   });
 
   @override
@@ -36,7 +36,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
         Gap(30),
         // Title
         Padding(
-          padding: const EdgeInsets.only(left: 16.0),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -61,19 +61,33 @@ class RideConfirmationBottomSheet extends StatelessWidget {
                         color: AppColors.white,
                       ),
                     ),
-              TextButton(
-                onPressed: () {
-                  onCancelRide?.call();
-                },
-                child: Text(
-                  'Cancel',
-                  style: TextStyles.t1.copyWith(
-                    fontSize: FontSizes.s16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.white,
-                  ),
+
+              if (estimate != null)
+                Row(
+                  children: [
+                    Text(
+                      '${formatDistance(estimate?.distanceKm ?? 0)}, ${formatDuration(estimate?.durationMinutes ?? 0)}',
+                      style: TextStyles.t1.copyWith(
+                        fontSize: FontSizes.s18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+              // TextButton(
+              //   onPressed: () {
+              //     onEditRide?.call();
+              //   },
+              //   child: Text(
+              //     'Edit Route',
+              //     style: TextStyles.t1.copyWith(
+              //       fontSize: FontSizes.s16,
+              //       fontWeight: FontWeight.w700,
+              //       color: AppColors.white,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

@@ -77,26 +77,26 @@ class _RideBookingBottomsheetState
           ),
           child: Column(
             children: [
-              Gap(20.0),
-              // Handle bar with close button
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.greyStrong,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              Gap(30.0),
 
-              Gap(16.0),
+              // Handle bar with close button
+              // Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: 16),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Container(
+              //         width: 40,
+              //         height: 4,
+              //         decoration: BoxDecoration(
+              //           color: AppColors.greyStrong,
+              //           borderRadius: BorderRadius.circular(2),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              // Gap(16.0),
 
               Expanded(child: _buildContent(scrollController)),
             ],
@@ -180,14 +180,18 @@ class _RideBookingBottomsheetState
           // Schedule Ride Button
           CustomButton(
             text: 'Continue',
-            onPressed: selectedRideSlot != null
-                ? () {
-                    ref
-                        .read(rideNotifierProvider.notifier)
-                        .bookRide(rideType: selectedRideSlot.rideType!);
-                  }
-                : () {},
+            onPressed: () {
+              if (selectedRideSlot == null) {
+                showErrorSnackbar('Please select a ride');
+                return;
+              }
+
+              ref
+                  .read(rideNotifierProvider.notifier)
+                  .bookRide(rideType: selectedRideSlot.rideType!);
+            },
             isLoading: ride.isLoading,
+            progressColor: AppColors.orange400,
             backgroundColor: selectedRideSlot != null
                 ? AppColors.accent
                 : AppColors.accentLighter,
@@ -201,8 +205,13 @@ class _RideBookingBottomsheetState
 
   // show action snackbar for errors
   void showErrorSnackbar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message, style: TextStyles.body2)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: TextStyles.body2.copyWith(fontSize: 14.0),
+        ),
+      ),
+    );
   }
 }

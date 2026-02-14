@@ -10,12 +10,12 @@ import 'package:gap/gap.dart';
 class PlanRideBottomsheet extends ConsumerStatefulWidget {
   final VoidCallback? onWhereToTap;
   final VoidCallback? onScheduleRide;
-  final VoidCallback? onCancelRide;
+  final VoidCallback? onEditRide;
   const PlanRideBottomsheet({
     super.key,
     this.onWhereToTap,
     this.onScheduleRide,
-    this.onCancelRide,
+    this.onEditRide,
   });
 
   @override
@@ -30,9 +30,6 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
     final pickupLocation = rideState.pickupLocation;
     final destinationLocation = rideState.destinationLocation;
 
-    final showRideDetails =
-        pickupLocation != null && destinationLocation != null;
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: const BoxDecoration(
@@ -41,7 +38,7 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
       ),
       child: Column(
         children: [
-          switch (showRideDetails) {
+          switch (rideState.hasActiveRoutes) {
             true => RideConfirmationBottomSheet(
               pickupLocation: pickupLocation!.name ?? '',
               destinationLocation: destinationLocation!.name ?? '',
@@ -50,9 +47,8 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
                   ? rideState.fareEstimates[0]
                   : null,
               onScheduleRide: widget.onScheduleRide,
-              onCancelRide: () {
-                widget.onCancelRide?.call();
-                ref.read(rideNotifierProvider.notifier).clearRoute();
+              onEditRide: () {
+                widget.onEditRide?.call();
               },
             ),
             false => HomeContentWidget(onWhereToTap: widget.onWhereToTap),

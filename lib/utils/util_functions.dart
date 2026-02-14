@@ -9,9 +9,9 @@ String formatThousand(double number) {
 }
 
 // format duration to something like 1h 30m or 30m
-String formatDuration(Duration duration) {
-  final hours = duration.inHours;
-  final minutes = duration.inMinutes.remainder(60);
+String formatDuration(int duration) {
+  final hours = duration ~/ 60;
+  final minutes = duration % 60;
   if (hours > 0) {
     return '${hours}h ${minutes}m';
   } else {
@@ -19,9 +19,9 @@ String formatDuration(Duration duration) {
   }
 }
 
-// format distance to something like 1.5 km just km
-String formatDistance(double distance) {
-  return '${(distance / 1000).toStringAsFixed(1)} km';
+// format distance to something like 1.5 km
+String formatDistance(double distanceKm) {
+  return '${distanceKm.toStringAsFixed(1)} km';
 }
 
 // Format ride type,eg individual or shared_3

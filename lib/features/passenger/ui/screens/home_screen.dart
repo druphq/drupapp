@@ -5,6 +5,7 @@ import 'package:drup/features/passenger/ui/bottomsheets/ride_booking_bottomsheet
 import 'package:drup/features/passenger/ui/widgets/plan_ride_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/app_drawer.dart';
 import 'package:drup/features/passenger/ui/widgets/location_permission_bottom_sheet.dart';
+import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +29,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   GoogleMapController? _mapController;
   bool _isAtUserLocation = true;
-  bool _showRideSearchSheet = false;
+  bool _showRideBookingSheet = false;
   Set<Polyline> polylines = {};
   Set<Marker> markers = {};
   LocationModel? currentLocation;
@@ -208,35 +209,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       extendBody: true,
       extendBodyBehindAppBar: true,
       drawer: const AppDrawer(),
-      // appBar:
-      //  AppBar(
-      //   systemOverlayStyle: SystemUiOverlayStyle.dark,
-      //   leading: SizedBox.shrink(),
-      // leading: Builder(
-      //   builder: (context) => Container(
-      //     margin: EdgeInsets.all(8.0),
-      //     decoration: BoxDecoration(
-      //       color: context.colorScheme.surface,
-      //       shape: BoxShape.circle,
-      //       boxShadow: [
-      //         BoxShadow(
-      //           color: Colors.black.withValues(alpha: 0.5),
-      //           blurRadius: 6,
-      //           offset: Offset(0, 2),
-      //         ),
-      //       ],
-      //     ),
-      //     child: IconButton(
-      //       icon: Icon(Icons.menu, color: AppColors.onAccent, size: 24.0),
-      //       onPressed: () {
-      //         Scaffold.of(context).openDrawer();
-      //       },
-      //     ),
-      //   ),
-      // ),
-      //   backgroundColor: Colors.transparent,
-      //   iconTheme: const IconThemeData(color: Colors.black),
-      // ),
+
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: Stack(
@@ -304,7 +277,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           _animateCameraToRoute();
                         }
                       },
-                      onCancelRide: _onMyLocationButtonPressed,
+                      onEditRide: () {},
                       onScheduleRide: _scheduleRideBottomsheet,
                     ),
                   ),
@@ -313,7 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
 
             // Ride Search Draggable Bottom Sheet with backdrop
-            if (_showRideSearchSheet)
+            if (_showRideBookingSheet)
               NotificationListener<SizeChangedLayoutNotification>(
                 onNotification: (notification) {
                   _measureBottomSheetHeight();
@@ -322,7 +295,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: RideBookingBottomsheet(
                   onClose: () {
                     setState(() {
-                      _showRideSearchSheet = false;
+                      _showRideBookingSheet = false;
                     });
                   },
                 ),
@@ -331,26 +304,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Menu button
             Positioned(
               left: 16,
+              right: 16,
               child: SafeArea(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Builder(
-                    builder: (context) => IconButton(
-                      icon: const Icon(Icons.menu, size: 24.0),
-                      color: AppColors.onAccent,
-                      onPressed: () => Scaffold.of(context).openDrawer(),
+                      child: Builder(
+                        builder: (context) => IconButton(
+                          icon: const Icon(Icons.menu, size: 24.0),
+                          color: AppColors.onAccent,
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        ),
+                      ),
                     ),
-                  ),
+
+                    if (rideState.hasActiveRoutes)
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.close, size: 24.0),
+                          color: AppColors.onAccent,
+                          onPressed: () {
+                            _clearRoute(context);
+                          },
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -448,7 +449,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Wait for bottom sheet to close before showing the next one
           Future.delayed(const Duration(milliseconds: 300), () {
             setState(() {
-              _showRideSearchSheet = true;
+              _showRideBookingSheet = true;
             });
           });
         },
@@ -595,6 +596,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _clearRoute(BuildContext context) async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Cancel Ride',
+          style: TextStyles.t3.copyWith(
+            fontSize: FontSizes.s20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to cancel the ride?',
+          style: TextStyles.h3.copyWith(
+            fontSize: FontSizes.s14,
+            color: AppColors.surface500,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'No',
+              style: TextStyles.t2.copyWith(
+                fontSize: FontSizes.s16,
+                color: AppColors.surface500,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              'Yes',
+              style: TextStyles.t1.copyWith(
+                fontSize: FontSizes.s16,
+                color: AppColors.accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Check if user confirmed cancellation
+    if (shouldLogout == true) {
+      _onMyLocationButtonPressed();
+
+      setState(() {
+        _showRideBookingSheet = false;
+      });
+      ref.read(rideNotifierProvider.notifier).clearRoute();
+    }
   }
 
   @override
