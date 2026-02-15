@@ -9,17 +9,17 @@ class MapHelper {
       markerId: MarkerId(id ?? 'pickup'),
       position: position,
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-      infoWindow: const InfoWindow(title: 'Pickup Location'),
+      infoWindow: const InfoWindow(title: 'Pickup Address'),
     );
   }
 
   /// Create custom marker for destination
   static Marker createDestinationMarker(LatLng position, {String? id}) {
     return Marker(
-      markerId: MarkerId(id ?? 'destination'),
+      markerId: MarkerId(id ?? 'drop-off'),
       position: position,
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-      infoWindow: const InfoWindow(title: 'Destination'),
+      infoWindow: const InfoWindow(title: 'Drop-off Address'),
     );
   }
 

@@ -28,7 +28,7 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
     final rideState = ref.watch(rideNotifierProvider);
 
     final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.destinationLocation;
+    final destinationLocation = rideState.dropoffLocation;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),

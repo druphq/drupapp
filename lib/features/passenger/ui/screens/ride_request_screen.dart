@@ -18,7 +18,7 @@ class RideRequestScreen extends ConsumerWidget {
     final rideState = ref.watch(rideNotifierProvider);
 
     final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.destinationLocation;
+    final destinationLocation = rideState.dropoffLocation;
     final distance = rideState.estimatedDistance;
     final duration = rideState.estimatedDuration;
     final fare = rideState.estimatedFare;

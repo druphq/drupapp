@@ -89,7 +89,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
     });
   }
 
-  // If the selected location matches either pickup or destination, we want to hide it from recent locations list.
+  // If the selected location matches either pickup or dropoff, we want to hide it from recent locations list.
   void hideLocationFromRecent(LocationModel location) {
     setState(() {
       _recentLocations.removeWhere(
@@ -253,7 +253,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
         _dropoffController.text.isNotEmpty) {
       final rideRef = ref.read(rideNotifierProvider.notifier);
       rideRef.setPickupLocation(_selectedPickupLocation!);
-      rideRef.setDestinationLocation(_selectedDropOffLocation!);
+      rideRef.setDropoffLocation(_selectedDropOffLocation!);
 
       context.pop(true);
     }
@@ -415,7 +415,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
 
             const Gap(16),
 
-            // Destination TextField
+            // Dropoff TextField
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -477,15 +477,15 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                               size: 20,
                             ),
                             onPressed: () {
-                              // Restore the destination location to recent list before clearing
+                              // Restore the dropoff location to recent list before clearing
                               final rideState = ref.read(rideNotifierProvider);
-                              if (rideState.destinationLocation != null) {
+                              if (rideState.dropoffLocation != null) {
                                 restoreLocationToRecent(
-                                  rideState.destinationLocation!,
+                                  rideState.dropoffLocation!,
                                 );
                                 ref
                                     .read(rideNotifierProvider.notifier)
-                                    .clearDestinationLocation();
+                                    .clearDropoffLocation();
                               }
                               _dropoffController.clear();
                               setState(() {

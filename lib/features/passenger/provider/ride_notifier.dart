@@ -14,7 +14,7 @@ class RideState {
   final RideRequest? currentRequest;
   final List<LatLng> routePoints;
   final LocationModel? pickupLocation;
-  final LocationModel? destinationLocation;
+  final LocationModel? dropoffLocation;
   final DateTime? scheduleTime;
   final bool isLoading;
   final String? errorMessage;
@@ -36,7 +36,7 @@ class RideState {
     this.currentRequest,
     this.routePoints = const [],
     this.pickupLocation,
-    this.destinationLocation,
+    this.dropoffLocation,
     this.scheduleTime,
     this.isLoading = false,
     this.errorMessage,
@@ -81,7 +81,7 @@ class RideState {
       currentRequest: currentRequest ?? this.currentRequest,
       routePoints: routePoints ?? this.routePoints,
       pickupLocation: pickupLocation ?? this.pickupLocation,
-      destinationLocation: destinationLocation ?? this.destinationLocation,
+      dropoffLocation: destinationLocation ?? this.dropoffLocation,
       scheduleTime: scheduleTime ?? this.scheduleTime,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
@@ -99,8 +99,7 @@ class RideState {
     );
   }
 
-  bool get hasActiveRoutes =>
-      pickupLocation != null && destinationLocation != null;
+  bool get hasActiveRoutes => pickupLocation != null && dropoffLocation != null;
 
   bool get hasActiveRide => currentRide != null || bookedRide != null;
 }
@@ -160,12 +159,12 @@ class RideNotifier extends StateNotifier<RideState> {
 
   Future<void> setPickupLocation(LocationModel location) async {
     state = state.copyWith(pickupLocation: location);
-    if (state.destinationLocation != null) {
+    if (state.dropoffLocation != null) {
       Future.wait([calculateRoute(), calculateFare()]);
     }
   }
 
-  Future<void> setDestinationLocation(LocationModel location) async {
+  Future<void> setDropoffLocation(LocationModel location) async {
     state = state.copyWith(destinationLocation: location);
     if (state.pickupLocation != null) {
       Future.wait([calculateRoute(), calculateFare()]);
@@ -179,7 +178,7 @@ class RideNotifier extends StateNotifier<RideState> {
       currentRequest: state.currentRequest,
       routePoints: state.routePoints,
       pickupLocation: null,
-      destinationLocation: state.destinationLocation,
+      dropoffLocation: state.dropoffLocation,
       scheduleTime: state.scheduleTime,
       isLoading: state.isLoading,
       errorMessage: state.errorMessage,
@@ -194,14 +193,14 @@ class RideNotifier extends StateNotifier<RideState> {
     );
   }
 
-  void clearDestinationLocation() {
+  void clearDropoffLocation() {
     state = RideState(
       currentRide: state.currentRide,
       bookedRide: state.bookedRide,
       currentRequest: state.currentRequest,
       routePoints: state.routePoints,
       pickupLocation: state.pickupLocation,
-      destinationLocation: null,
+      dropoffLocation: null,
       scheduleTime: state.scheduleTime,
       isLoading: state.isLoading,
       errorMessage: state.errorMessage,
@@ -222,7 +221,7 @@ class RideNotifier extends StateNotifier<RideState> {
 
   /// Calculate route polyline from Google Maps Directions API
   Future<bool> calculateRoute() async {
-    if (state.pickupLocation == null || state.destinationLocation == null) {
+    if (state.pickupLocation == null || state.dropoffLocation == null) {
       return false;
     }
 
@@ -230,7 +229,7 @@ class RideNotifier extends StateNotifier<RideState> {
       final mapsService = ref.read(googleMapsServiceProvider);
       final directions = await mapsService.getDirections(
         state.pickupLocation!,
-        state.destinationLocation!,
+        state.dropoffLocation!,
       );
 
       if (directions != null) {
@@ -263,7 +262,7 @@ class RideNotifier extends StateNotifier<RideState> {
 
   /// Fetch fare estimates from API
   Future<bool> calculateFare() async {
-    if (state.pickupLocation == null || state.destinationLocation == null) {
+    if (state.pickupLocation == null || state.dropoffLocation == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup and destination',
       );
@@ -284,12 +283,12 @@ class RideNotifier extends StateNotifier<RideState> {
           ),
         ),
         dropoff: RideLocation(
-          address: state.destinationLocation!.address ?? '',
-          name: state.destinationLocation!.name ?? '',
-          placeId: state.destinationLocation!.placeId ?? '',
+          address: state.dropoffLocation!.address ?? '',
+          name: state.dropoffLocation!.name ?? '',
+          placeId: state.dropoffLocation!.placeId ?? '',
           coordinates: RideCoordinates(
-            latitude: state.destinationLocation!.latitude,
-            longitude: state.destinationLocation!.longitude,
+            latitude: state.dropoffLocation!.latitude,
+            longitude: state.dropoffLocation!.longitude,
           ),
         ),
       );
@@ -322,7 +321,7 @@ class RideNotifier extends StateNotifier<RideState> {
   /// Get available slots for shared rides on a specific date
   Future<void> getAvailableSlots() async {
     if (state.pickupLocation == null ||
-        state.destinationLocation == null ||
+        state.dropoffLocation == null ||
         state.scheduleTime == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup, destination, and date',
@@ -348,11 +347,11 @@ class RideNotifier extends StateNotifier<RideState> {
             ),
           ),
           dropoff: RideLocation(
-            name: state.destinationLocation!.name ?? '',
-            address: state.destinationLocation!.address ?? '',
+            name: state.dropoffLocation!.name ?? '',
+            address: state.dropoffLocation!.address ?? '',
             coordinates: RideCoordinates(
-              latitude: state.destinationLocation!.latitude,
-              longitude: state.destinationLocation!.longitude,
+              latitude: state.dropoffLocation!.latitude,
+              longitude: state.dropoffLocation!.longitude,
             ),
           ),
           scheduledTime: state.scheduleTime ?? DateTime.now(),
@@ -379,7 +378,7 @@ class RideNotifier extends StateNotifier<RideState> {
   /// Book a ride with selected vehicle type
   Future<bool> bookRide({String? rideType, String? joinRideId}) async {
     if (state.pickupLocation == null ||
-        state.destinationLocation == null ||
+        state.dropoffLocation == null ||
         state.scheduleTime == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup, destination, and date',
@@ -400,11 +399,11 @@ class RideNotifier extends StateNotifier<RideState> {
           ),
         ),
         dropoff: RideLocation(
-          name: state.destinationLocation!.name ?? '',
-          address: state.destinationLocation!.address ?? '',
+          name: state.dropoffLocation!.name ?? '',
+          address: state.dropoffLocation!.address ?? '',
           coordinates: RideCoordinates(
-            latitude: state.destinationLocation!.latitude,
-            longitude: state.destinationLocation!.longitude,
+            latitude: state.dropoffLocation!.latitude,
+            longitude: state.dropoffLocation!.longitude,
           ),
         ),
         rideType: rideType,
@@ -440,7 +439,7 @@ class RideNotifier extends StateNotifier<RideState> {
     required String userName,
     required String paymentMethod,
   }) async {
-    if (state.pickupLocation == null || state.destinationLocation == null) {
+    if (state.pickupLocation == null || state.dropoffLocation == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup and destination',
       );
@@ -454,7 +453,7 @@ class RideNotifier extends StateNotifier<RideState> {
         userId: userId,
         userName: userName,
         pickupLocation: state.pickupLocation!,
-        destinationLocation: state.destinationLocation!,
+        destinationLocation: state.dropoffLocation!,
       );
 
       state = state.copyWith(currentRequest: request, isLoading: false);

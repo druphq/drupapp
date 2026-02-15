@@ -220,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               bottom: 0,
               child: GoogleMap(
                 mapType: MapType.normal,
-                padding: EdgeInsets.only(bottom: _bottomSheetHeight),
+                padding: EdgeInsets.only(bottom: _bottomSheetHeight * 0.9),
                 onMapCreated: _onMapCreated,
                 // onTap: _onMapTap,
                 onCameraMove: _onCameraMove,
@@ -270,10 +270,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         final result = await context.push(
                           AppRoutes.pickLocationRoute,
                         );
-                        if (result == true) {
-                          // Animate camera to show route after returning
-                          _animateCameraToRoute();
-                        }
+                        // if (result == true) {
+                        //   // Animate camera to show route after returning
+                        //   _animateCameraToRoute();
+                        // }
                       },
                       onEditRide: () {},
                       onScheduleRide: _scheduleRideBottomsheet,
@@ -364,8 +364,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _animateCameraToRoute() async {
     final rideState = ref.read(rideNotifierProvider);
 
-    if (rideState.pickupLocation == null ||
-        rideState.destinationLocation == null) {
+    if (rideState.pickupLocation == null || rideState.dropoffLocation == null) {
       return;
     }
 
@@ -374,7 +373,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Include route points for more accurate bounds if available
     final List<LatLng> allPoints = [
       rideState.pickupLocation!.latLng,
-      rideState.destinationLocation!.latLng,
+      rideState.dropoffLocation!.latLng,
       ...rideState.routePoints,
     ];
 
@@ -382,7 +381,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bounds = MapHelper.calculateBounds(allPoints);
 
     // Padding for the bounds:
-    const double boundsPadding = 80.0;
+    const double boundsPadding = 50.0;
 
     await _mapController!.animateCamera(
       CameraUpdate.newLatLngBounds(bounds, boundsPadding),
@@ -392,7 +391,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// Update map overlays (markers and polylines) based on ride state
   void _updateMapOverlays(RideState rideState) {
     final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.destinationLocation;
+    final destinationLocation = rideState.dropoffLocation;
     final routePoints = rideState.routePoints;
 
     if (!rideState.hasActiveRoutes) {
@@ -423,6 +422,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         !_setEquals(polylines, newPolylines)) {
       markers = newMarkers;
       polylines = newPolylines;
+    }
+
+    // adjust camera if we have a new route
+    if (routePoints.isNotEmpty) {
+      _animateCameraToRoute();
     }
   }
 

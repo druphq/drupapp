@@ -29,7 +29,7 @@ class _RideStatusScreenState extends ConsumerState<RideStatusScreen> {
     if (_mapController == null) return;
 
     final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.destinationLocation;
+    final destinationLocation = rideState.dropoffLocation;
 
     if (pickupLocation != null && destinationLocation != null) {
       final bounds = MapHelper.calculateBounds([
@@ -47,7 +47,7 @@ class _RideStatusScreenState extends ConsumerState<RideStatusScreen> {
 
     final currentRide = rideState.currentRide;
     final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.destinationLocation;
+    final destinationLocation = rideState.dropoffLocation;
 
     Set<Marker> markers = {};
 
