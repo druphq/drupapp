@@ -27,13 +27,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final GlobalKey _bottomSheetKey = GlobalKey();
   GoogleMapController? _mapController;
   bool _isAtUserLocation = true;
   bool _showRideBookingSheet = false;
   Set<Polyline> polylines = {};
   Set<Marker> markers = {};
   LocationModel? currentLocation;
-  final GlobalKey _bottomSheetKey = GlobalKey();
   double _bottomSheetHeight = 0;
 
   @override
@@ -198,9 +198,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch ride state to update map when route changes
     final rideState = ref.watch(rideNotifierProvider);
-
     // Update markers and polylines when route data changes
     _updateMapOverlays(rideState);
 
@@ -348,6 +346,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AppColors.onAccent,
                           onPressed: () {
                             _clearRoute(context);
+                            _clearMapMarkers();
                           },
                         ),
                       ),
@@ -428,11 +427,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!b.contains(item)) return false;
     }
     return true;
-  }
-
-  void _clearMapMarkers() {
-    markers = {};
-    polylines = {};
   }
 
   // fill scheduling details bottomsheet
@@ -596,6 +590,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _clearMapMarkers() {
+    markers = {};
+    polylines = {};
   }
 
   void _clearRoute(BuildContext context) async {

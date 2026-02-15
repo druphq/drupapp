@@ -133,122 +133,123 @@ class _EmailVerificationScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.dark,
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Gap(20),
-                Text(
-                  'Verify Email',
-                  style: TextStyles.t1.copyWith(fontSize: FontSizes.s20),
-                ),
-                const Gap(8),
-                Text.rich(
-                  TextSpan(
-                    text: 'We sent a verification code to ',
-                    style: TextStyles.body1.copyWith(
-                      fontSize: FontSizes.s16,
-                      color: AppColors.surface600,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: widget.email,
-                        style: TextStyles.body1.copyWith(
-                          fontSize: FontSizes.s16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.surface600,
-                        ),
-                      ),
-                    ],
+      appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Gap(20),
+              Text(
+                'Verify Email',
+                style: TextStyles.t1.copyWith(fontSize: FontSizes.s20),
+              ),
+              const Gap(8),
+              Text.rich(
+                TextSpan(
+                  text: 'We sent a verification code to ',
+                  style: TextStyles.body1.copyWith(
+                    fontSize: FontSizes.s16,
+                    color: AppColors.surface600,
                   ),
+                  children: [
+                    TextSpan(
+                      text: widget.email,
+                      style: TextStyles.body1.copyWith(
+                        fontSize: FontSizes.s16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.surface600,
+                      ),
+                    ),
+                  ],
                 ),
-                const Gap(40),
-                // OTP Input Field
-                OtpPinField(
-                  key: _otpPinFieldController,
-                  autoFillEnable: false,
-                  textInputAction: TextInputAction.done,
-                  onSubmit: (text) {
+              ),
+              const Gap(40),
+              // OTP Input Field
+              OtpPinField(
+                key: _otpPinFieldController,
+                autoFillEnable: false,
+                textInputAction: TextInputAction.done,
+                onSubmit: (text) {
+                  _otp = text;
+                  _verifyEmailOTP(text);
+                },
+                onChange: (text) {
+                  setState(() {
                     _otp = text;
-                    _verifyEmailOTP(text);
-                  },
-                  onChange: (text) {
-                    setState(() {
-                      _otp = text;
-                    });
-                  },
-                  maxLength: 6,
-                  showCursor: true,
-                  cursorColor: AppColors.primary,
-                  cursorWidth: 2,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  otpPinFieldStyle: OtpPinFieldStyle(
-                    defaultFieldBorderColor: Colors.grey.shade300,
-                    activeFieldBorderColor: AppColors.primary,
-                    filledFieldBorderColor: AppColors.primary,
-                    fieldBorderWidth: 1,
-                    fieldBorderRadius: Corners.md,
-                    fieldPadding: 8,
-                  ),
-                  otpPinFieldDecoration: OtpPinFieldDecoration.custom,
-                  fieldWidth: 50,
-                  fieldHeight: 60,
+                  });
+                },
+                maxLength: 6,
+                showCursor: true,
+                cursorColor: AppColors.primary,
+                cursorWidth: 2,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                otpPinFieldStyle: OtpPinFieldStyle(
+                  defaultFieldBorderColor: Colors.grey.shade300,
+                  activeFieldBorderColor: AppColors.primary,
+                  filledFieldBorderColor: AppColors.primary,
+                  fieldBorderWidth: 1,
+                  fieldBorderRadius: Corners.md,
+                  fieldPadding: 8,
                 ),
-                const Gap(30),
-                // Resend OTP
-                Text.rich(
-                  TextSpan(
-                    text: 'Didn\'t receive the code? ',
-                    style: TextStyles.body2.copyWith(
-                      fontSize: FontSizes.s16,
-                      color: AppColors.surface700,
+                otpPinFieldDecoration: OtpPinFieldDecoration.custom,
+                fieldWidth: 50,
+                fieldHeight: 60,
+              ),
+              const Gap(30),
+              // Resend OTP
+              Text.rich(
+                TextSpan(
+                  text: 'Didn\'t receive the code? ',
+                  style: TextStyles.body2.copyWith(
+                    fontSize: FontSizes.s16,
+                    color: AppColors.surface700,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Resend',
+                      style: TextStyles.t1.copyWith(
+                        color: AppColors.primary,
+                        fontSize: FontSizes.s16,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = _isResending ? null : _resendOTP,
                     ),
-                    children: [
-                      TextSpan(
-                        text: 'Resend',
-                        style: TextStyles.t1.copyWith(
-                          color: AppColors.primary,
-                          fontSize: FontSizes.s16,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = _isResending ? null : _resendOTP,
-                      ),
-                      WidgetSpan(
-                        child: _isResending
-                            ? Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.primary,
-                                  ),
+                    WidgetSpan(
+                      child: _isResending
+                          ? Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.primary,
                                 ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
-                const Gap(40),
-                // Verify Button
-                CustomButton(
-                  text: 'Verify Email',
-                  onPressed: _verifyEmailOTP,
-                  isLoading: _isLoading,
-                  textStyle: TextStyles.btnStyle.copyWith(
-                    color: Colors.white,
-                    fontSize: 16.0,
-                  ),
+              ),
+              const Gap(40),
+              // Verify Button
+              CustomButton(
+                text: 'Verify Email',
+                onPressed: _verifyEmailOTP,
+                isLoading: _isLoading,
+                textStyle: TextStyles.btnStyle.copyWith(
+                  color: Colors.white,
+                  fontSize: 16.0,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

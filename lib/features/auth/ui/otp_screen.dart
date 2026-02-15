@@ -78,9 +78,9 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
 
         if (user != null) {
           // Load user profile
-          await ref.read(userNotifierProvider.notifier).loadUserProfile();
+          // await ref.read(userNotifierProvider.notifier).loadUserProfile();
 
-          if (user.isProfileComplete && mounted) {
+          if (user.isProfileComplete) {
             if (mounted) {
               final isDriver = user.userType == UserType.driver;
               context.go(
@@ -154,6 +154,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,

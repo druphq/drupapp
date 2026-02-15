@@ -24,15 +24,17 @@ class PickLocationScreen extends ConsumerStatefulWidget {
 
 class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
   final _pickupController = TextEditingController();
-  final _destinationController = TextEditingController();
+  final _dropoffController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
   List<LocationModel> _recentLocations = [];
-  bool _isSearching = false;
-  bool _isCurrentLocationField = false;
   Timer? _debounceTimer;
   final focusNode1 = FocusNode();
   final focusNode2 = FocusNode();
+  bool _isSearching = false;
+  bool _isCurrentLocationField = false;
   bool _showCurrentLocationBtn = false;
+  LocationModel? _selectedPickupLocation;
+  LocationModel? _selectedDropOffLocation;
 
   @override
   void initState() {
@@ -64,8 +66,8 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
       setState(() {
         if ((_pickupController.text.isNotEmpty &&
                 _pickupController.text == address) ||
-            (_destinationController.text.isNotEmpty &&
-                _destinationController.text == address)) {
+            (_dropoffController.text.isNotEmpty &&
+                _dropoffController.text == address)) {
           _showCurrentLocationBtn = false;
         } else {
           _showCurrentLocationBtn = true;
@@ -73,12 +75,12 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
       });
     });
 
-    _destinationController.addListener(() {
+    _dropoffController.addListener(() {
       setState(() {
         if ((_pickupController.text.isNotEmpty &&
                 _pickupController.text == address) ||
-            (_destinationController.text.isNotEmpty &&
-                _destinationController.text == address)) {
+            (_dropoffController.text.isNotEmpty &&
+                _dropoffController.text == address)) {
           _showCurrentLocationBtn = false;
         } else {
           _showCurrentLocationBtn = true;
@@ -118,9 +120,10 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
     if (userState.currentLocation != null) {
       final address = userState.currentLocation!.name;
       _pickupController.text = address ?? '';
-      ref
-          .read(rideNotifierProvider.notifier)
-          .setPickupLocation(userState.currentLocation!);
+
+      setState(() {
+        _selectedPickupLocation = userState.currentLocation!;
+      });
     }
   }
 
@@ -128,7 +131,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
   void dispose() {
     _debounceTimer?.cancel();
     _pickupController.dispose();
-    _destinationController.dispose();
+    _dropoffController.dispose();
     super.dispose();
   }
 
@@ -206,10 +209,14 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
     // Update the text field with selected address
     if (_isCurrentLocationField) {
       _pickupController.text = place['name'];
-      ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
+      setState(() {
+        _selectedPickupLocation = location;
+      });
     } else {
-      _destinationController.text = place['name'];
-      ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+      _dropoffController.text = place['name'];
+      setState(() {
+        _selectedDropOffLocation = location;
+      });
     }
 
     setState(() {
@@ -224,10 +231,14 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
     // Update the text field with selected address
     if (_isCurrentLocationField || focusNode1.hasFocus) {
       _pickupController.text = location.name ?? location.address ?? '';
-      ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
+      setState(() {
+        _selectedPickupLocation = location;
+      });
     } else {
-      _destinationController.text = location.name ?? location.address ?? '';
-      ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+      _dropoffController.text = location.name ?? location.address ?? '';
+      setState(() {
+        _selectedDropOffLocation = location;
+      });
     }
 
     // Hide the selected location from recent locations list
@@ -239,7 +250,11 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
 
   void _checkAndPopIfBothLocationsSelected() {
     if (_pickupController.text.isNotEmpty &&
-        _destinationController.text.isNotEmpty) {
+        _dropoffController.text.isNotEmpty) {
+      final rideRef = ref.read(rideNotifierProvider.notifier);
+      rideRef.setPickupLocation(_selectedPickupLocation!);
+      rideRef.setDestinationLocation(_selectedDropOffLocation!);
+
       context.pop(true);
     }
   }
@@ -249,12 +264,19 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
       '${AppRoutes.nigeriaAirportsRoute}?isPickup=$isPickup',
     );
 
-    if (result != null && result is Map<String, dynamic>) {
+    if (result != null && result is LocationModel) {
       // Update the text field with selected airport
       if (isPickup) {
-        _pickupController.text = result['name'];
+        _pickupController.text = result.name ?? '';
+
+        setState(() {
+          _selectedPickupLocation = result;
+        });
       } else {
-        _destinationController.text = result['name'];
+        _dropoffController.text = result.name ?? '';
+        setState(() {
+          _selectedDropOffLocation = result;
+        });
       }
 
       // Check if both locations are selected, then pop back to home
@@ -404,7 +426,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                 height: Sizes.tfieldHeight,
                 alignment: Alignment.center,
                 child: TextField(
-                  controller: _destinationController,
+                  controller: _dropoffController,
                   focusNode: focusNode2,
                   autofocus: true,
                   autocorrect: false,
@@ -437,8 +459,8 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                       children: [
                         Gap(16.0),
                         LocationDotWidget(
-                          bgColor: AppColors.accent,
-                          isActive: _destinationController.text.isNotEmpty,
+                          bgColor: AppColors.red400,
+                          isActive: _dropoffController.text.isNotEmpty,
                         ),
                       ],
                     ),
@@ -446,7 +468,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (_destinationController.text.isNotEmpty &&
+                        if (_dropoffController.text.isNotEmpty &&
                             focusNode2.hasFocus)
                           IconButton(
                             icon: const Icon(
@@ -465,7 +487,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                                     .read(rideNotifierProvider.notifier)
                                     .clearDestinationLocation();
                               }
-                              _destinationController.clear();
+                              _dropoffController.clear();
                               setState(() {
                                 _searchResults = [];
                               });
@@ -606,25 +628,17 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                                             if (focusNode1.hasFocus) {
                                               _pickupController.text = address;
 
-                                              ref
-                                                  .read(
-                                                    rideNotifierProvider
-                                                        .notifier,
-                                                  )
-                                                  .setPickupLocation(
-                                                    userState.currentLocation!,
-                                                  );
+                                              setState(() {
+                                                _selectedPickupLocation =
+                                                    userState.currentLocation!;
+                                              });
                                             } else if (focusNode2.hasFocus) {
-                                              _destinationController.text =
-                                                  address;
-                                              ref
-                                                  .read(
-                                                    rideNotifierProvider
-                                                        .notifier,
-                                                  )
-                                                  .setDestinationLocation(
-                                                    userState.currentLocation!,
-                                                  );
+                                              _dropoffController.text = address;
+
+                                              setState(() {
+                                                _selectedDropOffLocation =
+                                                    userState.currentLocation!;
+                                              });
                                             }
                                             // Check if both locations are selected
                                             _checkAndPopIfBothLocationsSelected();

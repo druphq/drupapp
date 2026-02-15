@@ -61,8 +61,8 @@ class AppColors {
   //* red colors
   static const Color red50 = Color(0xFFFFB2B2);
   static const Color red100 = Color(0xFFFF6666);
-  static const Color red400 = Color(0xFFFF3232);
-  static const Color red700 = Color(0xFFFF0000);
+  static const Color red400 = Color(0xFFF44336);
+  static const Color red700 = Color(0xFFD32F2F);
 
   static const copyBg = Color(0xffB1C0BC);
   static const white = Color(0xffffffff);

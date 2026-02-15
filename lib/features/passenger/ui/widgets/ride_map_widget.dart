@@ -38,7 +38,7 @@ class RideMapWidget extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 30.0),
                   child: LocationDotWidget(
-                    bgColor: AppColors.accent,
+                    bgColor: AppColors.red100,
                     isActive: true,
                     size: 12,
                   ),

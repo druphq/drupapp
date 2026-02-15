@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/app_phone_field.dart';
+import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/core/widgets/custom_text_field.dart';
 import 'package:drup/di/providers.dart';
 import 'package:drup/theme/app_style.dart';
@@ -6,6 +7,7 @@ import 'package:drup/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/resources/app_strings.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -70,10 +72,11 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         elevation: 0,
         centerTitle: true,
         title: Text('Complete  Profile', style: TextStyles.t1),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: SizedBox.shrink(),
         scrolledUnderElevation: 0.0,
       ),
       body: SafeArea(
@@ -168,23 +171,14 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 minHeight: Sizes.btnHeightMd,
                 minWidth: Sizes.btnWidthMd,
               ),
-              child: FilledButton(
-                onPressed: _isLoading ? null : _handleSubmit,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        AppStrings.continueTxt,
-                        style: TextStyles.btnStyle.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
+              child: CustomButton(
+                text: AppStrings.continueTxt,
+                isLoading: _isLoading,
+                onPressed: _handleSubmit,
+                textStyle: TextStyles.btnStyle.copyWith(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                ),
               ),
             ),
           ],
@@ -262,6 +256,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
             _phoneController.text.trim().isNotEmpty) {
           // Navigate to phone verification (OTP) screen
           _showSuccess('Please verify your phone number');
+
           await Future.delayed(const Duration(milliseconds: 500));
           if (mounted) {
             context.push(

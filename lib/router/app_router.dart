@@ -19,7 +19,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
     // Listen to auth changes and notify router to re-evaluate redirects
     ref.listen(isLoggedInProvider, (_, __) => notifyListeners());
     ref.listen(isDriverProvider, (_, __) => notifyListeners());
-    ref.listen(userNotifierProvider, (_, __) => notifyListeners());
+    // ref.listen(userNotifierProvider, (_, __) => notifyListeners());
   }
 }
 

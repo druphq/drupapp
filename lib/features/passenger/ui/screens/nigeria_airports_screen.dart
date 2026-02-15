@@ -73,15 +73,8 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
       address: airport['address'],
     );
 
-    // Update the corresponding location in ride state
-    if (widget.isPickupLocation) {
-      ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
-    } else {
-      ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
-    }
-
     // Go back with the selected airport
-    context.pop(airport);
+    context.pop(location);
   }
 
   @override
@@ -95,7 +88,7 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          widget.isPickupLocation ? 'Select Pickup' : 'Select Destination',
+          '${widget.isPickupLocation ? 'Pickup' : 'Drop off'} Airport',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -147,7 +140,6 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
 
   Widget _buildAirportCard(Map<String, dynamic> airport) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(Corners.md),
         color: Colors.transparent,
@@ -172,7 +164,7 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+
         onTap: () => _selectAirport(airport),
       ),
     );
