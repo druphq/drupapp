@@ -237,19 +237,28 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
               ),
             );
           } else if (item is BookedRide) {
-            return _buildRideCard(item);
+            // Add divider below each ride except the last in the group
+            final isLastInGroup =
+                (index + 1 >= items.length) || (items[index + 1] is String);
+            return Column(
+              children: [
+                _buildRideCard(item),
+                if (!isLastInGroup) _buildDivider(),
+              ],
+            );
           } else {
             return const SizedBox.shrink();
-          } 
+          }
         },
       ),
     );
   }
 
   Widget _buildRideCard(BookedRide ride) {
-    // final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-    // final formattedDate = dateFormat.format(ride.createdAt);
+    final dateFormat = DateFormat('dd MMM  •  hh:mm a');
+    final formattedDate = dateFormat.format(ride.createdAt);
     final scheduleDate = formatDate(ride.scheduledTime!);
+    final pickupTime = formatTime(ride.pickupWindow!.start);
     final formattedFare = '₦${formatThousand(ride.fare.totalFare)}';
 
     return Card(
@@ -279,10 +288,10 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                       ),
                       const Gap(4),
                       Text(
-                        scheduleDate,
+                        '$scheduleDate • $pickupTime',
                         style: TextStyles.t2.copyWith(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -338,7 +347,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                   ),
 
                   Text(
-                    '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
+                    // '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
+                    formattedDate,
                     style: TextStyles.t2.copyWith(
                       fontSize: 12,
                       color: AppColors.textSecondary,

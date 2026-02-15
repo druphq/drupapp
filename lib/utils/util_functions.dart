@@ -56,7 +56,7 @@ String formatRelativeDateTime(DateTime dateTime) {
 
 // format date to something like June 5, 2024
 String formatDate(DateTime dateTime) {
-  return '${_getMonthName(dateTime.month)} ${dateTime.day}, ${dateTime.year}';
+  return '${dateTime.day} ${_getMonthName(dateTime.month)}'; //${dateTime.year}
 }
 
 // format date time to something like 10:30 AM, June 5, 2024
