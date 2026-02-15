@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:drup/router/app_routes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import 'package:drup/core/cache/cache_manager.dart';
@@ -12,7 +10,7 @@ import 'interceptors/auth_interceptor.dart';
 import 'interceptors/refresh_token_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
 import 'interceptors/retry_interceptor.dart';
-import 'interceptors/connectivity_interceptor.dart';
+// import 'interceptors/connectivity_interceptor.dart';
 // import 'interceptors/cache_interceptor.dart';
 
 /// Singleton Dio client with all interceptors configured
@@ -111,7 +109,7 @@ class DioClient {
     debugPrint('Token expired - user needs to re-authenticate');
     final navigatorContext = rootNavigator.currentContext;
     if (navigatorContext != null && navigatorContext.mounted) {
-      // Navigate to login screen
+      //Navigate to login screen
       Navigator.popUntil(navigatorContext, (route) => route.isFirst);
     }
   }

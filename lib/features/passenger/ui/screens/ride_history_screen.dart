@@ -79,6 +79,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(

@@ -191,7 +191,7 @@ class _RideBookingBottomsheetState
                   .bookRide(rideType: selectedRideSlot.rideType!);
             },
             isLoading: ride.isLoading,
-            progressColor: AppColors.orange400,
+            progressColor: AppColors.accent,
             backgroundColor: selectedRideSlot != null
                 ? AppColors.accent
                 : AppColors.accentLighter,

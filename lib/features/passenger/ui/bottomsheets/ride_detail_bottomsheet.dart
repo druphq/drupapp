@@ -158,10 +158,15 @@ class RideDetailBottomsheet extends ConsumerWidget {
                   AppRoutes.paymentWebViewRoute,
                   extra: {
                     'authorizationUrl': result!.authorizationUrl!,
-                    'onPaymentComplete': () {
+                    'onPaymentComplete': () async {
                       // Pop webview and navigate to ride details
                       context.pop();
-                      context.push(AppRoutes.rideDetailsRoute, extra: ride);
+                      await context.push(
+                        AppRoutes.rideDetailsRoute,
+                        extra: ride,
+                      );
+
+                      ref.read(rideNotifierProvider.notifier).clearRoute();
                     },
                   },
                 );

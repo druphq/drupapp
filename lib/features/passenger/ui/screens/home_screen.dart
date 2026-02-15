@@ -395,6 +395,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final destinationLocation = rideState.destinationLocation;
     final routePoints = rideState.routePoints;
 
+    if (!rideState.hasActiveRoutes) {
+      setState(() {
+        _showRideBookingSheet = false;
+      });
+    }
+
     // Build new markers set
     final newMarkers = <Marker>{};
     if (pickupLocation != null) {

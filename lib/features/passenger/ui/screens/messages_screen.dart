@@ -15,7 +15,6 @@ class MessagesScreen extends ConsumerStatefulWidget {
 class _MessagesScreenState extends ConsumerState<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
-    // TODO: Replace with actual messages data
     final messages = <Map<String, dynamic>>[];
 
     return Scaffold(
@@ -46,32 +45,36 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.chat_bubble_outline, size: 80, color: AppColors.textLight),
-          const Gap(16),
-          Text(
-            'No messages yet',
-            style: TextStyles.t2.copyWith(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const Gap(8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              'Messages from your drivers and support will appear here',
-              textAlign: TextAlign.center,
+    final height = MediaQuery.of(context).size.height;
+    return Padding(
+      padding: EdgeInsets.only(top: height * 0.2),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(Icons.chat_bubble_outline, size: 80, color: AppColors.textLight),
+            const Gap(16),
+            Text(
+              'No messages yet',
               style: TextStyles.t2.copyWith(
-                fontSize: 14,
-                color: AppColors.textLight,
+                fontSize: 16,
+                color: AppColors.textSecondary,
               ),
             ),
-          ),
-        ],
+            const Gap(8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                'Messages from your drivers and support will appear here',
+                textAlign: TextAlign.center,
+                style: TextStyles.t2.copyWith(
+                  fontSize: 14,
+                  color: AppColors.textLight,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

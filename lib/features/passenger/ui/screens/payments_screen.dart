@@ -59,6 +59,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
