@@ -1,3 +1,4 @@
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/util_functions.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import '../../model/ride_api_models.dart';
 import '../../../../di/providers.dart';
 
@@ -180,86 +182,91 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.transparent,
       elevation: 0.0,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Date & Amount
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formattedDate,
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  formattedAmount,
-                  style: TextStyles.t1.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const Gap(12),
-
-            // Pickup & Dropoff
-            if (pickupName.isNotEmpty || dropoffName.isNotEmpty) ...[
-              _buildLocationRow(
-                Icons.circle,
-                pickupName.isNotEmpty ? pickupName : 'Pickup',
-                AppColors.pickupMarker,
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 11),
-                height: 20,
-                width: 2,
-                color: AppColors.divider,
-              ),
-              _buildLocationRow(
-                Icons.location_on,
-                dropoffName.isNotEmpty ? dropoffName : 'Dropoff',
-                AppColors.destinationMarker,
-              ),
-              const Gap(12),
-            ],
-
-            // Status & Payment method
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusLabel,
+      child: InkWell(
+        onTap: () {
+          context.push(AppRoutes.paymentDetailRoute, extra: payment);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date & Amount
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    formattedDate,
                     style: TextStyles.t2.copyWith(
                       fontSize: 12,
-                      color: statusColor,
-                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
                     ),
                   ),
-                ),
-                Text(
-                  _capitalizeFirst(payment.paymentMethod),
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                  Text(
+                    formattedAmount,
+                    style: TextStyles.t1.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                ],
+              ),
+              const Gap(12),
+
+              // Pickup & Dropoff
+              if (pickupName.isNotEmpty || dropoffName.isNotEmpty) ...[
+                _buildLocationRow(
+                  Icons.circle,
+                  pickupName.isNotEmpty ? pickupName : 'Pickup',
+                  AppColors.pickupMarker,
                 ),
+                Container(
+                  margin: const EdgeInsets.only(left: 11),
+                  height: 20,
+                  width: 2,
+                  color: AppColors.divider,
+                ),
+                _buildLocationRow(
+                  Icons.location_on,
+                  dropoffName.isNotEmpty ? dropoffName : 'Dropoff',
+                  AppColors.destinationMarker,
+                ),
+                const Gap(12),
               ],
-            ),
-          ],
+
+              // Status & Payment method
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: statusColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _capitalizeFirst(payment.paymentMethod),
+                    style: TextStyles.t2.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

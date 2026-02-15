@@ -33,7 +33,7 @@ class RideRepository {
     required LocationModel pickupLocation,
     required LocationModel destinationLocation,
   }) async {
-    return await _rideService.createRideRequest(   
+    return await _rideService.createRideRequest(
       userId: userId,
       userName: userName,
       pickupLocation: pickupLocation,

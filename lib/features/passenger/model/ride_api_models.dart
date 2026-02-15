@@ -592,7 +592,7 @@ class BookedRide extends Equatable {
     return BookedRide(
       id: json['id'] as String? ?? json['_id'] as String? ?? '',
       rideNumber: json['rideNumber'] as String? ?? '',
-      userId: json['user'] as String?,
+      userId: json['userId'] as String?,
       rideType: json['rideType'] as String? ?? 'individual',
       vehicleType: json['vehicleType'] as String? ?? '',
       pickup: RideLocation.fromJson(json['pickup'] as Map<String, dynamic>),

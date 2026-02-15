@@ -1,9 +1,13 @@
+import 'package:drup/resources/app_assets.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../model/ride_api_models.dart';
 import '../../provider/ride_notifier.dart';
@@ -198,104 +202,152 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       );
     }
 
+    // Group rides by month/year
+    Map<String, List<BookedRide>> grouped = {};
+    for (final ride in rides) {
+      final key = DateFormat('MMMM yyyy').format(ride.createdAt);
+      grouped.putIfAbsent(key, () => []).add(ride);
+    }
+
+    // Flatten to a list of headers and rides
+    final List<dynamic> items = [];
+    grouped.forEach((month, rides) {
+      items.add(month);
+      items.addAll(rides);
+    });
+
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: ListView.separated(
+      child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: rides.length,
+        itemCount: items.length,
         itemBuilder: (context, index) {
-          final ride = rides[index];
-          return _buildRideCard(ride);
+          final item = items[index];
+          if (item is String) {
+            // Section header
+            return Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Text(
+                item,
+                style: TextStyles.t1.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            );
+          } else if (item is BookedRide) {
+            return _buildRideCard(item);
+          } else {
+            return const SizedBox.shrink();
+          } 
         },
-        separatorBuilder: (context, index) => _buildDivider(),
       ),
     );
   }
 
   Widget _buildRideCard(BookedRide ride) {
-    final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-    final formattedDate = dateFormat.format(ride.createdAt);
-    final formattedFare = '₦${ride.fare.totalFare.toStringAsFixed(0)}';
+    // final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
+    // final formattedDate = dateFormat.format(ride.createdAt);
+    final scheduleDate = formatDate(ride.scheduledTime!);
+    final formattedFare = '₦${formatThousand(ride.fare.totalFare)}';
 
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.transparent,
       elevation: 0.0,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formattedDate,
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  formattedFare,
-                  style: TextStyles.t1.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const Gap(12),
-            _buildLocationRow(
-              Icons.circle,
-              ride.pickup.name.isNotEmpty
-                  ? ride.pickup.name
-                  : ride.pickup.address,
-              AppColors.pickupMarker,
-            ),
-            Container(
-              margin: const EdgeInsets.only(left: 11),
-              height: 20,
-              width: 2,
-              color: AppColors.divider,
-            ),
-            _buildLocationRow(
-              Icons.location_on,
-              ride.dropoff.name.isNotEmpty
-                  ? ride.dropoff.name
-                  : ride.dropoff.address,
-              AppColors.destinationMarker,
-            ),
-            const Gap(12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.drive_eta, size: 20, color: AppColors.accent),
-                    Gap(4.0),
-                    Text(
-                      ride.vehicleType.toUpperCase(),
-                      style: TextStyles.t2.copyWith(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+      child: InkWell(
+        onTap: () {
+          // Navigate to ride details
+          context.push(AppRoutes.rideDetailsRoute, extra: ride);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      ImageIcon(
+                        AssetImage(AppAssets.scheduleIcon),
+                        size: 18,
+                        color: AppColors.accent,
                       ),
-                    ),
-                  ],
-                ),
-
-                Text(
-                  '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                      const Gap(4),
+                      Text(
+                        scheduleDate,
+                        style: TextStyles.t2.copyWith(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
+
+                  Text(
+                    formattedFare,
+                    style: TextStyles.t1.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const Gap(12),
+              _buildLocationRow(
+                Icons.circle,
+                ride.pickup.name.isNotEmpty
+                    ? ride.pickup.name
+                    : ride.pickup.address,
+                AppColors.pickupMarker,
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 11),
+                height: 20,
+                width: 2,
+                color: AppColors.divider,
+              ),
+              _buildLocationRow(
+                Icons.location_on,
+                ride.dropoff.name.isNotEmpty
+                    ? ride.dropoff.name
+                    : ride.dropoff.address,
+                AppColors.destinationMarker,
+              ),
+              const Gap(12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.drive_eta, size: 20, color: AppColors.accent),
+                      Gap(4.0),
+                      Text(
+                        ride.vehicleType.toUpperCase(),
+                        style: TextStyles.t2.copyWith(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  Text(
+                    '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

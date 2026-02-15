@@ -99,6 +99,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       AppScreens.rideRequestRoute,
       AppScreens.userTrackingRoute,
       AppScreens.paymentsRoute,
+      AppScreens.paymentDetailRoute,
       AppScreens.rideDetailsRoute,
       AppScreens.paymentWebViewRoute,
     ],

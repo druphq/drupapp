@@ -33,6 +33,7 @@ import 'package:drup/features/passenger/ui/screens/payments_screen.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drup/features/auth/model/auth.dart';
+import 'package:drup/features/passenger/ui/screens/payment_detail_screen.dart';
 
 class AppRoutes {
   // Routes
@@ -63,6 +64,7 @@ class AppRoutes {
   static const String deleteAccountRoute = '/delete-account';
   static const String paymentsRoute = '/payments';
   static const String rideDetailsRoute = '/ride-details';
+  static const String paymentDetailRoute = '/payment-detail';
   static const String paymentWebViewRoute = '/payment-webview';
 }
 
@@ -356,7 +358,19 @@ class AppScreens {
       final ride = state.extra as BookedRide;
       return slideRightTransitionPage(
         key: state.pageKey,
-        child: RideDetailsScreen(bookedRide: ride),
+        child: RideDetailsScreen(ride: ride),
+      );
+    },
+  );
+
+  static final paymentDetailRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.paymentDetailRoute,
+    pageBuilder: (context, state) {
+      final paymentInfo = state.extra as PaymentHistoryItem;
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: PaymentDetailScreen(paymentInfo: paymentInfo),
       );
     },
   );

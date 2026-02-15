@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -108,9 +109,10 @@ class DioClient {
   /// Handle when refresh token expires
   void _handleTokenExpired() {
     debugPrint('Token expired - user needs to re-authenticate');
-    final context = rootNavigator.currentContext;
-    if (context != null && context.mounted) {
-      context.go(AppRoutes.loginRoute);
+    final navigatorContext = rootNavigator.currentContext;
+    if (navigatorContext != null && navigatorContext.mounted) {
+      // Navigate to login screen
+      Navigator.popUntil(navigatorContext, (route) => route.isFirst);
     }
   }
 
