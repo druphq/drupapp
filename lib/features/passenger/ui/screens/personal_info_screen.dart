@@ -51,7 +51,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Personal Information',
+          'Personal Info',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -137,10 +137,6 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             // Form Fields
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
               child: Column(
                 children: [
                   _buildTextField(

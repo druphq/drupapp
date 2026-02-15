@@ -223,7 +223,7 @@ class PrivacyPolicyScreen extends ConsumerWidget {
       child: Theme(
         data: ThemeData().copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 20,),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 20),
           childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           // leading: Container(
           //   padding: const EdgeInsets.all(10),

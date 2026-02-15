@@ -309,7 +309,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: rideState.hasActiveRoutes
+                            ? Colors.white60
+                            : Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -322,8 +324,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Builder(
                         builder: (context) => IconButton(
                           icon: const Icon(Icons.menu, size: 24.0),
-                          color: AppColors.onAccent,
-                          onPressed: () => Scaffold.of(context).openDrawer(),
+                          color: rideState.hasActiveRoutes
+                              ? AppColors.accentLight
+                              : AppColors.accent,
+                          onPressed: () {
+                            if (rideState.hasActiveRoutes) return;
+
+                            Scaffold.of(context).openDrawer();
+                          },
                         ),
                       ),
                     ),

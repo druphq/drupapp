@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -42,12 +44,16 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
             // App Logo and Info
             const Gap(20),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: const BoxDecoration(
                 color: AppColors.accent,
                 shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(12),
+                  top: Radius.circular(12),
+                ),
               ),
-              child: Image.asset(AppAssets.drupLogoIcon, width: 60, height: 60),
+              child: Image.asset(AppAssets.drupLogoIcon, height: 100),
             ),
             const Gap(16),
             Text(
@@ -123,20 +129,19 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
 
             _buildDivider(),
 
-            _buildLinkTile(
-              icon: Icons.gavel_outlined,
-              title: 'Licenses',
-              onTap: () {
-                showLicensePage(
-                  context: context,
-                  applicationName: AppStrings.appNameTxt,
-                  applicationVersion: _appVersion,
-                );
-              },
-            ),
+            // _buildLinkTile(
+            //   icon: Icons.gavel_outlined,
+            //   title: 'Licenses',
+            //   onTap: () {
+            //     showLicensePage(
+            //       context: context,
+            //       applicationName: AppStrings.appNameTxt,
+            //       applicationVersion: _appVersion,
+            //     );
+            //   },
+            // ),
 
-            _buildDivider(),
-
+            // _buildDivider(),
             const Gap(24),
 
             // Connect Section
@@ -166,7 +171,8 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
 
             _buildLinkTile(
               icon: Icons.star_outline,
-              title: 'Rate Us on App Store',
+              title:
+                  'Rate Us on ${Platform.isAndroid ? 'Google Play' : 'App Store'}',
               onTap: () {
                 ScaffoldMessenger.of(
                   context,
