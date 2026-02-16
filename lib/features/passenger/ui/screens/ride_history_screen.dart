@@ -82,7 +82,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'My Ride',
+          'My Rides',
           style: TextStyles.t1.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -280,17 +280,14 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      ImageIcon(
-                        AssetImage(AppAssets.scheduleIcon),
-                        size: 18,
-                        color: AppColors.accent,
-                      ),
-                      const Gap(4),
+                      Icon(Icons.drive_eta, size: 20, color: AppColors.accent),
+                      Gap(4.0),
                       Text(
-                        '$scheduleDate • $pickupTime',
+                        ride.rideType.toUpperCase(),
                         style: TextStyles.t2.copyWith(
-                          fontSize: 14,
+                          fontSize: 12,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -332,15 +329,18 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.drive_eta, size: 20, color: AppColors.accent),
-                      Gap(4.0),
+                      ImageIcon(
+                        AssetImage(AppAssets.scheduleIcon),
+                        size: 18,
+                        color: AppColors.accent,
+                      ),
+                      const Gap(4),
                       Text(
-                        ride.vehicleType.toUpperCase(),
+                        '$scheduleDate • $pickupTime',
                         style: TextStyles.t2.copyWith(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],

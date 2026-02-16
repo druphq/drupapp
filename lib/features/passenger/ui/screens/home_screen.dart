@@ -266,14 +266,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     key: _bottomSheetKey,
                     child: PlanRideBottomsheet(
                       onWhereToTap: () async {
-                        // Navigate to location search screen with slide up transition
-                        final result = await context.push(
-                          AppRoutes.pickLocationRoute,
-                        );
-                        // if (result == true) {
-                        //   // Animate camera to show route after returning
-                        //   _animateCameraToRoute();
-                        // }
+                        // Navigate to pick location search
+                        await context.push(AppRoutes.pickLocationRoute);
                       },
                       onEditRide: () {},
                       onScheduleRide: _scheduleRideBottomsheet,

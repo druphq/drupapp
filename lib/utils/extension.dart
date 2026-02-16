@@ -13,4 +13,14 @@ extension StringUtils on String {
     if (isEmpty) return '';
     return split(' ').first;
   }
+
+  String capitalizeFirstChar() {
+    if (isEmpty) return '';
+    return this[0].toUpperCase() + substring(1);
+  }
+}
+
+extension NullableStringUtils on String? {
+  // Check if not empty or null
+  bool get isNotEmptyOrNull => this != null && this!.isNotEmpty;
 }

@@ -1,7 +1,6 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/features/passenger/provider/ride_notifier.dart';
-import 'package:drup/features/passenger/ui/widgets/driver_info_card.dart';
 import 'package:drup/features/passenger/ui/widgets/ride_map_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
@@ -125,20 +124,6 @@ class RideDetailBottomsheet extends ConsumerWidget {
               ],
             ),
           ),
-
-          if (ride.driver != null) ...[
-            DriverInfoCard(driver: ride.driver!),
-          ] else ...[
-            Gap(16),
-            Text(
-              'Driver details will be available once a driver is assigned to your ride.',
-              textAlign: TextAlign.center,
-              style: TextStyles.t2.copyWith(
-                fontSize: FontSizes.s14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
 
           Gap(24),
 

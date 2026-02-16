@@ -1,144 +1,98 @@
-import 'package:drup/features/passenger/model/ride_api_models.dart';
+import 'package:drup/features/passenger/model/model.dart';
+import 'package:drup/resources/app_assets.dart';
+import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/theme/app_colors.dart';
+import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/extension.dart';
+import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
-import '../../../../theme/app_colors.dart';
+import 'package:gap/gap.dart';
 
 class DriverInfoCard extends StatelessWidget {
-  final DriverInfo driver;
-
-  const DriverInfoCard({super.key, required this.driver});
+  const DriverInfoCard({super.key, this.bookedRide});
+  final BookedRide? bookedRide;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: AppColors.primary,
-              child: driver.profilePhoto != null
-                  ? ClipOval(
-                      child: Image.network(
-                        driver.profilePhoto!,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.person,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                      ),
-                    )
-                  : const Icon(Icons.person, size: 30, color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final driverInfo = bookedRide?.driver;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 25,
+          backgroundColor: Colors.black.withValues(alpha: 0.1),
+          backgroundImage: driverInfo != null
+              ? driverInfo.profilePhoto.isNotEmptyOrNull
+                    ? AssetImage(AppAssets.privacyIcon)
+                    : NetworkImage(driverInfo.profilePhoto ?? '')
+              : null,
+        ),
+        Gap(12.0),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    driver.firstName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 16, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      Text(
-                        driver.rating.average.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      // const SizedBox(width: 4),
-                      // Text(
-                      //   '(${driver.totalRides} trips)',
-                      //   style: const TextStyle(
-                      //     fontSize: 12,
-                      //     color: AppColors.textSecondary,
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${driver.vehicle.model} • ${driver.vehicle.licensePlate}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  // if (eta != null || distance != null) ...[
-                  //   const SizedBox(height: 8),
-                  //   Row(
-                  //     children: [
-                  //       if (distance != null) ...[
-                  //         const Icon(
-                  //           Icons.directions_car,
-                  //           size: 14,
-                  //           color: AppColors.textSecondary,
-                  //         ),
-                  //         const SizedBox(width: 4),
-                  //         Text(
-                  //           distance!,
-                  //           style: const TextStyle(
-                  //             fontSize: 12,
-                  //             color: AppColors.textSecondary,
-                  //           ),
-                  //         ),
-                  //       ],
-                  //       if (distance != null && eta != null)
-                  //         const SizedBox(width: 12),
-                  //       if (eta != null) ...[
-                  //         const Icon(
-                  //           Icons.access_time,
-                  //           size: 14,
-                  //           color: AppColors.textSecondary,
-                  //         ),
-                  //         const SizedBox(width: 4),
-                  //         Text(
-                  //           eta!,
-                  //           style: const TextStyle(
-                  //             fontSize: 12,
-                  //             color: AppColors.textSecondary,
-                  //           ),
-                  //         ),
-                  //       ],
-                  //     ],
-                  //   ),
-                  // ],
+                  driverInfo != null
+                      ? Text(
+                          driverInfo.firstName,
+                          style: TextStyles.t1.copyWith(
+                            fontSize: FontSizes.s16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.onAccent,
+                          ),
+                        )
+                      : _buildBlurWidget(),
+                  driverInfo != null
+                      ? Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.0,
+                            vertical: 2.0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppColors.accent),
+                            borderRadius: BorderRadius.circular(Corners.sm),
+                            color: AppColors.grey50,
+                          ),
+                          child: Text(
+                            'ABC-123-XY',
+                            style: TextStyles.t2.copyWith(
+                              fontSize: FontSizes.s11,
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        )
+                      : _buildBlurWidget(),
                 ],
               ),
-            ),
-            Column(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.phone),
-                  onPressed: () {
-                    // Call driver
-                  },
-                  color: AppColors.primary,
+              Gap(4.0),
+
+              Text(
+                'Arriving in ${formatRelativeDateTime(bookedRide?.scheduledTime ?? DateTime.now())}',
+                textAlign: TextAlign.center,
+                style: TextStyles.t2.copyWith(
+                  fontSize: FontSizes.s14,
+                  color: AppColors.textSecondary,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.message),
-                  onPressed: () {
-                    // Message driver
-                  },
-                  color: AppColors.primary,
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildBlurWidget({double? width}) {
+    return Container(
+      height: 18,
+      width: width ?? 80,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }

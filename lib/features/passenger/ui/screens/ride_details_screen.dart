@@ -5,10 +5,12 @@ import 'package:drup/features/passenger/ui/widgets/ride_map_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../di/providers.dart';
 
 class RideDetailsScreen extends ConsumerStatefulWidget {
@@ -94,21 +96,33 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
           ),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _error!,
-                style: TextStyles.t2.copyWith(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: _fetchRide, child: const Text('Retry')),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 80, color: AppColors.textLight),
+                const Gap(16),
+                Text(
+                  _error!,
+                  textAlign: TextAlign.center,
+                  style: TextStyles.t2.copyWith(color: AppColors.textSecondary),
+                ),
+                TextButton(
+                  onPressed: _fetchRide,
+                  child: Text(
+                    'Retry',
+                    style: TextStyles.btnStyle.copyWith(fontSize: 16.0),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
     final ride = _ride!;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -125,51 +139,142 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
         ),
       ),
       body: ListView(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         children: [
-          Text(
-            'Ride Booked',
-            textAlign: TextAlign.center,
-            style: TextStyles.t1.copyWith(
-              fontSize: FontSizes.s24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.onAccent,
+          Gap(10.0),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              children: [
+                DriverInfoCard(bookedRide: ride),
+
+                Gap(10),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(Corners.md),
+                  ),
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Driver\'s detail will appear once a driver is assigned to your ride.',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: FontSizes.s14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          Gap(8),
-          Text(
-            'Driver will be arriving in ${formatRelativeDateTime(ride.scheduledTime ?? DateTime.now())}',
-            textAlign: TextAlign.center,
-            style: TextStyles.t2.copyWith(
-              fontSize: FontSizes.s14,
-              color: AppColors.textSecondary,
+
+          Gap(10.0),
+
+          // Text(
+          //   'Ride Booked',
+          //   textAlign: TextAlign.center,
+          //   style: TextStyles.t1.copyWith(
+          //     fontSize: FontSizes.s24,
+          //     fontWeight: FontWeight.w700,
+          //     color: AppColors.onAccent,
+          //   ),
+          // ),
+          // Gap(8),
+          // Text(
+          //   'Arriving in ${formatRelativeDateTime(ride.scheduledTime ?? DateTime.now())}',
+          //   textAlign: TextAlign.center,
+          //   style: TextStyles.t2.copyWith(
+          //     fontSize: FontSizes.s14,
+          //     color: AppColors.textSecondary,
+          //   ),
+          // ),
+          // Gap(32),
+          SizedBox(
+            height: 150,
+            child: Stack(
+              children: [
+                GoogleMap(
+                  mapType: MapType.normal,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                      ride.pickup.coordinates.latitude,
+                      ride.pickup.coordinates.longitude,
+                    ),
+                    zoom: 14,
+                  ),
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                ),
+
+                Positioned(
+                  left: 16.0,
+                  top: 8.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(Corners.lg),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.directions_car,
+                          size: 20,
+                          color: AppColors.onAccent,
+                        ),
+                        Gap(4),
+                        Text(
+                          '${formatDistance(ride.estimatedDistance.toDouble())}, ${formatDuration(ride.estimatedDuration)}',
+                          style: TextStyles.h1.copyWith(
+                            fontSize: FontSizes.s14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          Gap(32),
+
+          Gap(16.0),
 
           // Trip Details
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(Corners.md),
-              border: Border.all(color: AppColors.greyStrong),
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Trip Details',
-                  style: TextStyles.t1.copyWith(
-                    fontSize: FontSizes.s16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.onAccent,
-                  ),
+                Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        text: 'Ride Type:',
+                        style: TextStyles.h2.copyWith(
+                          fontSize: FontSizes.s14,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: ' ${ride.rideType.capitalizeFirstChar()}',
+                            style: TextStyles.t2.copyWith(
+                              fontSize: FontSizes.s18,
+                              color: AppColors.onAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                Gap(4.0),
+                Gap(10),
                 RichText(
                   text: TextSpan(
-                    text: 'Scheduled for ',
+                    text: 'Pickup Date:  ',
                     style: TextStyles.t2.copyWith(
                       fontSize: FontSizes.s14,
                       color: AppColors.textSecondary,
@@ -186,49 +291,58 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                     ],
                   ),
                 ),
-                Gap(12),
+                Gap(10),
+
                 RideMapWidget(ride: ride),
+                Gap(20),
+                CustomButton(
+                  text: 'Get help with ride',
+                  onPressed: () {},
+                  backgroundColor: AppColors.divider,
+                  textStyle: TextStyles.t2.copyWith(
+                    fontSize: FontSizes.s16,
+                    color: AppColors.onAccent,
+                  ),
+                ),
                 Gap(16),
-                Divider(color: AppColors.greyStrong),
-                Gap(12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Total Fare',
+                      'Payment',
                       style: TextStyles.t2.copyWith(
                         fontSize: FontSizes.s16,
                         fontWeight: FontWeight.w600,
                         color: AppColors.onAccent,
                       ),
                     ),
-                    Text(
-                      '₦${formatThousand(ride.fare.totalFare)}',
-                      style: TextStyles.t1.copyWith(
-                        fontSize: FontSizes.s20,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total Fare',
+                          style: TextStyles.t2.copyWith(
+                            fontSize: FontSizes.s16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.onAccent,
+                          ),
+                        ),
+                        Text(
+                          '₦${formatThousand(ride.fare.totalFare)}',
+                          style: TextStyles.t1.copyWith(
+                            fontSize: FontSizes.s20,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
           ),
-
-          if (ride.driver != null) ...[
-            DriverInfoCard(driver: ride.driver!),
-          ] else ...[
-            Gap(16),
-            Text(
-              'Driver details will be available once a driver is assigned to your ride.',
-              textAlign: TextAlign.center,
-              style: TextStyles.t2.copyWith(
-                fontSize: FontSizes.s14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
 
           Gap(24),
 

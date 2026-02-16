@@ -36,7 +36,7 @@ class RideMapWidget extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 30.0),
+                  padding: const EdgeInsets.only(bottom: 4.0),
                   child: LocationDotWidget(
                     bgColor: AppColors.red100,
                     isActive: true,
@@ -47,6 +47,7 @@ class RideMapWidget extends StatelessWidget {
             ),
           ),
           Gap(12),
+
           // Right side: pickup & dropoff info
           Expanded(
             child: Column(
@@ -54,7 +55,7 @@ class RideMapWidget extends StatelessWidget {
               children: [
                 // Pickup section
                 Text(
-                  'Pickup',
+                  'Pickup Address',
                   style: TextStyles.t2.copyWith(
                     fontSize: FontSizes.s14,
                     color: AppColors.textSecondary,
@@ -100,21 +101,24 @@ class RideMapWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                Gap(20),
+                Gap(4.0),
+
+                Gap(30),
                 // Dropoff section
-                Text(
-                  'Dropoff',
-                  style: TextStyles.t2.copyWith(
-                    fontSize: FontSizes.s14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Gap(5.0),
                 Text(
                   ride.dropoff.name,
                   style: TextStyles.t2.copyWith(
                     fontSize: FontSizes.s16,
                     color: AppColors.onAccent,
+                  ),
+                ),
+                Gap(5.0),
+
+                Text(
+                  'Drop-off Address',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: FontSizes.s14,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],

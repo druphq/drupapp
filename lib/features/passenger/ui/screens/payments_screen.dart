@@ -92,31 +92,33 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     return Padding(
       padding: EdgeInsets.only(top: height * 0.2),
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(Icons.error_outline, size: 80, color: AppColors.textLight),
-            const Gap(16),
-            Text(
-              _errorMessage!,
-              style: TextStyles.t2.copyWith(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const Gap(16),
-            TextButton(
-              onPressed: _fetchPaymentHistory,
-              child: Text(
-                'Retry',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(Icons.error_outline, size: 80, color: AppColors.textLight),
+              const Gap(16),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
                 style: TextStyles.t2.copyWith(
-                  fontSize: 14,
-                  color: AppColors.accent,
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
                 ),
               ),
-            ),
-          ],
+              TextButton(
+                onPressed: _fetchPaymentHistory,
+                child: Text(
+                  'Retry',
+                  style: TextStyles.btnStyle.copyWith(
+                    fontSize: 16,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -153,22 +155,60 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   }
 
   Widget _buildPaymentList() {
+    // Group payments by month/year
+    Map<String, List<PaymentHistoryItem>> grouped = {};
+    for (final payment in _payments) {
+      final key = formatMonthYear(payment.createdAt);
+      grouped.putIfAbsent(key, () => []).add(payment);
+    }
+
+    // Flatten to a list of headers and payments
+    final List<dynamic> items = [];
+    grouped.forEach((month, payments) {
+      items.add(month);
+      items.addAll(payments);
+    });
+
     return RefreshIndicator(
       onRefresh: _fetchPaymentHistory,
-      child: ListView.separated(
+      child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _payments.length,
+        itemCount: items.length,
         itemBuilder: (context, index) {
-          final payment = _payments[index];
-          return _buildPaymentCard(payment);
+          final item = items[index];
+          if (item is String) {
+            // Section header
+            return Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Text(
+                item,
+                style: TextStyles.t1.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            );
+          } else if (item is PaymentHistoryItem) {
+            // Add divider below each payment except the last in the group
+            final isLastInGroup =
+                (index + 1 >= items.length) || (items[index + 1] is String);
+            return Column(
+              children: [
+                _buildPaymentCard(item),
+                if (!isLastInGroup) _buildDivider(),
+              ],
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
         },
-        separatorBuilder: (context, index) => _buildDivider(),
       ),
     );
   }
 
   Widget _buildPaymentCard(PaymentHistoryItem payment) {
-    final formattedDate = formatDateTime(payment.createdAt);
+    final formattedDate = formatTimeDate(payment.createdAt);
     final formattedAmount = '₦${formatThousand(payment.amount)}';
     final statusColor = _getStatusColor(payment.status);
     final statusLabel = _capitalizeFirst(payment.status);
@@ -196,7 +236,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    formattedDate,
+                    payment.reference,
                     style: TextStyles.t2.copyWith(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -257,7 +297,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                     ),
                   ),
                   Text(
-                    _capitalizeFirst(payment.paymentMethod),
+                    formattedDate,
                     style: TextStyles.t2.copyWith(
                       fontSize: 12,
                       color: AppColors.textSecondary,

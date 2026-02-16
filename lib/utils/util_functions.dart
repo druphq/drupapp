@@ -59,8 +59,16 @@ String formatDate(DateTime dateTime) {
   return '${dateTime.day} ${_getMonthName(dateTime.month)}'; //${dateTime.year}
 }
 
-// format date time to something like 10:30 AM, June 5, 2024
+//format date time to something like June 5, 2024 10:30 AM
 String formatDateTime(DateTime dateTime) {
+  final formattedTime = _formatTimeOfDay(dateTime);
+  final formattedDate =
+      '${_getMonthName(dateTime.month)} ${dateTime.day}, ${dateTime.year}';
+  return '$formattedDate, $formattedTime';
+}
+
+// format date time to something like 10:30 AM June 5, 2024
+String formatTimeDate(DateTime dateTime) {
   final formattedTime = _formatTimeOfDay(dateTime);
   final formattedDate =
       '${_getMonthName(dateTime.month)} ${dateTime.day}, ${dateTime.year}';
@@ -70,6 +78,10 @@ String formatDateTime(DateTime dateTime) {
 // format time to something like 10:30 AM
 String formatTime(DateTime dateTime) {
   return _formatTimeOfDay(dateTime);
+}
+
+String formatMonthYear(DateTime dateTime) {
+  return '${_getMonthName(dateTime.month)} ${dateTime.year}';
 }
 
 // format pickup window to something like 10:00 AM
