@@ -75,5 +75,7 @@ class AppColors {
   static Color greyStrong = Color(0xff747682);
   static Color greyStronger = Colors.grey.shade700;
 
-  static Color? get orange400 => Color(0xFFFFA500);
+  //////
+  static Color orange400 = Color(0xFFFFA500);
+  static Color orange50 = Color(0xFFFFF3E0);
 }

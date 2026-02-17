@@ -270,8 +270,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       child: InkWell(
         onTap: () {
           // Navigate to ride details
-          // context.push(AppRoutes.rideDetailsRoute, extra: ride);
-          _showBookDetailBottomsheet(ride);
+          context.push(AppRoutes.rideDetailsRoute, extra: ride);
+          // _showBookDetailBottomsheet(ride);
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

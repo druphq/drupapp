@@ -1,15 +1,19 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
+import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/features/passenger/ui/widgets/driver_info_card.dart';
 import 'package:drup/features/passenger/ui/widgets/ride_map_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../di/providers.dart';
 
@@ -72,6 +76,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             icon: Icon(Icons.close, color: AppColors.onAccent),
             onPressed: () => Navigator.of(context).pop(),
           ),
+          scrolledUnderElevation: 0.0,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -94,7 +99,9 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             icon: Icon(Icons.close, color: AppColors.onAccent),
             onPressed: () => Navigator.of(context).pop(),
           ),
+          scrolledUnderElevation: 0.0,
         ),
+
         body: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -137,6 +144,16 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
           icon: Icon(Icons.close, color: AppColors.onAccent),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        scrolledUnderElevation: 0.0,
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(
+          left: 20.0,
+          right: 20.0,
+          bottom: 30.0,
+          top: 10,
+        ),
+        child: _buildStatusWidget(ride.paymentStatus),
       ),
       body: ListView(
         padding: EdgeInsets.zero,
@@ -145,7 +162,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
             child: Column(
               children: [
-                DriverInfoCard(bookedRide: ride),
+                if (ride.driver != null) DriverInfoCard(bookedRide: ride),
 
                 Gap(10),
 
@@ -154,7 +171,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(Corners.md),
                   ),
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(
                     'Driver\'s detail will appear once a driver is assigned to your ride.',
                     style: TextStyles.t2.copyWith(
@@ -188,58 +205,55 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
           //   ),
           // ),
           // Gap(32),
-          SizedBox(
-            height: 150,
-            child: Stack(
-              children: [
-                GoogleMap(
-                  mapType: MapType.normal,
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(
-                      ride.pickup.coordinates.latitude,
-                      ride.pickup.coordinates.longitude,
-                    ),
-                    zoom: 14,
-                  ),
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                ),
+          // SizedBox(
+          //   height: 150,
+          //   child: Stack(
+          //     children: [
+          //       GoogleMap(
+          //         mapType: MapType.normal,
+          //         initialCameraPosition: CameraPosition(
+          //           target: LatLng(
+          //             ride.pickup.coordinates.latitude,
+          //             ride.pickup.coordinates.longitude,
+          //           ),
+          //           zoom: 14,
+          //         ),
+          //         myLocationButtonEnabled: false,
+          //         zoomControlsEnabled: false,
+          //       ),
 
-                Positioned(
-                  left: 16.0,
-                  top: 8.0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(Corners.lg),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.directions_car,
-                          size: 20,
-                          color: AppColors.onAccent,
-                        ),
-                        Gap(4),
-                        Text(
-                          '${formatDistance(ride.estimatedDistance.toDouble())}, ${formatDuration(ride.estimatedDuration)}',
-                          style: TextStyles.h1.copyWith(
-                            fontSize: FontSizes.s14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Gap(16.0),
-
-          // Trip Details
+          //       Positioned(
+          //         left: 16.0,
+          //         top: 8.0,
+          //         child: Container(
+          //           decoration: BoxDecoration(
+          //             color: AppColors.white,
+          //             borderRadius: BorderRadius.circular(Corners.lg),
+          //           ),
+          //           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          //           child: Row(
+          //             mainAxisSize: MainAxisSize.min,
+          //             children: [
+          //               Icon(
+          //                 Icons.directions_car,
+          //                 size: 20,
+          //                 color: AppColors.onAccent,
+          //               ),
+          //               Gap(4),
+          //               Text(
+          //                 '${formatDistance(ride.estimatedDistance.toDouble())}, ${formatDuration(ride.estimatedDuration)}',
+          //                 style: TextStyles.h1.copyWith(
+          //                   fontSize: FontSizes.s14,
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Gap(16.0),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -267,36 +281,56 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                         ],
                       ),
                     ),
-                  ],
-                ),
-                Gap(10),
-                RichText(
-                  text: TextSpan(
-                    text: 'Pickup Date:  ',
-                    style: TextStyles.t2.copyWith(
-                      fontSize: FontSizes.s14,
+                    Spacer(),
+                    Icon(
+                      Icons.drive_eta,
+                      size: 20,
                       color: AppColors.textSecondary,
                     ),
+                    Gap(4.0),
+                    Text(
+                      ride.vehicleType.capitalizeFirstChar(),
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                Gap(4.0),
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: ride.rideNumber));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Copied to clipboard')),
+                    );
+                  },
+                  child: Row(
                     children: [
-                      TextSpan(
-                        text: formatDate(ride.scheduledTime ?? DateTime.now()),
+                      Text(
+                        'Ref: ${ride.rideNumber}',
                         style: TextStyles.t2.copyWith(
                           fontSize: FontSizes.s14,
                           color: AppColors.onAccent,
-                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      Gap(4.0),
+                      Icon(
+                        Icons.copy,
+                        size: 16,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),
                 ),
-                Gap(10),
-
+                Gap(10.0),
                 RideMapWidget(ride: ride),
                 Gap(20),
+
                 CustomButton(
                   text: 'Get help with ride',
                   onPressed: () {},
-                  backgroundColor: AppColors.divider,
+                  backgroundColor: AppColors.grey50,
                   textStyle: TextStyles.t2.copyWith(
                     fontSize: FontSizes.s16,
                     color: AppColors.onAccent,
@@ -308,11 +342,53 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   children: [
                     Text(
                       'Payment',
-                      style: TextStyles.t2.copyWith(
+                      style: TextStyles.t1.copyWith(
                         fontSize: FontSizes.s16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.onAccent,
                       ),
+                    ),
+
+                    Gap(12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Booking Fees',
+                          style: TextStyles.body1.copyWith(
+                            fontSize: FontSizes.s16,
+                            color: AppColors.onAccent,
+                          ),
+                        ),
+                        Text(
+                          '₦${formatThousand(ride.fare.serviceFee)}',
+                          style: TextStyles.t1.copyWith(
+                            fontSize: FontSizes.s18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Ride Fees',
+                          style: TextStyles.body1.copyWith(
+                            fontSize: FontSizes.s16,
+                            color: AppColors.onAccent,
+                          ),
+                        ),
+                        Text(
+                          '₦${formatThousand(ride.fare.totalBeforeDiscount)}',
+                          style: TextStyles.t1.copyWith(
+                            fontSize: FontSizes.s18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
 
                     Row(
@@ -320,34 +396,108 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                       children: [
                         Text(
                           'Total Fare',
-                          style: TextStyles.t2.copyWith(
+                          style: TextStyles.body1.copyWith(
                             fontSize: FontSizes.s16,
-                            fontWeight: FontWeight.w600,
                             color: AppColors.onAccent,
                           ),
                         ),
                         Text(
                           '₦${formatThousand(ride.fare.totalFare)}',
                           style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s20,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            fontSize: FontSizes.s18,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
+                    ),
+
+                    Gap(10.0),
+
+                    Text(
+                      'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
+                      style: TextStyles.t2.copyWith(
+                        fontSize: FontSizes.s14,
+                        color: AppColors.orange400,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-
           Gap(24),
-
-          // Make Payment Button
-          CustomButton(text: 'Make Payment', onPressed: () {}),
         ],
       ),
     );
+  }
+
+  Widget _buildStatusWidget(String status) {
+    Color bgColor;
+    Color textColor;
+
+    switch (status.toLowerCase()) {
+      case 'pending':
+        bgColor = AppColors.orange50;
+        textColor = AppColors.orange400;
+        break;
+      case 'completed':
+        bgColor = AppColors.green50;
+        textColor = AppColors.green400;
+        break;
+      case 'cancelled':
+        bgColor = AppColors.red50;
+        textColor = AppColors.red400;
+        break;
+      default:
+        bgColor = AppColors.grey50;
+        textColor = AppColors.textSecondary;
+    }
+
+    return status.toLowerCase() == 'pending'
+        ? CustomButton(
+            text: 'Make Payment',
+            onPressed: () async {
+              final result = await ref
+                  .read(rideNotifierProvider.notifier)
+                  .initializePayment(rideId: _ride!.id, paymentMethod: 'card');
+
+              if (result?.authorizationUrl != null && mounted) {
+                context.push(
+                  AppRoutes.paymentWebViewRoute,
+                  extra: {
+                    'authorizationUrl': result!.authorizationUrl!,
+                    'onPaymentComplete': () async {
+                      // refresh ride details after payment completion
+                      await _fetchRide();
+                    },
+                  },
+                );
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Failed to initialize payment. Please try again.',
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+          )
+        : Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(Corners.sm),
+            ),
+            child: Text(
+              status,
+              style: TextStyles.t2.copyWith(
+                fontSize: FontSizes.s12,
+                color: textColor,
+              ),
+            ),
+          );
   }
 }

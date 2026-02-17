@@ -10,6 +10,7 @@ import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -147,7 +148,35 @@ class RideDetailBottomsheet extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      Gap(12),
+                      Gap(4.0),
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(
+                            ClipboardData(text: ride.rideNumber),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Copied to clipboard')),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              'Ref: ${ride.rideNumber}',
+                              style: TextStyles.t2.copyWith(
+                                fontSize: FontSizes.s14,
+                                color: AppColors.onAccent,
+                              ),
+                            ),
+                            Gap(4.0),
+                            Icon(
+                              Icons.copy,
+                              size: 16,
+                              color: AppColors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Gap(10),
                       RideMapWidget(ride: ride),
 
                       Gap(20),
@@ -160,14 +189,13 @@ class RideDetailBottomsheet extends ConsumerWidget {
                           color: AppColors.onAccent,
                         ),
                       ),
-                      
+
                       Gap(10),
 
                       // Padding(
                       //   padding: const EdgeInsets.symmetric(vertical: 8.0),
                       //   child: Divider(color: AppColors.grey50),
                       // ),
-
                       Text(
                         'Payment',
                         style: TextStyles.t1.copyWith(
@@ -329,7 +357,7 @@ class RideDetailBottomsheet extends ConsumerWidget {
           ),
         ),
         content: Text(
-          'Are you sure you want to pay later? Your ride may be cancelled if payment is not made before the deadline.',
+          'Are you sure you want to pay later? Your ride will be cancelled if payment is not made before the deadline.',
           style: TextStyles.h3.copyWith(
             fontSize: FontSizes.s14,
             color: AppColors.surface500,
