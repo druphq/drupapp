@@ -43,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     // Load custom location icon
     BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(48, 48)),
+      const ImageConfiguration(size: Size(30, 48)),
       AppAssets.pickupIcon,
     ).then((icon) {
       setState(() {
