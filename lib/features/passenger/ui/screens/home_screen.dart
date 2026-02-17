@@ -35,7 +35,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ProviderSubscription<UserState>? _userSub;
 
   bool _isAtUserLocation = true;
-  bool _showRideBookingSheet = false;
 
   Set<Polyline> polylines = {};
   Set<Marker> markers = {};
@@ -313,12 +312,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final destinationLocation = rideState.dropoffLocation;
     final routePoints = rideState.routePoints;
 
-    if (!rideState.hasActiveRoutes && _showRideBookingSheet) {
-      if (mounted) {
-        setState(() => _showRideBookingSheet = false);
-      }
-    }
-
     final newMarkers = <Marker>{};
 
     // user's location marker
@@ -417,53 +410,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
 
-            // Positioned(
-            //   left: 0,
-            //   right: 0,
-            //   bottom: 0,
-            //   child: NotificationListener<SizeChangedLayoutNotification>(
-            //     onNotification: (notification) {
-            //       _measurePlanBottomSheetHeight();
-            //       return true;
-            //     },
-            //     child: SizeChangedLayoutNotifier(
-            //       child: Container(
-            //         key: _planBottomSheetKey,
-            //         child: PlanRideBottomsheet(
-            //           onWhereToTap: () async {
-            //             await context.push(AppRoutes.pickLocationRoute);
-            //           },
-            //           onEditRide: () {},
-            //           onScheduleRide: _scheduleRideBottomsheet,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
-
-            // if (_showRideBookingSheet)
-            //   Positioned(
-            //     left: 0,
-            //     right: 0,
-            //     bottom: 0,
-            //     child: NotificationListener<SizeChangedLayoutNotification>(
-            //       onNotification: (notification) {
-            //         _measureBookBottomSheetHeight();
-            //         return true;
-            //       },
-            //       child: SizeChangedLayoutNotifier(
-            //         child: Container(
-            //           key: _bookBottomSheetKey,
-            //           child: RideBookingBottomsheet(
-            //             onClose: () {
-            //               if (!mounted) return;
-            //               setState(() => _showRideBookingSheet = false);
-            //             },
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //   ),
             Positioned(
               left: 0,
               right: 0,
@@ -562,10 +508,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       builder: (context) => ScheduleFormBottomsheet(
         onConfirm: () {
           Navigator.of(context).pop();
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (!mounted) return;
-            setState(() => _showRideBookingSheet = true);
-          });
         },
       ),
     );
@@ -623,7 +565,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                 ),
                 child: Icon(
                   isAppSettings ? Icons.settings : Icons.location_off,
@@ -747,10 +689,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (shouldLogout == true) {
       await _onMyLocationButtonPressed();
-
-      if (mounted) {
-        setState(() => _showRideBookingSheet = false);
-      }
       ref.read(rideNotifierProvider.notifier).clearRoute();
     }
   }

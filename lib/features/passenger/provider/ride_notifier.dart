@@ -108,7 +108,7 @@ enum RideScheduleState {
   showConfirmRoutes,
   showSearchingRide,
   showAvailableRides,
-  showRideBooked,
+  // showRideBooked,
   showConnectingDriver,
   showDriverMatched,
   idle,
@@ -385,14 +385,14 @@ class RideNotifier extends StateNotifier<RideState> {
   }
 
   /// Book a ride with selected vehicle type
-  Future<bool> bookRide({String? rideType, String? joinRideId}) async {
+  Future<BookedRide?> bookRide({String? rideType, String? joinRideId}) async {
     if (state.pickupLocation == null ||
         state.dropoffLocation == null ||
         state.scheduleTime == null) {
       state = state.copyWith(
         errorMessage: 'Please select pickup, destination, and date',
       );
-      return false;
+      return null;
     }
 
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -423,22 +423,23 @@ class RideNotifier extends StateNotifier<RideState> {
       final response = await _repository.bookRide(request);
 
       if (response.success && response.data != null) {
-        state = state.copyWith(
-          bookedRide: response.data!.ride,
-          rideScheduleState: RideScheduleState.showRideBooked,
-          isLoading: false,
-        );
-        return true;
+        // state = state.copyWith(
+        //   bookedRide: response.data!.ride,
+        //   rideScheduleState: RideScheduleState.idle, // cancel flow
+        //   isLoading: false,
+        // );
+        state = RideState(); // back to first state
+        return response.data!.ride;
       } else {
         state = state.copyWith(
           errorMessage: response.message ?? 'Failed to book ride',
           isLoading: false,
         );
-        return false;
+        return null;
       }
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
-      return false;
+      return null;
     }
   }
 

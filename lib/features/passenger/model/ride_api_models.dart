@@ -159,6 +159,9 @@ class FareDetails extends Equatable {
     );
   }
 
+  double get totalBeforeDiscount =>
+      baseFare + distanceFare + timeFare + surgePricing;
+
   @override
   List<Object?> get props => [
     baseFare,
@@ -545,6 +548,7 @@ class BookedRide extends Equatable {
   final DateTime createdAt;
   final DriverInfo? driver;
   final DateTime? matchedAt;
+  final DateTime? paymentDeadline;
   final DateTime? completedAt;
   final DateTime? cancelledAt;
   final String? cancelledBy;
@@ -579,6 +583,7 @@ class BookedRide extends Equatable {
     this.driver,
     this.matchedAt,
     this.completedAt,
+    this.paymentDeadline,
     this.cancelledAt,
     this.cancelledBy,
     this.cancellationReason,
@@ -643,6 +648,9 @@ class BookedRide extends Equatable {
       driverRating: json['driverRating'] != null
           ? RideRating.fromJson(json['driverRating'] as Map<String, dynamic>)
           : null,
+      paymentDeadline: json['paymentDeadline'] != null
+          ? DateTime.parse(json['paymentDeadline'] as String)
+          : null,
     );
   }
 
@@ -685,6 +693,7 @@ class BookedRide extends Equatable {
     cancelledBy,
     cancellationReason,
     driverRating,
+    paymentDeadline,
   ];
 }
 

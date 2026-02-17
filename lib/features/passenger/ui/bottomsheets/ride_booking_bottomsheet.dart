@@ -88,8 +88,8 @@ class _RideBookingBottomsheetState
           rideSlots: rideState.rideSlots,
         );
 
-      case RideScheduleState.showRideBooked:
-        return RideDetailBottomsheet(bookedRide: rideState.bookedRide);
+      // case RideScheduleState.showRideBooked:
+      //   return RideDetailBottomsheet(bookedRide: rideState.bookedRide);
 
       case RideScheduleState
           .showConnectingDriver: // connectingDriver and driverMatched are not used
@@ -152,15 +152,19 @@ class _RideBookingBottomsheetState
           // Schedule Ride Button
           CustomButton(
             text: 'Continue',
-            onPressed: () {
+            onPressed: () async {
               if (selectedRideSlot == null) {
                 showErrorSnackbar('Please select a ride');
                 return;
               }
 
-              ref
+              final result = await ref
                   .read(rideNotifierProvider.notifier)
                   .bookRide(rideType: selectedRideSlot.rideType!);
+
+              if (result != null) {
+                _showBookDetailBottomsheet(result);
+              }
             },
             isLoading: ride.isLoading,
             progressColor: AppColors.accent,
@@ -172,6 +176,15 @@ class _RideBookingBottomsheetState
           Gap(MediaQuery.of(context).size.height * 0.06),
         ],
       ),
+    );
+  }
+
+  void _showBookDetailBottomsheet(BookedRide bookedRide) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => RideDetailBottomsheet(bookedRide: bookedRide),
     );
   }
 

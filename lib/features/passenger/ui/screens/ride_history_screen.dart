@@ -1,3 +1,4 @@
+import 'package:drup/features/passenger/ui/bottomsheets/ride_detail_bottomsheet.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -269,7 +270,8 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       child: InkWell(
         onTap: () {
           // Navigate to ride details
-          context.push(AppRoutes.rideDetailsRoute, extra: ride);
+          // context.push(AppRoutes.rideDetailsRoute, extra: ride);
+          _showBookDetailBottomsheet(ride);
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -359,6 +361,18 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showBookDetailBottomsheet(BookedRide bookedRide) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: RideDetailBottomsheet(bookedRide: bookedRide),
       ),
     );
   }

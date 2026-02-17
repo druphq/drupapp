@@ -59,6 +59,11 @@ String formatDate(DateTime dateTime) {
   return '${dateTime.day} ${_getMonthName(dateTime.month)}'; //${dateTime.year}
 }
 
+// return end date by adding duration to start date and format it to something like 10:30 AM
+String calculateEndDate(DateTime endDate, int durationMinutes) {
+  return formatTime(endDate.add(Duration(seconds: durationMinutes)));
+}
+
 //format date time to something like June 5, 2024 10:30 AM
 String formatDateTime(DateTime dateTime) {
   final formattedTime = _formatTimeOfDay(dateTime);

@@ -141,10 +141,8 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          Gap(10.0),
-
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
             child: Column(
               children: [
                 DriverInfoCard(bookedRide: ride),

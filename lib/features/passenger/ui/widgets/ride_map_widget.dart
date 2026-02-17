@@ -1,5 +1,4 @@
 import 'package:drup/features/passenger/model/ride_api_models.dart';
-import 'package:drup/features/passenger/ui/widgets/location_dot_widget.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/util_functions.dart';
@@ -18,31 +17,26 @@ class RideMapWidget extends StatelessWidget {
         children: [
           // Left side: dots + dotted line
           SizedBox(
-            width: 12,
+            // width: 12,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: LocationDotWidget(
-                    bgColor: AppColors.green400,
-                    isActive: true,
-                    size: 12,
+                Container(
+                  height: 18,
+                  width: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
                   ),
+                  child: Icon(Icons.circle, color: Colors.white, size: 10),
                 ),
                 Expanded(
                   child: CustomPaint(
                     painter: _DottedLinePainter(color: AppColors.textSecondary),
-                    child: SizedBox(width: 12),
+                    child: SizedBox(width: 24),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: LocationDotWidget(
-                    bgColor: AppColors.red100,
-                    isActive: true,
-                    size: 12,
-                  ),
-                ),
+                Icon(Icons.location_on, size: 24, color: AppColors.red400),
               ],
             ),
           ),
@@ -68,6 +62,26 @@ class RideMapWidget extends StatelessWidget {
                   style: TextStyles.t2.copyWith(
                     fontSize: FontSizes.s16,
                     color: AppColors.onAccent,
+                  ),
+                ),
+                Gap(4.0),
+                RichText(
+                  text: TextSpan(
+                    text: 'Pickup Date: ',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: FontSizes.s14,
+                      color: AppColors.textSecondary,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: formatDate(ride.scheduledTime ?? DateTime.now()),
+                        style: TextStyles.t2.copyWith(
+                          fontSize: FontSizes.s14,
+                          color: AppColors.onAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Gap(4.0),
@@ -101,9 +115,9 @@ class RideMapWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                Gap(4.0),
 
-                Gap(30),
+                Gap(20),
+
                 // Dropoff section
                 Text(
                   ride.dropoff.name,
@@ -112,7 +126,30 @@ class RideMapWidget extends StatelessWidget {
                     color: AppColors.onAccent,
                   ),
                 ),
-                Gap(5.0),
+                Gap(4.0),
+                RichText(
+                  text: TextSpan(
+                    text: 'Est. Arrival Time: ',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: FontSizes.s14,
+                      color: AppColors.textSecondary,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: calculateEndDate(
+                          ride.pickupWindow?.end ?? DateTime.now(),
+                          ride.estimatedDuration,
+                        ),
+                        style: TextStyles.t2.copyWith(
+                          fontSize: FontSizes.s14,
+                          color: AppColors.onAccent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Gap(4.0),
 
                 Text(
                   'Drop-off Address',
