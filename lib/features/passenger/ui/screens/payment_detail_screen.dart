@@ -5,6 +5,7 @@ import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -168,14 +169,34 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
                     ),
                   ),
                   Flexible(
-                    child: Text(
-                      widget.paymentInfo.reference,
-                      style: TextStyles.t1.copyWith(
-                        fontSize: FontSizes.s16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Copy reference to clipboard
+                        Clipboard.setData(
+                          ClipboardData(text: widget.paymentInfo.reference),
+                        );
+                        showSnackbar('Reference copied to clipboard');
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            widget.paymentInfo.reference,
+                            style: TextStyles.t1.copyWith(
+                              fontSize: FontSizes.s16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Gap(4),
+                          Icon(
+                            Icons.copy,
+                            size: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -187,6 +208,12 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
         ],
       ),
     );
+  }
+
+  showSnackbar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildLocationRow(IconData icon, String address, Color color) {
