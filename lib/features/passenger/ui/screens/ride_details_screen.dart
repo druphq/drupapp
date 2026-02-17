@@ -186,74 +186,55 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
 
           Gap(10.0),
 
-          // Text(
-          //   'Ride Booked',
-          //   textAlign: TextAlign.center,
-          //   style: TextStyles.t1.copyWith(
-          //     fontSize: FontSizes.s24,
-          //     fontWeight: FontWeight.w700,
-          //     color: AppColors.onAccent,
-          //   ),
-          // ),
-          // Gap(8),
-          // Text(
-          //   'Arriving in ${formatRelativeDateTime(ride.scheduledTime ?? DateTime.now())}',
-          //   textAlign: TextAlign.center,
-          //   style: TextStyles.t2.copyWith(
-          //     fontSize: FontSizes.s14,
-          //     color: AppColors.textSecondary,
-          //   ),
-          // ),
-          // Gap(32),
-          // SizedBox(
-          //   height: 150,
-          //   child: Stack(
-          //     children: [
-          //       GoogleMap(
-          //         mapType: MapType.normal,
-          //         initialCameraPosition: CameraPosition(
-          //           target: LatLng(
-          //             ride.pickup.coordinates.latitude,
-          //             ride.pickup.coordinates.longitude,
-          //           ),
-          //           zoom: 14,
-          //         ),
-          //         myLocationButtonEnabled: false,
-          //         zoomControlsEnabled: false,
-          //       ),
+          SizedBox(
+            height: 150,
+            child: Stack(
+              children: [
+                GoogleMap(
+                  mapType: MapType.normal,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                      ride.pickup.coordinates.latitude,
+                      ride.pickup.coordinates.longitude,
+                    ),
+                    zoom: 14,
+                  ),
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                ),
 
-          //       Positioned(
-          //         left: 16.0,
-          //         top: 8.0,
-          //         child: Container(
-          //           decoration: BoxDecoration(
-          //             color: AppColors.white,
-          //             borderRadius: BorderRadius.circular(Corners.lg),
-          //           ),
-          //           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          //           child: Row(
-          //             mainAxisSize: MainAxisSize.min,
-          //             children: [
-          //               Icon(
-          //                 Icons.directions_car,
-          //                 size: 20,
-          //                 color: AppColors.onAccent,
-          //               ),
-          //               Gap(4),
-          //               Text(
-          //                 '${formatDistance(ride.estimatedDistance.toDouble())}, ${formatDuration(ride.estimatedDuration)}',
-          //                 style: TextStyles.h1.copyWith(
-          //                   fontSize: FontSizes.s14,
-          //                 ),
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // Gap(16.0),
+                Positioned(
+                  left: 16.0,
+                  top: 8.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(Corners.lg),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.directions_car,
+                          size: 20,
+                          color: AppColors.onAccent,
+                        ),
+                        Gap(4),
+                        Text(
+                          '${formatDistance(ride.estimatedDistance.toDouble())}, ${formatDuration(ride.estimatedDuration)}',
+                          style: TextStyles.h1.copyWith(
+                            fontSize: FontSizes.s14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Gap(16.0),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -413,13 +394,14 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
 
                     Gap(10.0),
 
-                    Text(
-                      'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
-                      style: TextStyles.t2.copyWith(
-                        fontSize: FontSizes.s14,
-                        color: AppColors.orange400,
+                    if (_ride?.paymentStatus.toLowerCase() == 'pending')
+                      Text(
+                        'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
+                        style: TextStyles.t2.copyWith(
+                          fontSize: FontSizes.s14,
+                          color: AppColors.orange400,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
