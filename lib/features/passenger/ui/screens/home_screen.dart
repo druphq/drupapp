@@ -219,10 +219,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               right: 0,
               bottom: 0,
               child: GoogleMap(
+                // onTap: _onMapTap,
                 mapType: MapType.normal,
                 padding: EdgeInsets.only(bottom: _bottomSheetHeight * 0.9),
                 onMapCreated: _onMapCreated,
-                // onTap: _onMapTap,
                 onCameraMove: _onCameraMove,
                 initialCameraPosition: CameraPosition(
                   target:
