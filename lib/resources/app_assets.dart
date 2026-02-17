@@ -30,6 +30,8 @@ class AppAssets {
   static const vehicleIcon = 'assets/icons/vehicle.png';
   static const starIcon = 'assets/icons/star.png';
   static const fileIcon = 'assets/icons/file.png';
+  static const pickupIcon = 'assets/icons/pickup.png';
+  static const dropoffIcon = 'assets/icons/dropoff.png';
 
 
   // others

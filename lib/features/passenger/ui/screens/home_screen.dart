@@ -1,3 +1,4 @@
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/schedule_form_bottomsheet.dart';
@@ -27,6 +28,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  BitmapDescriptor? _myLocationIcon;
   final GlobalKey _bottomSheetKey = GlobalKey();
   GoogleMapController? _mapController;
   bool _isAtUserLocation = true;
@@ -39,6 +41,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Load custom location icon
+    BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      AppAssets.pickupIcon,
+    ).then((icon) {
+      setState(() {
+        _myLocationIcon = icon;
+      });
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
       _measureBottomSheetHeight();
@@ -404,6 +416,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Build new markers set
     final newMarkers = <Marker>{};
+    // Add custom marker for user's current location
+    if (currentLocation != null && _myLocationIcon != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('my_location'),
+          position: currentLocation!.latLng,
+          icon: _myLocationIcon!,
+          infoWindow: const InfoWindow(title: 'You are here'),
+        ),
+      );
+    }
     if (pickupLocation != null) {
       newMarkers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
     }
