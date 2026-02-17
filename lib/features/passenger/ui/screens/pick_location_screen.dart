@@ -321,7 +321,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.hMd),
+                  borderRadius: BorderRadius.circular(Corners.lg),
                   color: AppColors.surface,
                 ),
                 height: Sizes.tfieldHeight,
@@ -337,15 +337,15 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                   },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderRadius: BorderRadius.circular(Corners.lg),
                       borderSide: BorderSide(color: AppColors.grey),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderRadius: BorderRadius.circular(Corners.lg),
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderRadius: BorderRadius.circular(Corners.lg),
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     prefixIcon: Row(
@@ -420,7 +420,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.hMd),
+                  borderRadius: BorderRadius.circular(Corners.lg),
                   color: AppColors.surface,
                 ),
                 height: Sizes.tfieldHeight,
@@ -441,11 +441,11 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                   },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderRadius: BorderRadius.circular(Corners.lg),
                       borderSide: BorderSide(color: AppColors.grey),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.hMd),
+                      borderRadius: BorderRadius.circular(Corners.lg),
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),

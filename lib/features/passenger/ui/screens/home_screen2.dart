@@ -3,6 +3,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/schedule_form_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_booking_bottomsheet.dart';
+import 'package:drup/features/passenger/ui/widgets/plan_ride_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/app_drawer.dart';
 import 'package:drup/features/passenger/ui/widgets/location_permission_bottom_sheet.dart';
 import 'package:drup/theme/app_style.dart';
@@ -29,61 +30,30 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   BitmapDescriptor? _myLocationIcon;
   final GlobalKey _bottomSheetKey = GlobalKey();
-  // final GlobalKey _bookBottomSheetKey = GlobalKey();
   GoogleMapController? _mapController;
-  ProviderSubscription<RideState>? _rideSub;
-  ProviderSubscription<UserState>? _userSub;
-
   bool _isAtUserLocation = true;
   bool _showRideBookingSheet = false;
-
   Set<Polyline> polylines = {};
   Set<Marker> markers = {};
   LocationModel? currentLocation;
-
   double _bottomSheetHeight = 0;
 
   @override
   void initState() {
     super.initState();
-
     // Load custom location icon
     BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(31, 48)),
+      const ImageConfiguration(size: Size(30, 48)),
       AppAssets.pickupIcon,
     ).then((icon) {
-      if (!mounted) return;
-      setState(() => _myLocationIcon = icon);
-
-      final rideState = ref.read(rideNotifierProvider);
-      _updateMapOverlays(rideState, allowCameraUpdate: false);
+      setState(() {
+        _myLocationIcon = icon;
+      });
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
       _measureBottomSheetHeight();
-    });
-
-    _rideSub = ref.listenManual<RideState>(rideNotifierProvider, (prev, next) {
-      _updateMapOverlays(next, allowCameraUpdate: true);
-      _onRideStateChanged(prev, next);
-    });
-
-    _userSub = ref.listenManual<UserState>(userNotifierProvider, (prev, next) {
-      final loc = next.currentLocation;
-      if (loc == null) return;
-
-      currentLocation = loc;
-
-      if (_mapController != null && _isAtUserLocation) {
-        _animateCameraToUserLocation();
-      }
-
-      // keep marker refreshed
-      _updateMapOverlays(
-        ref.read(rideNotifierProvider),
-        allowCameraUpdate: false,
-      );
     });
   }
 
@@ -93,25 +63,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _bottomSheetKey.currentContext?.findRenderObject() as RenderBox?;
       if (renderBox != null) {
         final height = renderBox.size.height;
-        if (height != _bottomSheetHeight && mounted) {
-          setState(() => _bottomSheetHeight = height);
+        if (height != _bottomSheetHeight) {
+          setState(() {
+            _bottomSheetHeight = height;
+          });
         }
       }
     });
   }
-
-  // void _measureBookBottomSheetHeight() {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final RenderBox? renderBox =
-  //         _bookBottomSheetKey.currentContext?.findRenderObject() as RenderBox?;
-  //     if (renderBox != null) {
-  //       final height = renderBox.size.height;
-  //       if (height != _bookingBottomSheetHeight && mounted) {
-  //         setState(() => _bookingBottomSheetHeight = height);
-  //       }
-  //     }
-  //   });
-  // }
 
   Future<void> _initializeLocation() async {
     final locationService = ref.read(locationServiceProvider);
@@ -119,38 +78,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     switch (permissionStatus) {
       case LocationPermissionStatus.granted:
+        // Permission already granted - silently fetch location
         await _fetchCurrentLocation();
         break;
 
       case LocationPermissionStatus.denied:
+        // Permission denied but can request again - show permission sheet
         _showLocationPermissionSheet();
         break;
 
       case LocationPermissionStatus.deniedForever:
+        // Permission permanently denied - show settings prompt
         _showOpenSettingsSheet(isAppSettings: true);
         break;
 
       case LocationPermissionStatus.serviceDisabled:
+        // Location services OFF - prompt to enable
         _showOpenSettingsSheet(isAppSettings: false);
         break;
 
       case LocationPermissionStatus.notDetermined:
+        // First time - show permission sheet
         _showLocationPermissionSheet();
         break;
     }
   }
 
+  /// Silently fetch current location when permission is granted
   Future<void> _fetchCurrentLocation() async {
     await ref.read(userNotifierProvider.notifier).updateUserLocation();
     final userState = ref.read(userNotifierProvider);
 
     if (userState.currentLocation != null) {
-      currentLocation = userState.currentLocation;
-      if (mounted) setState(() {});
+      setState(() {
+        currentLocation = userState.currentLocation;
+      });
       _animateCameraToUserLocation();
     }
   }
 
+  /// Animate camera to user's current location, centered in visible area
   Future<void> _animateCameraToUserLocation() async {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation == null || _mapController == null) return;
@@ -159,7 +126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: userState.currentLocation!.latLng,
-          zoom: AppConstants.defaultCameraZoom, // your idle zoom baseline
+          zoom: AppConstants.defaultCameraZoom,
         ),
       ),
     );
@@ -167,32 +134,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-
-    // center once when map is ready
+    // Move camera to current location if already available
     _animateCameraToUserLocation();
-
-    // apply ride-state camera logic once
-    final rideState = ref.read(rideNotifierProvider);
-    _onRideStateChanged(null, rideState);
   }
+
+  // void _onMapTap(LatLng position) async {
+  //   setState(() {
+  //     _isAtUserLocation = false;
+  //   });
+
+  //   final mapsService = ref.read(googleMapsServiceProvider);
+
+  //   // Get address from coordinates
+  //   final address = await mapsService.getAddressFromCoordinates(
+  //     LocationModel(latitude: position.latitude, longitude: position.longitude),
+  //   );
+
+  //   final location = LocationModel(
+  //     latitude: position.latitude,
+  //     longitude: position.longitude,
+  //     address: address,
+  //   );
+
+  //   if (_selectingPickup) {
+  //     ref.read(rideNotifierProvider.notifier).setPickupLocation(location);
+  //   } else {
+  //     ref.read(rideNotifierProvider.notifier).setDestinationLocation(location);
+  //   }
+  // }
 
   void _onCameraMove(CameraPosition position) {
     final userState = ref.read(userNotifierProvider);
-    final loc = userState.currentLocation;
-    if (loc == null) return;
+    final currentLocation = userState.currentLocation;
 
-    final distance = _calculateDistance(
-      position.target.latitude,
-      position.target.longitude,
-      loc.latitude,
-      loc.longitude,
-    );
+    if (currentLocation != null) {
+      // Calculate distance between camera position and user location
+      final distance = _calculateDistance(
+        position.target.latitude,
+        position.target.longitude,
+        currentLocation.latitude,
+        currentLocation.longitude,
+      );
 
-    // Rough ~50m threshold
-    final isNearUser = distance < 0.0005;
+      // If distance is very small (within ~50 meters), consider it at user location
+      final isNearUser = distance < 0.0005;
 
-    if (_isAtUserLocation != isNearUser && mounted) {
-      setState(() => _isAtUserLocation = isNearUser);
+      if (_isAtUserLocation != isNearUser) {
+        setState(() {
+          _isAtUserLocation = isNearUser;
+        });
+      }
     }
   }
 
@@ -211,182 +202,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation != null && _mapController != null) {
       await _animateCameraToUserLocation();
-      if (mounted) setState(() => _isAtUserLocation = true);
-    }
-  }
-
-  // Camera logic based on ride state
-  Future<void> _onRideStateChanged(RideState? prev, RideState next) async {
-    if (!mounted) return;
-    if (_mapController == null) return;
-
-    if (!_isAtUserLocation) return;
-
-    final hasPickup = next.pickupLocation != null;
-    final hasDropoff = next.dropoffLocation != null;
-    final hasRoute = next.routePoints.isNotEmpty;
-
-    // Idle state: no pickup/dropoff
-    if (!hasPickup && !hasDropoff) {
-      final target = ref.read(userNotifierProvider).currentLocation?.latLng;
-      if (target != null) {
-        await _setZoom(14.5, target);
-      }
-      return;
-    }
-
-    // Pickup set but no dropoff yet: zoom closer to pickup
-    if (hasPickup && !hasDropoff) {
-      await _setZoom(16.8, next.pickupLocation!.latLng);
-      return;
-    }
-
-    // Pickup + dropoff set: fit route bounds for best UX
-    if (hasPickup && hasDropoff) {
-      if (hasRoute) {
-        await _animateCameraToRoute();
-      } else {
-        await _fitTwoPoints(
-          next.pickupLocation!.latLng,
-          next.dropoffLocation!.latLng,
-        );
-      }
-    }
-  }
-
-  Future<void> _setZoom(double zoom, LatLng target) async {
-    if (_mapController == null) return;
-    await _mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: target, zoom: zoom),
-      ),
-    );
-  }
-
-  Future<void> _fitTwoPoints(LatLng a, LatLng b) async {
-    if (_mapController == null) return;
-
-    final bounds = LatLngBounds(
-      southwest: LatLng(
-        a.latitude < b.latitude ? a.latitude : b.latitude,
-        a.longitude < b.longitude ? a.longitude : b.longitude,
-      ),
-      northeast: LatLng(
-        a.latitude > b.latitude ? a.latitude : b.latitude,
-        a.longitude > b.longitude ? a.longitude : b.longitude,
-      ),
-    );
-
-    await _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 80),
-    );
-  }
-
-  Future<void> _animateCameraToRoute() async {
-    final rideState = ref.read(rideNotifierProvider);
-
-    if (rideState.pickupLocation == null || rideState.dropoffLocation == null) {
-      return;
-    }
-    if (_mapController == null) return;
-
-    final List<LatLng> allPoints = [
-      rideState.pickupLocation!.latLng,
-      rideState.dropoffLocation!.latLng,
-      ...rideState.routePoints,
-    ];
-
-    final bounds = MapHelper.calculateBounds(allPoints);
-    const double boundsPadding = 80.0;
-
-    await _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, boundsPadding),
-    );
-  }
-
-  /// Update map overlays when ride state changes
-  void _updateMapOverlays(
-    RideState rideState, {
-    required bool allowCameraUpdate,
-  }) {
-    final pickupLocation = rideState.pickupLocation;
-    final destinationLocation = rideState.dropoffLocation;
-    final routePoints = rideState.routePoints;
-
-    if (!rideState.hasActiveRoutes && _showRideBookingSheet) {
-      if (mounted) {
-        setState(() => _showRideBookingSheet = false);
-      }
-    }
-
-    final newMarkers = <Marker>{};
-
-    // user's location marker
-    if (currentLocation != null && _myLocationIcon != null) {
-      newMarkers.add(
-        Marker(
-          markerId: const MarkerId('my_location'),
-          position: currentLocation!.latLng,
-          icon: _myLocationIcon!,
-        ),
-      );
-    }
-
-    // pickup marker
-    if (pickupLocation != null) {
-      newMarkers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
-    }
-
-    // destination marker
-    if (destinationLocation != null) {
-      newMarkers.add(
-        MapHelper.createDestinationMarker(destinationLocation.latLng),
-      );
-    }
-
-    final newPolylines = <Polyline>{};
-    if (routePoints.isNotEmpty) {
-      newPolylines.add(MapHelper.createRoutePolyline(routePoints));
-    }
-
-    final markersChanged = !_setEquals(markers, newMarkers);
-    final polylinesChanged = !_setEquals(polylines, newPolylines);
-
-    if ((markersChanged || polylinesChanged) && mounted) {
       setState(() {
-        markers = newMarkers;
-        polylines = newPolylines;
+        _isAtUserLocation = true;
       });
     }
-  }
-
-  bool _setEquals<T>(Set<T> a, Set<T> b) {
-    if (a.length != b.length) return false;
-    for (final item in a) {
-      if (!b.contains(item)) return false;
-    }
-    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     final rideState = ref.watch(rideNotifierProvider);
+    // Update markers and polylines when route data changes
+    _updateMapOverlays(rideState);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBody: true,
       extendBodyBehindAppBar: true,
       drawer: const AppDrawer(),
+
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: Stack(
           children: [
+            // Google Map - stops at top of collapsed bottom sheet
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
               child: GoogleMap(
+                // onTap: _onMapTap,
                 mapType: MapType.normal,
                 padding: EdgeInsets.only(bottom: _bottomSheetHeight * 0.9),
                 onMapCreated: _onMapCreated,
@@ -405,6 +250,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
 
+            // Custom My Location Button
             if (!_isAtUserLocation)
               Positioned(
                 right: 16,
@@ -417,53 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
 
-            // Positioned(
-            //   left: 0,
-            //   right: 0,
-            //   bottom: 0,
-            //   child: NotificationListener<SizeChangedLayoutNotification>(
-            //     onNotification: (notification) {
-            //       _measurePlanBottomSheetHeight();
-            //       return true;
-            //     },
-            //     child: SizeChangedLayoutNotifier(
-            //       child: Container(
-            //         key: _planBottomSheetKey,
-            //         child: PlanRideBottomsheet(
-            //           onWhereToTap: () async {
-            //             await context.push(AppRoutes.pickLocationRoute);
-            //           },
-            //           onEditRide: () {},
-            //           onScheduleRide: _scheduleRideBottomsheet,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
-
-            // if (_showRideBookingSheet)
-            //   Positioned(
-            //     left: 0,
-            //     right: 0,
-            //     bottom: 0,
-            //     child: NotificationListener<SizeChangedLayoutNotification>(
-            //       onNotification: (notification) {
-            //         _measureBookBottomSheetHeight();
-            //         return true;
-            //       },
-            //       child: SizeChangedLayoutNotifier(
-            //         child: Container(
-            //           key: _bookBottomSheetKey,
-            //           child: RideBookingBottomsheet(
-            //             onClose: () {
-            //               if (!mounted) return;
-            //               setState(() => _showRideBookingSheet = false);
-            //             },
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //   ),
+            // Bottom sheet with controls
             Positioned(
               left: 0,
               right: 0,
@@ -476,18 +276,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: SizeChangedLayoutNotifier(
                   child: Container(
                     key: _bottomSheetKey,
-                    child: RideBookingBottomsheet(
+                    child: PlanRideBottomsheet(
                       onWhereToTap: () async {
+                        // Navigate to pick location search
                         await context.push(AppRoutes.pickLocationRoute);
                       },
-                      onScheduleRide: _scheduleRideBottomsheet,
                       onEditRide: () {},
+                      onScheduleRide: _scheduleRideBottomsheet,
                     ),
                   ),
                 ),
               ),
             ),
 
+            // Ride Search Draggable Bottom Sheet with backdrop
+            if (_showRideBookingSheet)
+              NotificationListener<SizeChangedLayoutNotification>(
+                onNotification: (notification) {
+                  _measureBottomSheetHeight();
+                  return true;
+                },
+                child: RideBookingBottomsheet(
+                  onClose: () {
+                    setState(() {
+                      _showRideBookingSheet = false;
+                    });
+                  },
+                ),
+              ),
+
+            // Menu button
             Positioned(
               left: 16,
               right: 16,
@@ -498,7 +316,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: rideState.hasActiveRoutes
-                            ? Colors.white54
+                            ? Colors.white60
                             : Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -513,15 +331,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         builder: (context) => IconButton(
                           icon: const Icon(Icons.menu, size: 24.0),
                           color: rideState.hasActiveRoutes
-                              ? AppColors.accentLighter
+                              ? AppColors.accentLight
                               : AppColors.accent,
                           onPressed: () {
                             if (rideState.hasActiveRoutes) return;
+
                             Scaffold.of(context).openDrawer();
                           },
                         ),
                       ),
                     ),
+
                     if (rideState.hasActiveRoutes)
                       Container(
                         decoration: BoxDecoration(
@@ -554,6 +374,97 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  // Animate camera to show both pickup and destination locations
+  Future<void> _animateCameraToRoute() async {
+    final rideState = ref.read(rideNotifierProvider);
+
+    if (rideState.pickupLocation == null || rideState.dropoffLocation == null) {
+      return;
+    }
+
+    if (_mapController == null) return;
+
+    // Include route points for more accurate bounds if available
+    final List<LatLng> allPoints = [
+      rideState.pickupLocation!.latLng,
+      rideState.dropoffLocation!.latLng,
+      ...rideState.routePoints,
+    ];
+
+    // Calculate bounds to show all points
+    final bounds = MapHelper.calculateBounds(allPoints);
+
+    // Padding for the bounds:
+    const double boundsPadding = 50.0;
+
+    await _mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, boundsPadding),
+    );
+  }
+
+  /// Update map overlays (markers and polylines) based on ride state
+  void _updateMapOverlays(RideState rideState) {
+    final pickupLocation = rideState.pickupLocation;
+    final destinationLocation = rideState.dropoffLocation;
+    final routePoints = rideState.routePoints;
+
+    if (!rideState.hasActiveRoutes) {
+      setState(() {
+        _showRideBookingSheet = false;
+      });
+    }
+
+    // Build new markers set
+    final newMarkers = <Marker>{};
+    // Add custom marker for user's current location
+    if (currentLocation != null && _myLocationIcon != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('my_location'),
+          position: currentLocation!.latLng,
+          icon: _myLocationIcon!,
+          infoWindow: const InfoWindow(title: 'You are here'),
+        ),
+      );
+    }
+    if (pickupLocation != null) {
+      newMarkers.add(MapHelper.createPickupMarker(pickupLocation.latLng));
+    }
+    if (destinationLocation != null) {
+      newMarkers.add(
+        MapHelper.createDestinationMarker(destinationLocation.latLng),
+      );
+    }
+
+    // Build new polylines set
+    final newPolylines = <Polyline>{};
+    if (routePoints.isNotEmpty) {
+      newPolylines.add(MapHelper.createRoutePolyline(routePoints));
+    }
+
+    // Only update if changed to avoid unnecessary rebuilds
+    if (!_setEquals(markers, newMarkers) ||
+        !_setEquals(polylines, newPolylines)) {
+      markers = newMarkers;
+      polylines = newPolylines;
+    }
+
+    // adjust camera if we have a new route
+    if (routePoints.isNotEmpty) {
+      _animateCameraToRoute();
+    }
+  }
+
+  /// Helper to compare sets
+  bool _setEquals<T>(Set<T> a, Set<T> b) {
+    if (a.length != b.length) return false;
+    for (final item in a) {
+      if (!b.contains(item)) return false;
+    }
+    return true;
+  }
+
+  // fill scheduling details bottomsheet
   void _scheduleRideBottomsheet() {
     showModalBottomSheet(
       context: context,
@@ -561,16 +472,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => ScheduleFormBottomsheet(
         onConfirm: () {
+          // Close schedule detail sheet
           Navigator.of(context).pop();
+
+          // Wait for bottom sheet to close before showing the next one
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (!mounted) return;
-            setState(() => _showRideBookingSheet = true);
+            setState(() {
+              _showRideBookingSheet = true;
+            });
           });
         },
       ),
     );
   }
 
+  // Show location permission bottom sheet
   void _showLocationPermissionSheet() {
     showModalBottomSheet(
       context: context,
@@ -580,15 +496,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => const LocationPermissionBottomSheet(),
     ).then((_) {
+      // After bottom sheet is closed, check if location is now available
       final userState = ref.read(userNotifierProvider);
       if (userState.currentLocation != null && _mapController != null) {
-        currentLocation = userState.currentLocation;
-        if (mounted) setState(() {});
+        setState(() {
+          currentLocation = userState.currentLocation;
+        });
+        // Center camera on current location with proper zoom
         _animateCameraToUserLocation();
       }
     });
   }
 
+  /// Show bottom sheet prompting user to open settings
+  /// [isAppSettings] - true for app settings (permission denied forever),
+  ///                   false for location settings (service disabled)
   void _showOpenSettingsSheet({required bool isAppSettings}) {
     final locationService = ref.read(locationServiceProvider);
 
@@ -609,6 +531,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Handle bar
               Container(
                 width: 40,
                 height: 4,
@@ -618,6 +541,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Icon
               Container(
                 width: 80,
                 height: 80,
@@ -632,6 +557,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              // Title
               Text(
                 isAppSettings
                     ? 'Location Permission Required'
@@ -643,6 +570,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
+
+              // Description
               Text(
                 isAppSettings
                     ? 'Location access was denied. Please enable it in your device settings to use Drup.'
@@ -651,6 +580,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
+
+              // Open Settings Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -680,6 +611,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+
+              // Skip Button
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
@@ -695,14 +628,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _clearMapMarkers() {
-    if (!mounted) return;
-    setState(() {
-      markers = {};
-      polylines = {};
-    });
+    markers = {};
+    polylines = {};
   }
 
   void _clearRoute(BuildContext context) async {
+    // Show confirmation dialog
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -745,20 +676,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
 
+    // Check if user confirmed cancellation
     if (shouldLogout == true) {
-      await _onMyLocationButtonPressed();
+      _onMyLocationButtonPressed();
 
-      if (mounted) {
-        setState(() => _showRideBookingSheet = false);
-      }
+      setState(() {
+        _showRideBookingSheet = false;
+      });
       ref.read(rideNotifierProvider.notifier).clearRoute();
     }
   }
 
   @override
   void dispose() {
-    _rideSub?.close();
-    _userSub?.close();
     _mapController?.dispose();
     super.dispose();
   }

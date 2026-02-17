@@ -50,8 +50,7 @@ class Corners {
   static const double sm = 4.0;
   static const double md = 8.0;
   static const double mmd = 10.0;
-  static const double hMd = 20.0;
-  static const double lg = 30.0;
+  static const double lg = 20.0;
   static const double vLg = 50.0;
   static const double vvLg = 60.0;
 }

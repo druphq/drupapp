@@ -50,7 +50,7 @@ class RideState {
     this.walletBalance,
     this.rideHistory = const [],
     this.rideSlots = const [],
-    this.rideScheduleState = RideScheduleState.none,
+    this.rideScheduleState = RideScheduleState.idle,
   });
 
   RideState copyWith({
@@ -105,12 +105,13 @@ class RideState {
 }
 
 enum RideScheduleState {
-  searching,
-  availableRides,
-  rideBooked,
-  connectingDriver,
-  driverMatched,
-  none,
+  showConfirmRoutes,
+  showSearchingRide,
+  showAvailableRides,
+  showRideBooked,
+  showConnectingDriver,
+  showDriverMatched,
+  idle,
 }
 
 class RideNotifier extends StateNotifier<RideState> {
@@ -160,6 +161,10 @@ class RideNotifier extends StateNotifier<RideState> {
   Future<void> setPickupLocation(LocationModel location) async {
     state = state.copyWith(pickupLocation: location);
     if (state.dropoffLocation != null) {
+      //scheduleRide show the confirm buttom.
+      state = state.copyWith(
+        rideScheduleState: RideScheduleState.showConfirmRoutes,
+      );
       Future.wait([calculateRoute(), calculateFare()]);
     }
   }
@@ -167,6 +172,10 @@ class RideNotifier extends StateNotifier<RideState> {
   Future<void> setDropoffLocation(LocationModel location) async {
     state = state.copyWith(destinationLocation: location);
     if (state.pickupLocation != null) {
+      //scheduleRide show the confirm buttom.
+      state = state.copyWith(
+        rideScheduleState: RideScheduleState.showConfirmRoutes,
+      );
       Future.wait([calculateRoute(), calculateFare()]);
     }
   }
@@ -331,7 +340,7 @@ class RideNotifier extends StateNotifier<RideState> {
 
     state = state.copyWith(
       isLoading: true,
-      rideScheduleState: RideScheduleState.searching,
+      rideScheduleState: RideScheduleState.showSearchingRide,
       errorMessage: null,
     );
 
@@ -363,7 +372,7 @@ class RideNotifier extends StateNotifier<RideState> {
       if (response.success && response.data != null) {
         state = state.copyWith(
           rideSlots: response.data!.slots,
-          rideScheduleState: RideScheduleState.availableRides,
+          rideScheduleState: RideScheduleState.showAvailableRides,
         );
       } else {
         state = state.copyWith(
@@ -416,7 +425,7 @@ class RideNotifier extends StateNotifier<RideState> {
       if (response.success && response.data != null) {
         state = state.copyWith(
           bookedRide: response.data!.ride,
-          rideScheduleState: RideScheduleState.rideBooked,
+          rideScheduleState: RideScheduleState.showRideBooked,
           isLoading: false,
         );
         return true;

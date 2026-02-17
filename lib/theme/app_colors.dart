@@ -34,7 +34,7 @@ class AppColors {
 
   //*accent
   static const Color accentLight = Color(0xFF4A5A9A);
-  static const Color accentLighter = Color(0xFF6A7AB5);
+  static const Color accentLighter = Color(0xFFAEB9DF);
   static const Color accent = Color(0xFF222D65);
   static const Color accent500 = Color(0xff253B80);
   static const Color onAccent = Color(0xff000000);

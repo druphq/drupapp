@@ -189,10 +189,10 @@ class _ScheduleDetailBottomSheetState
             // Pickup Date
             InkWell(
               onTap: _selectDate,
-              borderRadius: BorderRadius.circular(Corners.hMd),
+              borderRadius: BorderRadius.circular(Corners.lg),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.hMd),
+                  borderRadius: BorderRadius.circular(Corners.lg),
                   color: AppColors.grey50,
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -240,10 +240,10 @@ class _ScheduleDetailBottomSheetState
             // Pickup Date
             InkWell(
               onTap: _selectTime,
-              borderRadius: BorderRadius.circular(Corners.hMd),
+              borderRadius: BorderRadius.circular(Corners.lg),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.hMd),
+                  borderRadius: BorderRadius.circular(Corners.lg),
                   color: AppColors.grey50,
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -349,7 +349,8 @@ class _ScheduleDetailBottomSheetState
                   ? AppColors.accent
                   : AppColors.accentLighter,
               isLoading:
-                  rideState.rideScheduleState == RideScheduleState.searching,
+                  rideState.rideScheduleState ==
+                  RideScheduleState.showSearchingRide,
             ),
 
             Gap(24),

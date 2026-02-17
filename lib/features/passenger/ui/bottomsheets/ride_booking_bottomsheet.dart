@@ -1,9 +1,11 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/features/passenger/provider/ride_notifier.dart';
+import 'package:drup/features/passenger/ui/bottomsheets/ride_confirmation_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_detail_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/connect_driver_widget.dart';
 import 'package:drup/features/passenger/ui/widgets/driver_matched_widget.dart';
+import 'package:drup/features/passenger/ui/widgets/home_content_widget.dart';
 import 'package:drup/features/passenger/ui/widgets/ride_card_widget.dart';
 import 'package:drup/features/passenger/ui/widgets/search_ride_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
@@ -14,7 +16,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 class RideBookingBottomsheet extends ConsumerStatefulWidget {
-  const RideBookingBottomsheet({super.key, this.onClose});
+  const RideBookingBottomsheet({
+    super.key,
+    this.onClose,
+    this.onWhereToTap,
+    this.onScheduleRide,
+    this.onEditRide,
+  });
+  final VoidCallback? onWhereToTap;
+  final VoidCallback? onScheduleRide;
+  final VoidCallback? onEditRide;
   final VoidCallback? onClose;
 
   @override
@@ -24,89 +35,17 @@ class RideBookingBottomsheet extends ConsumerStatefulWidget {
 
 class _RideBookingBottomsheetState
     extends ConsumerState<RideBookingBottomsheet> {
-  final _sheetController = DraggableScrollableController();
-
   @override
   void dispose() {
-    _sheetController.dispose();
     super.dispose();
-  }
-
-  void _expandSheet() {
-    if (_sheetController.isAttached && _sheetController.size < 0.85) {
-      _sheetController.animateTo(
-        0.85,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-  void _collapseSheet() {
-    if (_sheetController.isAttached && _sheetController.size > 0.35) {
-      _sheetController.animateTo(
-        0.35,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      controller: _sheetController,
-      initialChildSize: 0.5,
-      minChildSize: 0.45,
-      maxChildSize: 1.0,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(Corners.lg),
-              topRight: Radius.circular(Corners.lg),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Gap(30.0),
-
-              // Handle bar with close button
-              // Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: 16),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     children: [
-              //       Container(
-              //         width: 40,
-              //         height: 4,
-              //         decoration: BoxDecoration(
-              //           color: AppColors.greyStrong,
-              //           borderRadius: BorderRadius.circular(2),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // Gap(16.0),
-
-              Expanded(child: _buildContent(scrollController)),
-            ],
-          ),
-        );
-      },
-    );
+    return _buildContent();
   }
 
-  Widget _buildContent(ScrollController scrollController) {
+  Widget _buildContent() {
     final rideState = ref.watch(rideNotifierProvider);
 
     if (rideState.errorMessage != null) {
@@ -116,27 +55,48 @@ class _RideBookingBottomsheetState
     }
 
     switch (rideState.rideScheduleState) {
-      case RideScheduleState.searching:
-        WidgetsBinding.instance.addPostFrameCallback((_) => _collapseSheet());
+      case RideScheduleState.idle:
+        return HomeContentWidget(
+          onWhereToTap: () {
+            widget.onWhereToTap?.call();
+          },
+        );
+
+      case RideScheduleState.showConfirmRoutes:
+        return RideConfirmationBottomSheet(
+          pickupLocation: rideState.pickupLocation?.name ?? '',
+          destinationLocation: rideState.dropoffLocation?.name ?? '',
+          isLoading: rideState.isLoading,
+          estimate: rideState.fareEstimates.isNotEmpty
+              ? rideState.fareEstimates[0]
+              : null,
+          onScheduleRide: widget.onScheduleRide,
+          onEditRide: () {
+            widget.onEditRide?.call();
+          },
+        );
+
+      case RideScheduleState.showSearchingRide:
         return SearchRideWidget(
           isSlotSelected: rideState.selectedRideSlot != null,
         );
-      case RideScheduleState.availableRides:
+
+      case RideScheduleState.showAvailableRides:
         return _buildAvailableRidesState(
           ride: rideState,
           selectedRideSlot: rideState.selectedRideSlot,
           rideSlots: rideState.rideSlots,
         );
-      case RideScheduleState.rideBooked:
-        WidgetsBinding.instance.addPostFrameCallback((_) => _expandSheet());
+
+      case RideScheduleState.showRideBooked:
         return RideDetailBottomsheet(bookedRide: rideState.bookedRide);
+
       case RideScheduleState
-          .connectingDriver: // connectingDriver and driverMatched are not used
+          .showConnectingDriver: // connectingDriver and driverMatched are not used
         return ConnectDriverWidget();
-      case RideScheduleState.driverMatched:
+
+      case RideScheduleState.showDriverMatched:
         return DriverMatchedWidget();
-      default:
-        return SizedBox.shrink();
     }
   }
 
@@ -145,34 +105,46 @@ class _RideBookingBottomsheetState
     RideSlot? selectedRideSlot,
     List<RideSlot> rideSlots = const [],
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+    return Container(
+      alignment: Alignment.topCenter,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(Corners.lg),
+          topRight: Radius.circular(Corners.lg),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemBuilder: (context, index) {
-                final rideSlot = rideSlots[index];
-                return RideCardWidget(
-                  isIndividual: index == 0,
-                  isSelected: selectedRideSlot?.rideType == rideSlot.rideType,
-                  rideSlot: rideSlot,
-                  onTap: () {
-                    ref
-                        .read(rideNotifierProvider.notifier)
-                        .setSelectedRideSlot(rideSlot);
-                  },
-                );
-              },
-              separatorBuilder: (context, index) => Divider(
-                height: 1,
-                color: AppColors.textSecondary.withValues(alpha: 0.2),
-                thickness: 0.5,
-              ),
-              itemCount: rideSlots.length,
+          Gap(30.0),
+
+          ListView.separated(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            primary: false,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              final rideSlot = rideSlots[index];
+              return RideCardWidget(
+                isIndividual: index == 0,
+                isSelected: selectedRideSlot?.rideType == rideSlot.rideType,
+                rideSlot: rideSlot,
+                onTap: () {
+                  ref
+                      .read(rideNotifierProvider.notifier)
+                      .setSelectedRideSlot(rideSlot);
+                },
+              );
+            },
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: AppColors.textSecondary.withValues(alpha: 0.2),
+              thickness: 0.5,
             ),
+            itemCount: rideSlots.length,
           ),
 
           Gap(20.0),
@@ -197,7 +169,7 @@ class _RideBookingBottomsheetState
                 : AppColors.accentLighter,
             textStyle: TextStyles.btnStyle.copyWith(color: AppColors.white),
           ),
-          Gap(30.0),
+          Gap(MediaQuery.of(context).size.height * 0.06),
         ],
       ),
     );
