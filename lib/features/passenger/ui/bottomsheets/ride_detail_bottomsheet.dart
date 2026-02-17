@@ -56,9 +56,10 @@ class RideDetailBottomsheet extends ConsumerWidget {
             Expanded(
               child: ListView(
                 children: [
-                  Gap(16),
+                  if (ride.driver != null) Gap(16),
 
-                  DriverInfoCard(bookedRide: ride),
+                  if (ride.driver != null) DriverInfoCard(bookedRide: ride),
+
                   Gap(10),
                   Container(
                     decoration: BoxDecoration(
@@ -79,36 +80,6 @@ class RideDetailBottomsheet extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Text(
-                      //   'Trip Details',
-                      //   style: TextStyles.t1.copyWith(
-                      //     fontSize: FontSizes.s16,
-                      //     fontWeight: FontWeight.w700,
-                      //     color: AppColors.onAccent,
-                      //   ),
-                      // ),
-                      // Gap(4.0),
-                      // RichText(
-                      //   text: TextSpan(
-                      //     text: 'Scheduled for ',
-                      //     style: TextStyles.t2.copyWith(
-                      //       fontSize: FontSizes.s14,
-                      //       color: AppColors.textSecondary,
-                      //     ),
-                      //     children: [
-                      //       TextSpan(
-                      //         text: formatDate(
-                      //           ride.scheduledTime ?? DateTime.now(),
-                      //         ),
-                      //         style: TextStyles.t2.copyWith(
-                      //           fontSize: FontSizes.s14,
-                      //           color: AppColors.onAccent,
-                      //           fontWeight: FontWeight.w600,
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
                       Row(
                         children: [
                           RichText(
