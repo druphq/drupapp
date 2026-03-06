@@ -7,7 +7,6 @@ import '../../provider/ride_notifier.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../core/utils/map_helper.dart';
 import '../../../../core/utils/location_helper.dart';
-import '../widgets/driver_info_card.dart';
 import '../../../../core/widgets/custom_button.dart';
 
 class UserTrackingScreen extends ConsumerStatefulWidget {
