@@ -216,7 +216,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.directions_car,
+                          Icons.call_split,
                           size: 20,
                           color: AppColors.onAccent,
                         ),
@@ -278,7 +278,11 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                     ),
                   ],
                 ),
-                Gap(4.0),
+
+                Gap(16.0),
+                RideMapWidget(ride: ride),
+
+                Gap(16.0),
                 GestureDetector(
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: ride.rideNumber));
@@ -304,8 +308,6 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                     ],
                   ),
                 ),
-                Gap(10.0),
-                RideMapWidget(ride: ride),
                 Gap(20),
 
                 CustomButton(
@@ -318,92 +320,94 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   ),
                 ),
                 Gap(16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Payment',
-                      style: TextStyles.t1.copyWith(
-                        fontSize: FontSizes.s16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onAccent,
-                      ),
-                    ),
-
-                    Gap(12),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Booking Fees',
-                          style: TextStyles.body1.copyWith(
-                            fontSize: FontSizes.s16,
-                            color: AppColors.onAccent,
-                          ),
-                        ),
-                        Text(
-                          '₦${formatThousand(ride.fare.serviceFee)}',
-                          style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Ride Fees',
-                          style: TextStyles.body1.copyWith(
-                            fontSize: FontSizes.s16,
-                            color: AppColors.onAccent,
-                          ),
-                        ),
-                        Text(
-                          '₦${formatThousand(ride.fare.totalBeforeDiscount)}',
-                          style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Fare',
-                          style: TextStyles.body1.copyWith(
-                            fontSize: FontSizes.s16,
-                            color: AppColors.onAccent,
-                          ),
-                        ),
-                        Text(
-                          '₦${formatThousand(ride.fare.totalFare)}',
-                          style: TextStyles.t1.copyWith(
-                            fontSize: FontSizes.s18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    Gap(10.0),
-
-                    if (_ride?.paymentStatus.toLowerCase() == 'pending')
+                if (ride.paymentStatus.toLowerCase() == 'pending')
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      
                       Text(
-                        'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
-                        style: TextStyles.t2.copyWith(
-                          fontSize: FontSizes.s14,
-                          color: AppColors.orange400,
+                        'Payment',
+                        style: TextStyles.t1.copyWith(
+                          fontSize: FontSizes.s16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onAccent,
                         ),
                       ),
-                  ],
-                ),
+
+                      Gap(12),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Booking Fees',
+                            style: TextStyles.body1.copyWith(
+                              fontSize: FontSizes.s16,
+                              color: AppColors.onAccent,
+                            ),
+                          ),
+                          Text(
+                            '₦${formatThousand(ride.fare.serviceFee)}',
+                            style: TextStyles.t1.copyWith(
+                              fontSize: FontSizes.s18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Ride Fees',
+                            style: TextStyles.body1.copyWith(
+                              fontSize: FontSizes.s16,
+                              color: AppColors.onAccent,
+                            ),
+                          ),
+                          Text(
+                            '₦${formatThousand(ride.fare.totalBeforeDiscount)}',
+                            style: TextStyles.t1.copyWith(
+                              fontSize: FontSizes.s18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total Fare',
+                            style: TextStyles.body1.copyWith(
+                              fontSize: FontSizes.s16,
+                              color: AppColors.onAccent,
+                            ),
+                          ),
+                          Text(
+                            '₦${formatThousand(ride.fare.totalFare)}',
+                            style: TextStyles.t1.copyWith(
+                              fontSize: FontSizes.s18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Gap(10.0),
+
+                      if (_ride?.paymentStatus.toLowerCase() == 'pending')
+                        Text(
+                          'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
+                          style: TextStyles.t2.copyWith(
+                            fontSize: FontSizes.s14,
+                            color: AppColors.orange400,
+                          ),
+                        ),
+                    ],
+                  ),
               ],
             ),
           ),

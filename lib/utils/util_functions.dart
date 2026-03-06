@@ -9,19 +9,29 @@ String formatThousand(double number) {
 }
 
 // format duration to something like 1h 30m or 30m
-String formatDuration(int duration) {
-  final hours = duration ~/ 60;
-  final minutes = duration % 60;
-  if (hours > 0) {
-    return '${hours}h ${minutes}m';
-  } else {
-    return '${minutes}m';
+String formatDuration(int seconds) {
+  int minutes = (seconds / 60).ceil(); // important!
+
+  if (minutes >= 60) {
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
+    return '${hours}h ${remainingMinutes}m';
   }
+
+  return '${minutes}m';
 }
 
 // format distance to something like 1.5 km
-String formatDistance(double distanceKm) {
-  return '${distanceKm.toStringAsFixed(1)} km';
+String formatDistance(double meters) {
+  final km = meters / 1000;
+
+  if (km < 1) {
+    // short distance → more precision
+    return '${km.toStringAsFixed(2)} km';
+  } else {
+    // normal distance
+    return '${km.toStringAsFixed(1)} km';
+  }
 }
 
 // Format ride type,eg individual or shared_3
@@ -56,7 +66,7 @@ String formatRelativeDateTime(DateTime dateTime) {
 
 // format date to something like June 5, 2024
 String formatDate(DateTime dateTime) {
-  return '${dateTime.day} ${_getMonthName(dateTime.month)}'; //${dateTime.year}
+  return '${_getMonthName(dateTime.month)} ${dateTime.day}';
 }
 
 // return end date by adding duration to start date and format it to something like 10:30 AM

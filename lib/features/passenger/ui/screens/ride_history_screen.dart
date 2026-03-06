@@ -3,6 +3,7 @@ import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -284,10 +285,18 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.drive_eta, size: 20, color: AppColors.accent),
-                      Gap(4.0),
                       Text(
                         ride.rideType.toUpperCase(),
+                        style: TextStyles.t2.copyWith(
+                          fontSize: 12,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Gap(10.0),
+                      Icon(Icons.drive_eta, size: 20, color: AppColors.textSecondary),
+                      Gap(4.0),
+                      Text(
+                        ride.vehicleType.capitalizeFirstChar(),
                         style: TextStyles.t2.copyWith(
                           fontSize: 12,
                           color: AppColors.textPrimary,
@@ -347,9 +356,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                       ),
                     ],
                   ),
-
                   Text(
-                    // '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.durationMinutes} min',
                     formattedDate,
                     style: TextStyles.t2.copyWith(
                       fontSize: 12,

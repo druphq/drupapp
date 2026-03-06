@@ -64,4 +64,53 @@ class ApiRoutes {
   static const String walletTopUp = '/payments/wallet/topup';
   static const String walletTransactions = '/payments/wallet/transactions';
   static const String paymentHistory = '/payments/history';
+
+  // ============== DRIVER APPLICATION (USER ROUTES) ==============
+  static const String applyDriver = '/users/apply-driver';
+  static const String driverStatus = '/users/driver-status';
+  static const String switchRole = '/users/switch-role';
+
+  // ============== DRIVER PROFILE ==============
+  static const String driverProfile = '/drivers/profile';
+  static const String driverProfilePhoto = '/drivers/profile/photo';
+  static const String driverDeviceToken = '/drivers/device-token';
+
+  // ============== DRIVER VEHICLE ==============
+  static const String driverVehicle = '/drivers/vehicle';
+
+  // ============== DRIVER DOCUMENTS ==============
+  static const String driverDocuments = '/drivers/documents';
+
+  // ============== DRIVER VERIFICATION ==============
+  static const String driverVerificationStatus = '/drivers/verification-status';
+
+  // ============== DRIVER STATUS & LOCATION ==============
+  static const String driverOnlineStatus = '/drivers/status';
+  static const String driverLocation = '/drivers/location';
+
+  // ============== DRIVER RIDE OPERATIONS ==============
+  static const String nearbyRides = '/rides/nearby';
+  static String acceptRide(String rideId) => '/rides/$rideId/accept';
+  static String declineRide(String rideId) => '/rides/$rideId/decline';
+  static String arrivedAtPickup(String rideId) => '/rides/$rideId/arrived';
+  static String startRide(String rideId) => '/rides/$rideId/start';
+  static String completeRide(String rideId) => '/rides/$rideId/complete';
+  static String driverCancelRide(String rideId) =>
+      '/rides/$rideId/driver-cancel';
+  static const String driverActiveRide = '/rides/driver/active';
+  static const String driverScheduledRides = '/rides/driver/scheduled';
+  static const String driverRideHistory = '/rides/driver/history';
+
+  // ============== SHARED RIDE PASSENGER MANAGEMENT ==============
+  static String ridePassengers(String rideId) => '/rides/$rideId/passengers';
+  static String passengerArrived(String rideId, String passengerId) =>
+      '/rides/$rideId/passengers/$passengerId/arrived';
+  static String passengerPickedUp(String rideId, String passengerId) =>
+      '/rides/$rideId/passengers/$passengerId/picked-up';
+  static String passengerNoShow(String rideId, String passengerId) =>
+      '/rides/$rideId/passengers/$passengerId/no-show';
+  static String passengerArrivingDropoff(String rideId, String passengerId) =>
+      '/rides/$rideId/passengers/$passengerId/arriving-dropoff';
+  static String passengerDroppedOff(String rideId, String passengerId) =>
+      '/rides/$rideId/passengers/$passengerId/dropped-off';
 }

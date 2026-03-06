@@ -2,6 +2,7 @@ import 'package:drup/features/auth/repository/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/cache/cache_manager.dart';
 import '../data/services/auth_service.dart';
+import '../data/services/driver_service.dart';
 import '../data/services/location_service.dart';
 import '../data/services/google_maps_service.dart';
 import '../data/services/ride_service.dart';
@@ -28,6 +29,10 @@ final googleMapsServiceProvider = Provider<GoogleMapsService>((ref) {
 
 final rideServiceProvider = Provider<RideService>((ref) {
   return RideService();
+});
+
+final driverServiceProvider = Provider<DriverService>((ref) {
+  return DriverService();
 });
 
 final recentLocationsServiceProvider = Provider<RecentLocationsService>((ref) {

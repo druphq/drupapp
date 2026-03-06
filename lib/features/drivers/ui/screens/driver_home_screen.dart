@@ -10,7 +10,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../provider/driver_notifier.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../core/utils/map_helper.dart';
-import '../../../passenger/ui/widgets/ride_request_card.dart';
 
 class DriverHomeScreen extends ConsumerStatefulWidget {
   const DriverHomeScreen({super.key});
@@ -59,7 +58,7 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
     final driverState = ref.watch(driverNotifierProvider);
 
     final currentLocation = driverState.currentLocation;
-    final pendingRequests = driverState.pendingRequests;
+    final nearbyRides = driverState.nearbyRides;
     final isAvailable = driverState.isAvailable;
 
     Set<Marker> markers = {};
@@ -70,14 +69,23 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
       );
     }
 
-    // Add markers for pending requests
-    for (var request in pendingRequests) {
-      markers.add(
-        MapHelper.createPickupMarker(
-          request.pickupLocation.latLng,
-          id: 'request_${request.id}',
-        ),
-      );
+    // Add markers for nearby ride requests
+    for (var ride in nearbyRides) {
+      final pickup = ride['pickupLocation'] as Map<String, dynamic>?;
+      if (pickup != null) {
+        final coords = pickup['coordinates'] as List<dynamic>?;
+        if (coords != null && coords.length >= 2) {
+          final lat = (coords[1] as num).toDouble();
+          final lng = (coords[0] as num).toDouble();
+          final rideId = (ride['_id'] ?? ride['id'] ?? '') as String;
+          markers.add(
+            MapHelper.createPickupMarker(
+              LatLng(lat, lng),
+              id: 'request_$rideId',
+            ),
+          );
+        }
+      }
     }
 
     return Scaffold(
@@ -181,8 +189,8 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
             //   ),
             // ),
 
-            // Pending requests
-            if (pendingRequests.isNotEmpty && isAvailable)
+            // Nearby ride requests
+            if (nearbyRides.isNotEmpty && isAvailable)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -190,27 +198,45 @@ class _DriverMapScreenState extends ConsumerState<DriverHomeScreen> {
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 400),
                   child: ListView.builder(
-                    itemCount: pendingRequests.length,
+                    itemCount: nearbyRides.length,
                     itemBuilder: (context, index) {
-                      final request = pendingRequests[index];
-                      return RideRequestCard(
-                        request: request,
-                        onAccept: () async {
-                          final success = await ref
-                              .read(driverNotifierProvider.notifier)
-                              .acceptRideRequest(request.id);
+                      final ride = nearbyRides[index];
+                      final rideId =
+                          (ride['_id'] ?? ride['id'] ?? '') as String;
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        child: ListTile(
+                          title: Text(
+                            ride['pickupAddress'] as String? ??
+                                'Pickup location',
+                          ),
+                          subtitle: Text(
+                            ride['dropoffAddress'] as String? ??
+                                'Drop-off location',
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: () async {
+                              final success = await ref
+                                  .read(driverNotifierProvider.notifier)
+                                  .acceptRide(rideId);
 
-                          if (success && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Ride accepted! Navigate to pickup location.',
-                                ),
-                                backgroundColor: AppColors.success,
-                              ),
-                            );
-                          }
-                        },
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Ride accepted! Navigate to pickup location.',
+                                    ),
+                                    backgroundColor: AppColors.success,
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Accept'),
+                          ),
+                        ),
                       );
                     },
                   ),

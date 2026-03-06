@@ -65,7 +65,7 @@ class _UserTrackingScreenState extends ConsumerState<UserTrackingScreen> {
         MapHelper.createDriverMarker(
           driverLocation.latLng,
           driver.id,
-          driverName: driver.name,
+          driverName: driver.fullName,
         ),
       );
     }

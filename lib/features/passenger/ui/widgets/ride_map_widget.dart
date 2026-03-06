@@ -25,7 +25,7 @@ class RideMapWidget extends StatelessWidget {
                   height: 18,
                   width: 24,
                   decoration: BoxDecoration(
-                    color: AppColors.accent,
+                    color: AppColors.pickupMarker,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.circle, color: Colors.white, size: 10),

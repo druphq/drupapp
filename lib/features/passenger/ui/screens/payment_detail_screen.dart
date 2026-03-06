@@ -145,7 +145,7 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
                     ),
                   ),
                   Text(
-                    widget.paymentInfo.status,
+                    widget.paymentInfo.status.capitalizeFirstChar(),
                     style: TextStyles.t1.copyWith(
                       fontSize: FontSizes.s16,
                       fontWeight: FontWeight.w600,
