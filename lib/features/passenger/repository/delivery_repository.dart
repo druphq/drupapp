@@ -1,13 +1,14 @@
-import 'package:drup/data/api/api_routes.dart';
 import 'package:drup/data/api/api_service.dart';
+import 'package:drup/data/services/delivery_service.dart';
 import 'package:drup/features/passenger/model/delivery_api_models.dart';
 
-/// Repository handling all delivery-related API operations
+/// Repository handling all delivery-related operations
+/// Acts as the single source of truth for delivery data in the app
 class DeliveryRepository {
-  final ApiService _apiService;
+  final DeliveryService _deliveryService;
 
-  DeliveryRepository({ApiService? apiService})
-    : _apiService = apiService ?? ApiService();
+  DeliveryRepository({DeliveryService? deliveryService})
+    : _deliveryService = deliveryService ?? DeliveryService();
 
   // ===========================================================================
   // FARE ESTIMATE (API)
@@ -19,20 +20,16 @@ class DeliveryRepository {
   Future<ApiResponse<DeliveryEstimateResponse>> getDeliveryEstimate(
     DeliveryEstimateRequest request,
   ) async {
-    final response = await _apiService.post<Map<String, dynamic>>(
-      ApiRoutes.deliveryEstimate,
-      data: request.toJson(),
+    final response = await _deliveryService.getDeliveryEstimate(
+      request.toJson(),
     );
 
     if (response.success && response.data != null) {
-      final data = response.data!['data'] as Map<String, dynamic>?;
-      if (data != null) {
-        return ApiResponse.success(
-          data: DeliveryEstimateResponse.fromJson(data),
-          message: response.message,
-          statusCode: response.statusCode,
-        );
-      }
+      return ApiResponse.success(
+        data: DeliveryEstimateResponse.fromJson(response.data!),
+        message: response.message,
+        statusCode: response.statusCode,
+      );
     }
 
     return ApiResponse.failure(
@@ -51,20 +48,14 @@ class DeliveryRepository {
   Future<ApiResponse<BookDeliveryResponse>> bookDelivery(
     BookDeliveryRequest request,
   ) async {
-    final response = await _apiService.post<Map<String, dynamic>>(
-      ApiRoutes.bookDelivery,
-      data: request.toJson(),
-    );
+    final response = await _deliveryService.bookDelivery(request.toJson());
 
     if (response.success && response.data != null) {
-      final data = response.data!['data'] as Map<String, dynamic>?;
-      if (data != null) {
-        return ApiResponse.success(
-          data: BookDeliveryResponse.fromJson(data),
-          message: response.message,
-          statusCode: response.statusCode,
-        );
-      }
+      return ApiResponse.success(
+        data: BookDeliveryResponse.fromJson(response.data!),
+        message: response.message,
+        statusCode: response.statusCode,
+      );
     }
 
     return ApiResponse.failure(

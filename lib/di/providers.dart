@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/cache/cache_manager.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/driver_service.dart';
+import '../data/services/delivery_service.dart';
 import '../data/services/location_service.dart';
 import '../data/services/google_maps_service.dart';
 import '../data/services/ride_service.dart';
@@ -35,6 +36,10 @@ final rideServiceProvider = Provider<RideService>((ref) {
 
 final driverServiceProvider = Provider<DriverService>((ref) {
   return DriverService();
+});
+
+final deliveryServiceProvider = Provider<DeliveryService>((ref) {
+  return DeliveryService();
 });
 
 final recentLocationsServiceProvider = Provider<RecentLocationsService>((ref) {
@@ -75,5 +80,6 @@ final rideRepositoryProvider = Provider<RideRepository>((ref) {
 
 /// Provider for delivery operations (API)
 final deliveryRepositoryProvider = Provider<DeliveryRepository>((ref) {
-  return DeliveryRepository();
+  final deliveryService = ref.watch(deliveryServiceProvider);
+  return DeliveryRepository(deliveryService: deliveryService);
 });
