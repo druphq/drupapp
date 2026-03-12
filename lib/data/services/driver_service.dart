@@ -1057,4 +1057,91 @@ class DriverService {
       return ApiResponse.failure(message: e.toString());
     }
   }
+
+  // ===========================================================================
+  // 17. DELIVERY-SPECIFIC OPERATIONS
+  // ===========================================================================
+
+  /// Driver picks up the package from the sender.
+  /// [packagePhotoUrl] - Optional photo proof of package pickup.
+  Future<ApiResponse<Map<String, dynamic>>> pickupPackage(
+    String rideId, {
+    String? packagePhotoUrl,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (packagePhotoUrl != null) data['packagePhotoUrl'] = packagePhotoUrl;
+
+      final response = await _apiService.post<Map<String, dynamic>>(
+        ApiRoutes.pickupPackage(rideId),
+        data: data,
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          return ApiResponse.success(
+            data: responseData,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to confirm package pickup',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error picking up package: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
+
+  /// Driver delivers the package to the recipient.
+  /// [code] - 6-digit delivery code (required, collected from recipient).
+  /// [receivedBy] - Name of the person who received the package.
+  /// [photoUrl] - Photo proof of delivery.
+  /// [signatureUrl] - Signature image URL.
+  /// [notes] - Delivery notes.
+  Future<ApiResponse<Map<String, dynamic>>> deliverPackage(
+    String rideId, {
+    required String code,
+    String? receivedBy,
+    String? photoUrl,
+    String? signatureUrl,
+    String? notes,
+  }) async {
+    try {
+      final data = <String, dynamic>{'code': code};
+      if (receivedBy != null) data['receivedBy'] = receivedBy;
+      if (photoUrl != null) data['photoUrl'] = photoUrl;
+      if (signatureUrl != null) data['signatureUrl'] = signatureUrl;
+      if (notes != null) data['notes'] = notes;
+
+      final response = await _apiService.post<Map<String, dynamic>>(
+        ApiRoutes.deliverPackage(rideId),
+        data: data,
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          return ApiResponse.success(
+            data: responseData,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to complete delivery',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error delivering package: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
 }

@@ -30,9 +30,7 @@ class Sizes {
   static double get iconSizeMd => 24;
   static double get btnWidthMd => 350;
   static double get btnHeightMd => 60;
-
   static double get flexibleTopPadding => 80.0;
-
   static double get flexibleHeight => 250;
 }
 

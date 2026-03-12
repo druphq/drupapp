@@ -360,4 +360,47 @@ class DriverRepository {
       endDate: endDate,
     );
   }
+
+  // ===========================================================================
+  // 17. DELIVERY-SPECIFIC OPERATIONS
+  // ===========================================================================
+
+  /// Driver confirms package pickup from the sender.
+  /// Delivery status changes to `in_progress`.
+  /// [packagePhotoUrl] - Optional photo proof of package pickup.
+  Future<ApiResponse<Map<String, dynamic>>> pickupPackage(
+    String rideId, {
+    String? packagePhotoUrl,
+  }) async {
+    return await _driverService.pickupPackage(
+      rideId,
+      packagePhotoUrl: packagePhotoUrl,
+    );
+  }
+
+  /// Driver delivers the package to the recipient.
+  /// Requires the 6-digit delivery code collected from the recipient.
+  /// Delivery status changes to `completed`.
+  /// [code] - 6-digit delivery code (required).
+  /// [receivedBy] - Name of the person who received the package.
+  /// [photoUrl] - Photo proof of delivery.
+  /// [signatureUrl] - Signature image URL.
+  /// [notes] - Delivery notes.
+  Future<ApiResponse<Map<String, dynamic>>> deliverPackage(
+    String rideId, {
+    required String code,
+    String? receivedBy,
+    String? photoUrl,
+    String? signatureUrl,
+    String? notes,
+  }) async {
+    return await _driverService.deliverPackage(
+      rideId,
+      code: code,
+      receivedBy: receivedBy,
+      photoUrl: photoUrl,
+      signatureUrl: signatureUrl,
+      notes: notes,
+    );
+  }
 }

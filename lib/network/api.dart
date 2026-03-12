@@ -10,3 +10,8 @@ export 'interceptors/cache_interceptor.dart';
 export 'dio_client.dart';
 export 'api_exceptions.dart';
 export 'api_response.dart';
+
+// Socket
+export 'socket_client.dart';
+export 'socket_events.dart';
+export 'socket_models.dart';

@@ -59,23 +59,17 @@ class DioClient {
 
   /// Setup all interceptors in the correct order
   void _setupInterceptors() {
-    // Clear any existing interceptors
     _dio.interceptors.clear();
 
-    // 1. Error interceptor - Added first, runs LAST for errors (for final error transformation)
+    // 1. Error interceptor - Added first, runs LAST for errors (handles all errors after transformation)
     _dio.interceptors.add(ErrorInterceptor());
-
-    // 2. Connectivity check - fails fast if no network
-    // TODO: Re-enable after testing - can give false negatives on simulators
+    
     // _dio.interceptors.add(ConnectivityInterceptor());
-
-    // 3. Auth interceptor - adds authentication token
     _dio.interceptors.add(AuthInterceptor(cacheManager: _cacheManager));
 
-    // 4. Cache interceptor - for offline support
+    // Cache interceptor - for offline support
     // _dio.interceptors.add(CacheInterceptor(cacheManager: _cacheManager));
 
-    // 5. Pretty logger - only in debug mode
     if (kDebugMode) {
       _dio.interceptors.add(
         PrettyDioLogger(
@@ -90,7 +84,7 @@ class DioClient {
       );
     }
 
-    // 6. Retry interceptor - retries failed requests (but not 401s)
+    // Retry interceptor - retries failed requests (but not 401s)
     _dio.interceptors.add(RetryInterceptor(dio: _dio));
 
     // 7. Refresh token interceptor - Added last, runs FIRST for errors (handles 401 before transformation)
@@ -120,38 +114,38 @@ class DioClient {
   }
 
   /// Create a new Dio instance with custom configuration
-  static Dio createCustomDio({
-    required String baseUrl,
-    Duration? connectTimeout,
-    Duration? receiveTimeout,
-    Map<String, dynamic>? headers,
-    bool addLogger = true,
-  }) {
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: connectTimeout ?? const Duration(seconds: 30),
-        receiveTimeout: receiveTimeout ?? const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...?headers,
-        },
-      ),
-    );
+  // static Dio createCustomDio({
+  //   required String baseUrl,
+  //   Duration? connectTimeout,
+  //   Duration? receiveTimeout,
+  //   Map<String, dynamic>? headers,
+  //   bool addLogger = true,
+  // }) {
+  //   final dio = Dio(
+  //     BaseOptions(
+  //       baseUrl: baseUrl,
+  //       connectTimeout: connectTimeout ?? const Duration(seconds: 30),
+  //       receiveTimeout: receiveTimeout ?? const Duration(seconds: 30),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json',
+  //         ...?headers,
+  //       },
+  //     ),
+  //   );
 
-    if (addLogger && kDebugMode) {
-      dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: true,
-          error: true,
-          compact: true,
-        ),
-      );
-    }
+  //   if (addLogger && kDebugMode) {
+  //     dio.interceptors.add(
+  //       PrettyDioLogger(
+  //         requestHeader: true,
+  //         requestBody: true,
+  //         responseBody: true,
+  //         error: true,
+  //         compact: true,
+  //       ),
+  //     );
+  //   }
 
-    return dio;
-  }
+  //   return dio;
+  // }
 }

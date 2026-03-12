@@ -65,6 +65,13 @@ class ApiRoutes {
   static const String walletTransactions = '/payments/wallet/transactions';
   static const String paymentHistory = '/payments/history';
 
+  // ============== DELIVERIES ==============
+  static const String deliveryEstimate = '/deliveries/estimate';
+  static const String bookDelivery = '/deliveries';
+  static String pickupPackage(String rideId) =>
+      '/deliveries/$rideId/pickup-package';
+  static String deliverPackage(String rideId) => '/deliveries/$rideId/deliver';
+
   // ============== DRIVER APPLICATION (USER ROUTES) ==============
   static const String applyDriver = '/users/apply-driver';
   static const String driverStatus = '/users/driver-status';

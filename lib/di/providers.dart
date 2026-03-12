@@ -9,7 +9,9 @@ import '../data/services/ride_service.dart';
 import '../features/passenger/repository/user_repository.dart';
 import '../features/drivers/repository/driver_repository.dart';
 import '../features/passenger/repository/ride_repository.dart';
+import '../features/passenger/repository/delivery_repository.dart';
 import '../features/passenger/service/recent_locations_service.dart';
+import '../network/socket_client.dart';
 
 // ============================================================================
 // Service Providers (Singletons)
@@ -40,6 +42,16 @@ final recentLocationsServiceProvider = Provider<RecentLocationsService>((ref) {
 });
 
 // ============================================================================
+// Socket Provider (Singleton)
+// ============================================================================
+
+final socketClientProvider = Provider<SocketClient>((ref) {
+  final client = SocketClient.instance;
+  ref.onDispose(() => client.dispose());
+  return client;
+});
+
+// ============================================================================
 // Repository Providers (Depend on Services)
 // ============================================================================
 
@@ -59,4 +71,9 @@ final driverRepositoryProvider = Provider<DriverRepository>((ref) {
 final rideRepositoryProvider = Provider<RideRepository>((ref) {
   final rideService = ref.watch(rideServiceProvider);
   return RideRepository(rideService);
+});
+
+/// Provider for delivery operations (API)
+final deliveryRepositoryProvider = Provider<DeliveryRepository>((ref) {
+  return DeliveryRepository();
 });

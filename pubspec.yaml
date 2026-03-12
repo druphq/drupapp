@@ -47,6 +47,7 @@ dependencies:
   otp_pin_field: ^1.4.1
   shimmer: ^3.0.0
   webview_flutter: ^4.13.1
+  socket_io_client: ^3.1.4
 
 dev_dependencies:
   flutter_test:
