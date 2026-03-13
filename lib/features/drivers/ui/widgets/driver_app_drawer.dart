@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
@@ -10,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../../passenger/provider/user_notifier.dart';
 import '../../../auth/provider/auth_notifier.dart';
 
 class DriverAppDrawer extends ConsumerWidget {

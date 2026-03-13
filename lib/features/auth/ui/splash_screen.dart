@@ -1,4 +1,5 @@
 import 'package:drup/core/animation/drup_animation.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
@@ -9,7 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../provider/auth_notifier.dart';
-import '../../passenger/provider/user_notifier.dart';
 import '../../../theme/app_colors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {

@@ -883,9 +883,3 @@ class RideNotifier extends StateNotifier<RideState> {
   }
 }
 
-// Provider instance
-final rideNotifierProvider = StateNotifierProvider<RideNotifier, RideState>((
-  ref,
-) {
-  return RideNotifier(ref);
-});

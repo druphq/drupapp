@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';

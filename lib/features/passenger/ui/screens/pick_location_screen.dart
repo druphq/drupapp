@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/resources/app_strings.dart';

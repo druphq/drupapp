@@ -52,13 +52,6 @@ class UserState {
   }
 }
 
-// Provider instance
-final userNotifierProvider = StateNotifierProvider<UserNotifier, UserState>((
-  ref,
-) {
-  return UserNotifier(ref);
-});
-
 class UserNotifier extends StateNotifier<UserState> {
   final Ref ref;
 

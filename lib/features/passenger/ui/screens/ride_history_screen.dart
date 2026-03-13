@@ -1,3 +1,4 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_detail_bottomsheet.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';

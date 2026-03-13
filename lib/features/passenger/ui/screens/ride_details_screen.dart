@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/features/passenger/ui/widgets/driver_info_card.dart';

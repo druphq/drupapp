@@ -34,7 +34,7 @@ class AppColors {
 
   //*accent
   static const Color accentLight = Color(0xFF4A5A9A);
-  static const Color accentLighter = Color(0xFFAEB9DF);
+  static const Color accentLighter = Color(0xFFF0F0F0);
   static const Color accent = Color(0xFF222D65);
   static const Color accent500 = Color(0xff253B80);
   static const Color onAccent = Color(0xff000000);
@@ -70,10 +70,10 @@ class AppColors {
   static const Color bgBlack = Color(0xff000000);
   static const Color splashBg = Color(0xff253B80);
 
-  static const Color grey = Colors.grey;
-  static Color grey50 = Color(0xFFF4F4F6);
-  static Color greyStrong = Color(0xff747682);
-  static Color greyStronger = Colors.grey.shade700;
+  static const Color grey = Color(0xFF828588);
+  static const Color grey50 = Color(0xFFF4F4F6);
+  static const Color greyStrong = Color(0xff747682);
+  static const Color greyStronger = Color(0xFF616161);
 
   //////
   static Color orange400 = Color(0xFFFFA500);

@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';

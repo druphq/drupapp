@@ -1,4 +1,4 @@
-import 'package:drup/features/passenger/provider/user_notifier.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

@@ -1,5 +1,5 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
-import 'package:drup/features/passenger/provider/user_notifier.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';

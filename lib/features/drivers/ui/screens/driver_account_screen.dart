@@ -1,3 +1,4 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -7,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../../passenger/provider/user_notifier.dart';
 import '../../../auth/provider/auth_notifier.dart';
 
 class DriverAccountScreen extends ConsumerWidget {

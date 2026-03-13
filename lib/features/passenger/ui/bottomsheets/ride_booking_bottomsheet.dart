@@ -1,4 +1,5 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/features/passenger/provider/ride_notifier.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_confirmation_bottomsheet.dart';
@@ -87,9 +88,6 @@ class _RideBookingBottomsheetState
           selectedRideSlot: rideState.selectedRideSlot,
           rideSlots: rideState.rideSlots,
         );
-
-      // case RideScheduleState.showRideBooked:
-      //   return RideDetailBottomsheet(bookedRide: rideState.bookedRide);
 
       case RideScheduleState
           .showConnectingDriver: // connectingDriver and driverMatched are not used

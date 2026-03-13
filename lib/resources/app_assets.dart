@@ -32,7 +32,9 @@ class AppAssets {
   static const fileIcon = 'assets/icons/file.png';
   static const pickupIcon = 'assets/icons/pickup.png';
   static const dropoffIcon = 'assets/icons/dropoff.png';
-
+  static const scheduleRideIcon = 'assets/icons/car_calendar.png';
+  static const deliveryIcon = 'assets/icons/delivery.png';
+  static const calendarRide = 'assets/icons/calendar_icon.png';
 
   // others
   static const drupLogoIcon = 'assets/others/drup_logo_icon.png';

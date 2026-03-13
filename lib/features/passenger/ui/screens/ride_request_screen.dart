@@ -1,9 +1,9 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/provider/auth_notifier.dart';
-import '../../provider/ride_notifier.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/utils/location_helper.dart';

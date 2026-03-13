@@ -1,3 +1,4 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -12,7 +13,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../provider/user_notifier.dart';
 import '../../provider/ride_notifier.dart';
 import '../../model/location_model.dart';
 import '../../../../core/constants/constants.dart';

@@ -1,3 +1,4 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -29,7 +30,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   BitmapDescriptor? _myLocationIcon;
   final GlobalKey _bottomSheetKey = GlobalKey();
-  // final GlobalKey _bookBottomSheetKey = GlobalKey();
   GoogleMapController? _mapController;
   ProviderSubscription<RideState>? _rideSub;
   ProviderSubscription<UserState>? _userSub;
@@ -374,6 +374,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         value: SystemUiOverlayStyle.dark,
         child: Stack(
           children: [
+
+            // Map Layer
             Positioned(
               top: 0,
               left: 0,
@@ -397,7 +399,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 zoomControlsEnabled: false,
               ),
             ),
-
+ 
+            
             if (!_isAtUserLocation)
               Positioned(
                 right: 16,
