@@ -10,11 +10,13 @@ import 'package:drup/features/passenger/ui/widgets/home_content_widget.dart';
 import 'package:drup/features/passenger/ui/widgets/ride_card_widget.dart';
 import 'package:drup/features/passenger/ui/widgets/search_ride_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 
 class RideBookingBottomsheet extends ConsumerStatefulWidget {
   const RideBookingBottomsheet({
@@ -58,8 +60,11 @@ class _RideBookingBottomsheetState
     switch (rideState.rideScheduleState) {
       case RideScheduleState.idle:
         return HomeContentWidget(
-          onWhereToTap: () {
-            widget.onWhereToTap?.call();
+          onRideTapped: () {
+            context.push(AppRoutes.pickRideLocationRoute);
+          },
+          onDeliveryTapped: () {
+            context.push(AppRoutes.pickDeliveryLocationRoute);
           },
         );
 

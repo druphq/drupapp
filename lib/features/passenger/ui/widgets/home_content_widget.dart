@@ -1,20 +1,25 @@
+import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
-class HomeContentWidget extends StatelessWidget {
-  const HomeContentWidget({super.key, this.onWhereToTap});
-  final VoidCallback? onWhereToTap;
+class HomeContentWidget extends ConsumerWidget {
+  const HomeContentWidget({
+    super.key,
+    this.onRideTapped,
+    this.onDeliveryTapped,
+  });
+  final VoidCallback? onRideTapped;
+  final VoidCallback? onDeliveryTapped;
 
   @override
-  Widget build(BuildContext context) {
-
-
-
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    //user notifier
+    final userNotifier = ref.watch(userNotifierProvider);
 
     return Container(
       decoration: const BoxDecoration(
@@ -26,11 +31,10 @@ class HomeContentWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Gap(30),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              'Great to see you, John!',
+              'Great to see you, ${userNotifier.user?.firstName ?? 'Guest'}!',
               textAlign: TextAlign.center,
               style: TextStyles.t1.copyWith(
                 fontSize: 18,
@@ -47,7 +51,7 @@ class HomeContentWidget extends StatelessWidget {
               children: [
                 Expanded(
                   child: ContentItemWidget(
-                    onTap: onWhereToTap,
+                    onTap: onDeliveryTapped,
                     iconPath: AppAssets.deliveryIcon,
                     title: 'Delivery',
                     subtitle: 'Send packages',
@@ -58,7 +62,7 @@ class HomeContentWidget extends StatelessWidget {
 
                 Expanded(
                   child: ContentItemWidget(
-                    onTap: onWhereToTap,
+                    onTap: onRideTapped,
                     iconPath: AppAssets.calendarRide,
                     title: 'Schedule',
                     subtitle: 'Airport Rides',
@@ -151,7 +155,7 @@ class ContentItemWidget extends StatelessWidget {
     return Material(
       clipBehavior: Clip.hardEdge,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(Corners.mmd),
+        borderRadius: BorderRadius.circular(Corners.lg),
       ),
       color: AppColors.accentLighter,
       child: InkWell(
@@ -167,25 +171,29 @@ class ContentItemWidget extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
               const Gap(16.0),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Gap(8),
-                  Text(
-                    title,
-                    style: TextStyles.t1.copyWith(
-                      fontSize: 14,
-                      color: AppColors.bgBlack,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Gap(8),
+                    Text(
+                      title,
+                      style: TextStyles.t1.copyWith(
+                        fontSize: 16,
+                        color: AppColors.bgBlack,
+                      ),
                     ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyles.body1.copyWith(
-                      fontSize: 12,
-                      color: AppColors.grey,
+                    Text(
+                      subtitle,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyles.body1.copyWith(
+                        fontSize: 14,
+                        color: AppColors.grey,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

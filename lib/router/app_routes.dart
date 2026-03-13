@@ -1,4 +1,6 @@
 import 'package:drup/core/animation/page_route_animation.dart';
+import 'package:drup/features/passenger/ui/screens/delivery_recipient_screen.dart';
+import 'package:drup/features/passenger/ui/screens/pick_delivery_location_screen.dart';
 import 'package:drup/router/app_router.dart';
 import 'package:drup/features/drivers/ui/screens/driver_main_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_splash_screen.dart';
@@ -7,7 +9,7 @@ import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
 import 'package:drup/features/drivers/ui/screens/verify_driver_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_account_screen.dart';
 import 'package:drup/features/passenger/ui/screens/home_screen.dart';
-import 'package:drup/features/passenger/ui/screens/pick_location_screen.dart';
+import 'package:drup/features/passenger/ui/screens/pick_ride_location_screen.dart';
 import 'package:drup/features/auth/ui/login_screen.dart';
 import 'package:drup/features/auth/ui/otp_screen.dart';
 import 'package:drup/features/auth/ui/email_verification_screen.dart';
@@ -40,7 +42,8 @@ class AppRoutes {
   static const String splashRoute = '/';
   static const String loginRoute = '/login';
   static const String otpRoute = '/otp';
-  static const String pickLocationRoute = '/pick-locations';
+  static const String pickRideLocationRoute = '/pick-locations';
+  static const String pickDeliveryLocationRoute = '/pick-delivery-locations';
   static const String emailVerificationRoute = '/email-verification';
   static const String completeProfileRoute = '/complete-profile';
   static const String homeRoute = '/home';
@@ -54,6 +57,7 @@ class AppRoutes {
   static const String rideStatusRoute = '/ride-status';
   static const String nigeriaAirportsRoute = '/nigeria-airports';
   static const String rideHistoryRoute = '/ride-history';
+  static const String deliveryRecipientRoute = '/delivery-recipient';
   static const String messagesRoute = '/messages';
   static const String supportRoute = '/support';
   static const String aboutRoute = '/about';
@@ -222,13 +226,33 @@ class AppScreens {
     ),
   );
 
-  static final pickLocationRoute = GoRoute(
+  static final pickRideLocationRoute = GoRoute(
     parentNavigatorKey: rootNavigator,
-    path: AppRoutes.pickLocationRoute,
+    path: AppRoutes.pickRideLocationRoute,
     pageBuilder: (context, state) => slideUpTransitionPage(
       key: state.pageKey,
-      child: const PickLocationScreen(),
+      child: const PickRideLocationScreen(),
     ),
+  );
+
+  static final pickDeliveryLocationRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.pickDeliveryLocationRoute,
+    pageBuilder: (context, state) => slideUpTransitionPage(
+      key: state.pageKey,
+      child: const PickDeliveryLocationScreen(),
+    ),
+  );
+
+  static final deliveryRecipientRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.deliveryRecipientRoute,
+    pageBuilder: (context, state) {
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: const DeliveryRecipientScreen(),
+      );
+    },
   );
 
   static final nigeriaAirportsRoute = GoRoute(

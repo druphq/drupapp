@@ -51,7 +51,7 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
                 widget.onEditRide?.call();
               },
             ),
-            false => HomeContentWidget(onWhereToTap: widget.onWhereToTap),
+            false => HomeContentWidget(onRideTapped: widget.onWhereToTap),
           },
           Gap(MediaQuery.of(context).size.height * 0.06),
         ],

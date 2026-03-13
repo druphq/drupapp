@@ -12,18 +12,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../di/providers.dart';
-import '../../provider/ride_notifier.dart';
-import '../../provider/user_notifier.dart';
 import '../../model/location_model.dart';
 
-class PickLocationScreen extends ConsumerStatefulWidget {
-  const PickLocationScreen({super.key});
+class PickDeliveryLocationScreen extends ConsumerStatefulWidget {
+  const PickDeliveryLocationScreen({super.key});
 
   @override
-  ConsumerState<PickLocationScreen> createState() => _PickLocationScreenState();
+  ConsumerState<PickDeliveryLocationScreen> createState() =>
+      _PickDeliveryLocationScreenState();
 }
 
-class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
+class _PickDeliveryLocationScreenState
+    extends ConsumerState<PickDeliveryLocationScreen> {
   final _pickupController = TextEditingController();
   final _dropoffController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
@@ -257,6 +257,9 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
       rideRef.setDropoffLocation(_selectedDropOffLocation!);
 
       context.pop(true);
+
+      // Navigate to a book where user enters recipient details and confirms the delivery
+      
     }
   }
 
@@ -304,7 +307,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      AppStrings.scheduleYourRideTitleTxt,
+                      'Delivery Route',
                       textAlign: TextAlign.center,
                       style: TextStyles.t1.copyWith(
                         fontSize: 20,
@@ -450,7 +453,7 @@ class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    hintText: 'Where to?',
+                    hintText: 'Drop off',
                     hintStyle: TextStyles.t2.copyWith(
                       color: AppColors.textSecondary,
                       fontSize: FontSizes.s16,

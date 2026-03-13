@@ -374,7 +374,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         value: SystemUiOverlayStyle.dark,
         child: Stack(
           children: [
-
             // Map Layer
             Positioned(
               top: 0,
@@ -399,8 +398,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 zoomControlsEnabled: false,
               ),
             ),
- 
-            
+
             if (!_isAtUserLocation)
               Positioned(
                 right: 16,
@@ -427,7 +425,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     key: _bottomSheetKey,
                     child: RideBookingBottomsheet(
                       onWhereToTap: () async {
-                        await context.push(AppRoutes.pickLocationRoute);
+                        await context.push(AppRoutes.pickRideLocationRoute);
                       },
                       onScheduleRide: _scheduleRideBottomsheet,
                       onEditRide: () {},
