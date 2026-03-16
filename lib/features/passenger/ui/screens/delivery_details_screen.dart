@@ -1,7 +1,7 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/di/notifiers.dart';
-import 'package:drup/features/passenger/model/ride_api_models.dart';
-import 'package:drup/features/passenger/ui/widgets/driver_info_card.dart';
+import 'package:drup/di/providers.dart';
+import 'package:drup/features/passenger/model/delivery_api_models.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -15,18 +15,18 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-import '../../../../di/providers.dart';
 
-class RideDetailsScreen extends ConsumerStatefulWidget {
-  const RideDetailsScreen({super.key, required this.ride});
-  final BookedRide ride;
+class DeliveryDetailsScreen extends ConsumerStatefulWidget {
+  const DeliveryDetailsScreen({super.key, required this.deliveryId});
+  final String deliveryId;
 
   @override
-  ConsumerState<RideDetailsScreen> createState() => _RideDetailsScreenState();
+  ConsumerState<DeliveryDetailsScreen> createState() =>
+      _DeliveryDetailsScreenState();
 }
 
-class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
-  BookedRide? _ride;
+class _DeliveryDetailsScreenState extends ConsumerState<DeliveryDetailsScreen> {
+  BookedDelivery? _delivery;
   bool _isLoading = true;
   String? _error;
   bool _isCancelling = false;
@@ -34,24 +34,26 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchRide();
+    _fetchDelivery();
   }
 
-  Future<void> _fetchRide() async {
+  Future<void> _fetchDelivery() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    final repo = ref.read(rideRepositoryProvider);
-    final response = await repo.getRideById(widget.ride.id);
+
+    final repo = ref.read(deliveryRepositoryProvider);
+    final response = await repo.getDeliveryById(widget.deliveryId);
+
     if (response.success && response.data != null) {
       setState(() {
-        _ride = response.data;
+        _delivery = response.data;
         _isLoading = false;
       });
     } else {
       setState(() {
-        _error = response.message ?? 'Failed to load ride details';
+        _error = response.message ?? 'Failed to load delivery details';
         _isLoading = false;
       });
     }
@@ -62,11 +64,11 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   // ---------------------------------------------------------------------------
 
   bool get _isPending =>
-      _ride != null && _ride!.paymentStatus.toLowerCase() == 'pending';
+      _delivery != null && _delivery!.paymentStatus.toLowerCase() == 'pending';
 
   bool get _canCancel {
-    if (_ride == null) return false;
-    final s = _ride!.status.toLowerCase();
+    if (_delivery == null) return false;
+    final s = _delivery!.status.toLowerCase();
     return s == 'booked' || s == 'pending';
   }
 
@@ -76,7 +78,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
         return AppColors.green400;
       case 'cancelled':
         return AppColors.red400;
-      case 'in_progress' || 'matched':
+      case 'in_progress' || 'picked_up':
         return AppColors.accent;
       default:
         return AppColors.orange400;
@@ -89,7 +91,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
         return AppColors.green50;
       case 'cancelled':
         return AppColors.red50;
-      case 'in_progress' || 'matched':
+      case 'in_progress' || 'picked_up':
         return AppColors.accent.withValues(alpha: 0.1);
       default:
         return AppColors.orange50;
@@ -109,7 +111,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       );
     }
 
-    if (_error != null || _ride == null) {
+    if (_error != null || _delivery == null) {
       return Scaffold(
         appBar: _buildAppBar(),
         body: Center(
@@ -127,7 +129,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                 ),
                 const Gap(12),
                 TextButton(
-                  onPressed: _fetchRide,
+                  onPressed: _fetchDelivery,
                   child: Text(
                     'Retry',
                     style: TextStyles.btnStyle.copyWith(fontSize: 16),
@@ -140,7 +142,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       );
     }
 
-    final ride = _ride!;
+    final delivery = _delivery!;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -149,18 +151,17 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
-          _buildHeaderCard(ride),
+          _buildHeaderCard(delivery),
           const Gap(12),
-          _buildMapPreview(ride),
+          _buildMapPreview(delivery),
           const Gap(12),
-          _buildRouteCard(ride),
+          _buildRouteCard(delivery),
           const Gap(12),
-          _buildDriverCard(ride),
+          _buildRecipientCard(delivery),
           const Gap(12),
-          if (ride.isScheduled) ...[_buildScheduleCard(ride), const Gap(12)],
-          _buildFareCard(ride),
+          _buildPackageCard(delivery),
           const Gap(12),
-          _buildHelpCard(),
+          _buildFareCard(delivery),
           const Gap(24),
         ],
       ),
@@ -174,7 +175,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       scrolledUnderElevation: 0,
       centerTitle: true,
       title: Text(
-        'Ride Details',
+        'Delivery Details',
         style: TextStyles.t1.copyWith(
           fontSize: FontSizes.s18,
           fontWeight: FontWeight.w700,
@@ -188,13 +189,13 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Header card – status badge, ride type, ref, date
+  // Header card – status badge, ride number, date
   // ---------------------------------------------------------------------------
 
-  Widget _buildHeaderCard(BookedRide ride) {
+  Widget _buildHeaderCard(BookedDelivery delivery) {
     final dateStr = DateFormat(
       'dd MMM yyyy  •  hh:mm a',
-    ).format(ride.createdAt);
+    ).format(delivery.createdAt);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -214,24 +215,24 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: _statusBg(ride.status),
+                  color: _statusBg(delivery.status),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  ride.status.replaceAll('_', ' ').capitalizeFirstChar(),
+                  delivery.status.replaceAll('_', ' ').capitalizeFirstChar(),
                   style: TextStyles.t2.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: _statusColor(ride.status),
+                    color: _statusColor(delivery.status),
                   ),
                 ),
               ),
               const Spacer(),
               // Vehicle type
-              Icon(Icons.drive_eta, size: 20, color: AppColors.textSecondary),
+              Icon(Icons.two_wheeler, size: 20, color: AppColors.textSecondary),
               const Gap(4),
               Text(
-                ride.vehicleType.capitalizeFirstChar(),
+                delivery.vehicleType.capitalizeFirstChar(),
                 style: TextStyles.t2.copyWith(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -244,7 +245,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
           // Reference
           GestureDetector(
             onTap: () {
-              Clipboard.setData(ClipboardData(text: ride.rideNumber));
+              Clipboard.setData(ClipboardData(text: delivery.rideNumber));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Copied to clipboard')),
               );
@@ -252,7 +253,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             child: Row(
               children: [
                 Text(
-                  'Ref: ${ride.rideNumber}',
+                  'Ref: ${delivery.rideNumber}',
                   style: TextStyles.t2.copyWith(
                     fontSize: FontSizes.s14,
                     fontWeight: FontWeight.w600,
@@ -272,30 +273,32 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             ),
           ),
 
-          // Ride type badge
-          const Gap(10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(Corners.md),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.directions_car, size: 18, color: AppColors.accent),
-                const Gap(6),
-                Text(
-                  'Ride Type: ${ride.rideType.capitalizeFirstChar()}',
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.accent,
+          // Delivery code
+          if (delivery.deliveryCode.isNotEmpty) ...[
+            const Gap(10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(Corners.md),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.qr_code_2, size: 18, color: AppColors.accent),
+                  const Gap(6),
+                  Text(
+                    'Delivery Code: ${delivery.deliveryCode}',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.accent,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -305,7 +308,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   // Map preview
   // ---------------------------------------------------------------------------
 
-  Widget _buildMapPreview(BookedRide ride) {
+  Widget _buildMapPreview(BookedDelivery delivery) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(Corners.lg),
       child: SizedBox(
@@ -316,8 +319,8 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
               mapType: MapType.normal,
               initialCameraPosition: CameraPosition(
                 target: LatLng(
-                  ride.pickup.coordinates.latitude,
-                  ride.pickup.coordinates.longitude,
+                  delivery.pickup.coordinates.latitude,
+                  delivery.pickup.coordinates.longitude,
                 ),
                 zoom: 13,
               ),
@@ -351,7 +354,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                     Icon(Icons.call_split, size: 18, color: AppColors.accent),
                     const Gap(4),
                     Text(
-                      '${formatDistance(ride.estimatedDistance.toDouble())}, ${formatDuration(ride.estimatedDuration)}',
+                      '${formatDistance(delivery.estimatedDistance.toDouble())}, ${formatDuration(delivery.estimatedDuration)}',
                       style: TextStyles.t2.copyWith(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -371,7 +374,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   // Route card – pickup & dropoff
   // ---------------------------------------------------------------------------
 
-  Widget _buildRouteCard(BookedRide ride) {
+  Widget _buildRouteCard(BookedDelivery delivery) {
     return _card(
       title: 'Route',
       child: IntrinsicHeight(
@@ -413,9 +416,9 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   ),
                   const Gap(2),
                   Text(
-                    ride.pickup.name.isNotEmpty
-                        ? ride.pickup.name
-                        : ride.pickup.address,
+                    delivery.pickup.name.isNotEmpty
+                        ? delivery.pickup.name
+                        : delivery.pickup.address,
                     style: TextStyles.t2.copyWith(fontSize: 14),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -431,9 +434,9 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   ),
                   const Gap(2),
                   Text(
-                    ride.dropoff.name.isNotEmpty
-                        ? ride.dropoff.name
-                        : ride.dropoff.address,
+                    delivery.dropoff.name.isNotEmpty
+                        ? delivery.dropoff.name
+                        : delivery.dropoff.address,
                     style: TextStyles.t2.copyWith(fontSize: 14),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -448,82 +451,73 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Driver card
+  // Recipient card
   // ---------------------------------------------------------------------------
 
-  Widget _buildDriverCard(BookedRide ride) {
-    if (ride.driver != null) {
-      return _card(
-        title: 'Driver',
-        child: DriverInfoCard(bookedRide: ride),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
-      ),
-      child: Row(
+  Widget _buildRecipientCard(BookedDelivery delivery) {
+    final r = delivery.recipient;
+    return _card(
+      title: 'Recipient',
+      child: Column(
         children: [
-          Container(
-            height: 40,
-            width: 40,
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
+          _infoRow(Icons.person_outline, 'Name', r.name),
+          const Gap(10),
+          _infoRow(Icons.phone_outlined, 'Phone', r.phone),
+          if (r.alternatePhone != null && r.alternatePhone!.isNotEmpty) ...[
+            const Gap(10),
+            _infoRow(
+              Icons.phone_forwarded_outlined,
+              'Alt. Phone',
+              r.alternatePhone!,
             ),
-            child: const Icon(
-              Icons.person_outline,
-              size: 22,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const Gap(12),
-          Expanded(
-            child: Text(
-              'Driver\'s detail will appear once a driver is assigned to your ride.',
-              style: TextStyles.t2.copyWith(
-                fontSize: FontSizes.s14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
+          ],
+          if (r.notes != null && r.notes!.isNotEmpty) ...[
+            const Gap(10),
+            _infoRow(Icons.note_outlined, 'Notes', r.notes!),
+          ],
         ],
       ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Schedule card – only for scheduled rides
+  // Package card
   // ---------------------------------------------------------------------------
 
-  Widget _buildScheduleCard(BookedRide ride) {
+  Widget _buildPackageCard(BookedDelivery delivery) {
+    final p = delivery.package;
     return _card(
-      title: 'Schedule',
+      title: 'Package',
       child: Column(
         children: [
-          _infoRow(
-            Icons.calendar_today_outlined,
-            'Date',
-            DateFormat(
-              'dd MMM yyyy',
-            ).format(ride.scheduledTime ?? ride.createdAt),
-          ),
-          const Gap(10),
-          _infoRow(
-            Icons.access_time_outlined,
-            'Time',
-            DateFormat('hh:mm a').format(ride.scheduledTime ?? ride.createdAt),
-          ),
-          if (ride.pickupWindow != null) ...[
+          _infoRow(Icons.inventory_2_outlined, 'Description', p.description),
+          if (p.size != null && p.size!.isNotEmpty) ...[
             const Gap(10),
             _infoRow(
-              Icons.timelapse_outlined,
-              'Window',
-              '${DateFormat('hh:mm a').format(ride.pickupWindow!.start)} – ${DateFormat('hh:mm a').format(ride.pickupWindow!.end)}',
+              Icons.straighten_outlined,
+              'Size',
+              p.size!.capitalizeFirstChar(),
             ),
+          ],
+          if (p.weight != null) ...[
+            const Gap(10),
+            _infoRow(
+              Icons.fitness_center_outlined,
+              'Weight',
+              '${p.weight!.toStringAsFixed(1)} kg',
+            ),
+          ],
+          if (p.quantity != null) ...[
+            const Gap(10),
+            _infoRow(Icons.numbers_outlined, 'Quantity', '${p.quantity}'),
+          ],
+          if (p.fragile) ...[
+            const Gap(10),
+            _infoRow(Icons.warning_amber_rounded, 'Fragile', 'Yes'),
+          ],
+          if (delivery.userNotes != null && delivery.userNotes!.isNotEmpty) ...[
+            const Gap(10),
+            _infoRow(Icons.comment_outlined, 'Comment', delivery.userNotes!),
           ],
         ],
       ),
@@ -534,8 +528,8 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   // Fare card
   // ---------------------------------------------------------------------------
 
-  Widget _buildFareCard(BookedRide ride) {
-    final fare = ride.fare;
+  Widget _buildFareCard(BookedDelivery delivery) {
+    final fare = delivery.fare;
     return _card(
       title: 'Fare Breakdown',
       child: Column(
@@ -543,13 +537,12 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
           _fareRow('Base fare', fare.baseFare),
           _fareRow('Distance fare', fare.distanceFare),
           _fareRow('Time fare', fare.timeFare),
+          if (fare.packageSurcharge > 0)
+            _fareRow('Package surcharge', fare.packageSurcharge),
           if (fare.surgePricing > 0)
             _fareRow('Surge pricing', fare.surgePricing),
           _fareRow('Service fee', fare.serviceFee),
           if (fare.tax > 0) _fareRow('Tax', fare.tax),
-          if (fare.tip > 0) _fareRow('Tip', fare.tip),
-          if (fare.waitingFare != null && fare.waitingFare! > 0)
-            _fareRow('Waiting fare', fare.waitingFare!),
           if (fare.discount > 0)
             _fareRow('Discount', -fare.discount, isDiscount: true),
           const Divider(height: 20),
@@ -582,7 +575,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
               ),
               const Gap(4),
               Text(
-                'Payment: ${ride.paymentStatus.capitalizeFirstChar()}',
+                'Payment: ${delivery.paymentStatus.capitalizeFirstChar()}',
                 style: TextStyles.t2.copyWith(
                   fontSize: 13,
                   color: _isPending ? AppColors.orange400 : AppColors.green400,
@@ -590,7 +583,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
               ),
               const Spacer(),
               Text(
-                ride.paymentMethod.capitalizeFirstChar(),
+                delivery.paymentMethod.capitalizeFirstChar(),
                 style: TextStyles.t2.copyWith(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -598,70 +591,13 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
               ),
             ],
           ),
-          if (_isPending && ride.paymentDeadline != null) ...[
-            const Gap(8),
-            Text(
-              'Kindly make payment before ${formatDateTime(ride.paymentDeadline!)} to avoid cancellation.',
-              style: TextStyles.t2.copyWith(
-                fontSize: 13,
-                color: AppColors.orange400,
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Help card
-  // ---------------------------------------------------------------------------
-
-  Widget _buildHelpCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(Corners.lg),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Corners.lg),
-          onTap: () {},
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.help_outline,
-                  size: 22,
-                  color: AppColors.textSecondary,
-                ),
-                const Gap(12),
-                Text(
-                  'Get help with ride',
-                  style: TextStyles.t2.copyWith(
-                    fontSize: FontSizes.s14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.chevron_right,
-                  size: 22,
-                  color: AppColors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Bottom action bar
+  // Bottom action bar: Cancel / Make Payment
   // ---------------------------------------------------------------------------
 
   Widget? _buildBottomActions() {
@@ -678,7 +614,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             if (_isPending && _canCancel) const Gap(10),
             if (_canCancel)
               CustomButton(
-                text: 'Cancel Ride',
+                text: 'Cancel Delivery',
                 isLoading: _isCancelling,
                 backgroundColor: AppColors.red50,
                 textStyle: TextStyles.t2.copyWith(
@@ -701,7 +637,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   Future<void> _handlePayment() async {
     final result = await ref
         .read(rideNotifierProvider.notifier)
-        .initializePayment(rideId: _ride!.id, paymentMethod: 'card');
+        .initializePayment(rideId: _delivery!.id, paymentMethod: 'card');
 
     if (result?.authorizationUrl != null && mounted) {
       context.push(
@@ -709,7 +645,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
         extra: {
           'authorizationUrl': result!.authorizationUrl!,
           'onPaymentComplete': () async {
-            await _fetchRide();
+            // In a real implementation, refresh delivery details here
           },
         },
       );
@@ -726,8 +662,8 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Ride'),
-        content: const Text('Are you sure you want to cancel this ride?'),
+        title: const Text('Cancel Delivery'),
+        content: const Text('Are you sure you want to cancel this delivery?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -750,20 +686,20 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
 
     final success = await ref
         .read(rideNotifierProvider.notifier)
-        .cancelRide(_ride!.id, reason: 'User cancelled ride');
+        .cancelRide(_delivery!.id, reason: 'User cancelled delivery');
 
     setState(() => _isCancelling = false);
 
     if (mounted) {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ride cancelled successfully.')),
+          const SnackBar(content: Text('Delivery cancelled successfully.')),
         );
         Navigator.of(context).pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to cancel ride. Please try again.'),
+            content: Text('Failed to cancel delivery. Please try again.'),
           ),
         );
       }

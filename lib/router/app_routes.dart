@@ -30,6 +30,7 @@ import 'package:drup/features/passenger/ui/screens/reviews_screen.dart';
 import 'package:drup/features/passenger/ui/screens/privacy_policy_screen.dart';
 import 'package:drup/features/passenger/ui/screens/delete_account_screen.dart';
 import 'package:drup/features/passenger/ui/screens/ride_details_screen.dart';
+import 'package:drup/features/passenger/ui/screens/delivery_details_screen.dart';
 import 'package:drup/features/passenger/ui/screens/payment_webview_screen.dart';
 import 'package:drup/features/passenger/ui/screens/payments_screen.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
@@ -68,6 +69,7 @@ class AppRoutes {
   static const String deleteAccountRoute = '/delete-account';
   static const String paymentsRoute = '/payments';
   static const String rideDetailsRoute = '/ride-details';
+  static const String deliveryDetailsRoute = '/delivery-details';
   static const String paymentDetailRoute = '/payment-detail';
   static const String paymentWebViewRoute = '/payment-webview';
 }
@@ -383,6 +385,18 @@ class AppScreens {
       return slideRightTransitionPage(
         key: state.pageKey,
         child: RideDetailsScreen(ride: ride),
+      );
+    },
+  );
+
+  static final deliveryDetailsRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.deliveryDetailsRoute,
+    pageBuilder: (context, state) {
+      final deliveryId = state.extra as String;
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: DeliveryDetailsScreen(deliveryId: deliveryId),
       );
     },
   );

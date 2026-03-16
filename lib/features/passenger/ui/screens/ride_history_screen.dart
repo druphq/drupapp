@@ -391,9 +391,11 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       elevation: 0.0,
       child: InkWell(
         onTap: () {
-          // Navigate to ride details
-          context.push(AppRoutes.rideDetailsRoute, extra: ride);
-          // _showBookDetailBottomsheet(ride);
+          if (_isDelivery(ride)) {
+            context.push(AppRoutes.deliveryDetailsRoute, extra: ride.id);
+          } else {
+            context.push(AppRoutes.rideDetailsRoute, extra: ride);
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

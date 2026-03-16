@@ -63,4 +63,26 @@ class DeliveryRepository {
       statusCode: response.statusCode,
     );
   }
+
+  // ===========================================================================
+  // GET DELIVERY BY ID (API)
+  // ===========================================================================
+
+  /// Fetch full delivery details by ID.
+  Future<ApiResponse<BookedDelivery>> getDeliveryById(String deliveryId) async {
+    final response = await _deliveryService.getDeliveryById(deliveryId);
+
+    if (response.success && response.data != null) {
+      return ApiResponse.success(
+        data: BookedDelivery.fromJson(response.data!),
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.failure(
+      message: response.message ?? 'Failed to get delivery details',
+      statusCode: response.statusCode,
+    );
+  }
 }

@@ -79,4 +79,42 @@ class DeliveryService {
       return ApiResponse.failure(message: e.toString());
     }
   }
+
+  // ===========================================================================
+  // 3. GET DELIVERY BY ID
+  // ===========================================================================
+
+  /// Fetch a single delivery by its ride ID.
+  /// Deliveries share the `/rides/:id` endpoint.
+  Future<ApiResponse<Map<String, dynamic>>> getDeliveryById(
+    String deliveryId,
+  ) async {
+    try {
+      final response = await _apiService.get<Map<String, dynamic>>(
+        ApiRoutes.ride(deliveryId),
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          final rideData = responseData['ride'] as Map<String, dynamic>?;
+          if (rideData != null) {
+            return ApiResponse.success(
+              data: rideData,
+              message: response.message,
+              statusCode: response.statusCode,
+            );
+          }
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to get delivery details',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error getting delivery by ID: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
 }
