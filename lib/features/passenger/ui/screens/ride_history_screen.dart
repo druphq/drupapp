@@ -1,5 +1,4 @@
 import 'package:drup/di/notifiers.dart';
-import 'package:drup/features/passenger/ui/bottomsheets/ride_detail_bottomsheet.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -13,8 +12,9 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../model/ride_api_models.dart';
-import '../../provider/ride_notifier.dart';
 import '../../../../di/providers.dart';
+
+enum _StatusFilter { upcoming, completed, cancelled }
 
 class RideHistoryScreen extends ConsumerStatefulWidget {
   const RideHistoryScreen({super.key});
@@ -32,10 +32,13 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   List<BookedRide> _upcomingRides = [];
   List<BookedRide> _historyRides = [];
 
+  _StatusFilter _ridesFilter = _StatusFilter.upcoming;
+  _StatusFilter _deliveryFilter = _StatusFilter.upcoming;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchAllData();
     });
@@ -77,6 +80,59 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     super.dispose();
   }
 
+  // ---------------------------------------------------------------------------
+  // Helpers to partition data by category (ride vs delivery) and status chip
+  // ---------------------------------------------------------------------------
+
+  bool _isDelivery(BookedRide r) => r.rideType == 'delivery';
+
+  List<BookedRide> _filterByStatus(
+    List<BookedRide> all,
+    _StatusFilter filter, {
+    required bool delivery,
+  }) {
+    final byCategory = all
+        .where((r) => delivery ? _isDelivery(r) : !_isDelivery(r))
+        .toList();
+
+    switch (filter) {
+      case _StatusFilter.upcoming:
+        // Active / upcoming rides from the separate endpoint
+        final upcoming = _upcomingRides
+            .where((r) => delivery ? _isDelivery(r) : !_isDelivery(r))
+            .toList();
+        return upcoming;
+      case _StatusFilter.completed:
+        return byCategory.where((r) => r.status == 'completed').toList();
+      case _StatusFilter.cancelled:
+        return byCategory.where((r) => r.status == 'cancelled').toList();
+    }
+  }
+
+  Future<void> Function() _refreshForFilter(_StatusFilter filter) {
+    switch (filter) {
+      case _StatusFilter.upcoming:
+        return _fetchUpcomingRides;
+      case _StatusFilter.completed:
+      case _StatusFilter.cancelled:
+        return _fetchRideHistory;
+    }
+  }
+
+  bool _isLoadingForFilter(_StatusFilter filter) {
+    switch (filter) {
+      case _StatusFilter.upcoming:
+        return _isLoadingUpcoming;
+      case _StatusFilter.completed:
+      case _StatusFilter.cancelled:
+        return _isLoadingHistory;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,41 +153,105 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.accent,
           tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
+            Tab(text: 'Rides'),
+            Tab(text: 'Delivery'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildTab(
-            isLoading: _isLoadingUpcoming,
-            rides: _upcomingRides,
-            emptyIcon: Icons.schedule,
-            emptyTitle: 'No upcoming rides',
-            emptySubtitle: 'Scheduled rides will appear here',
-            onRefresh: _fetchUpcomingRides,
+          _buildCategoryTab(
+            filter: _ridesFilter,
+            onFilterChanged: (f) => setState(() => _ridesFilter = f),
+            isDelivery: false,
           ),
-          _buildTab(
-            isLoading: _isLoadingHistory,
-            rides: _historyRides.where((r) => r.status == 'completed').toList(),
-            emptyIcon: Icons.history,
-            emptyTitle: 'No completed rides yet',
-            emptySubtitle: 'Your ride history will appear here',
-            onRefresh: _fetchRideHistory,
-          ),
-          _buildTab(
-            isLoading: _isLoadingHistory,
-            rides: _historyRides.where((r) => r.status == 'cancelled').toList(),
-            emptyIcon: Icons.cancel_outlined,
-            emptyTitle: 'No cancelled rides',
-            emptySubtitle: 'Cancelled rides will appear here',
-            onRefresh: _fetchRideHistory,
+          _buildCategoryTab(
+            filter: _deliveryFilter,
+            onFilterChanged: (f) => setState(() => _deliveryFilter = f),
+            isDelivery: true,
           ),
         ],
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Category tab (Rides or Delivery) with status chips
+  // ---------------------------------------------------------------------------
+
+  Widget _buildCategoryTab({
+    required _StatusFilter filter,
+    required ValueChanged<_StatusFilter> onFilterChanged,
+    required bool isDelivery,
+  }) {
+    final rides = _filterByStatus(_historyRides, filter, delivery: isDelivery);
+    final loading = _isLoadingForFilter(filter);
+    final onRefresh = _refreshForFilter(filter);
+
+    final label = isDelivery ? 'deliveries' : 'rides';
+
+    final emptyConfig = {
+      _StatusFilter.upcoming: (
+        icon: Icons.schedule,
+        title: 'No upcoming $label',
+        subtitle: 'Scheduled $label will appear here',
+      ),
+      _StatusFilter.completed: (
+        icon: Icons.history,
+        title: 'No completed $label yet',
+        subtitle: 'Your $label history will appear here',
+      ),
+      _StatusFilter.cancelled: (
+        icon: Icons.cancel_outlined,
+        title: 'No cancelled $label',
+        subtitle: 'Cancelled $label will appear here',
+      ),
+    }[filter]!;
+
+    return Column(
+      children: [
+        // Status filter chips
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: _StatusFilter.values.map((f) {
+              final selected = f == filter;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(f.name.capitalizeFirstChar()),
+                  selected: selected,
+                  onSelected: (_) => onFilterChanged(f),
+                  selectedColor: AppColors.accent,
+                  labelStyle: TextStyles.t2.copyWith(
+                    fontSize: 13,
+                    color: selected ? Colors.white : AppColors.textSecondary,
+                  ),
+                  backgroundColor: Colors.grey.shade100,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide.none,
+                  ),
+                  showCheckmark: false,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+
+        // Content
+        Expanded(
+          child: _buildTab(
+            isLoading: loading,
+            rides: rides,
+            emptyIcon: emptyConfig.icon,
+            emptyTitle: emptyConfig.title,
+            emptySubtitle: emptyConfig.subtitle,
+            onRefresh: onRefresh,
+          ),
+        ),
+      ],
     );
   }
 
@@ -294,7 +414,11 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
                         ),
                       ),
                       Gap(10.0),
-                      Icon(Icons.drive_eta, size: 20, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.drive_eta,
+                        size: 20,
+                        color: AppColors.textSecondary,
+                      ),
                       Gap(4.0),
                       Text(
                         ride.vehicleType.capitalizeFirstChar(),
@@ -369,18 +493,6 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showBookDetailBottomsheet(BookedRide bookedRide) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => GestureDetector(
-        onTap: () => Navigator.of(context).pop(),
-        child: RideDetailBottomsheet(bookedRide: bookedRide),
       ),
     );
   }

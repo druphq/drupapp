@@ -254,6 +254,7 @@ class BookDeliveryRequest extends Equatable {
     'vehicleType': vehicleType,
     'recipient': recipient.toJson(),
     'package': package.toJson(),
+    'rideType': 'delivery',
     if (scheduledTime != null)
       'scheduledTime': scheduledTime!.toUtc().toIso8601String(),
     if (paymentMethod != null) 'paymentMethod': paymentMethod,

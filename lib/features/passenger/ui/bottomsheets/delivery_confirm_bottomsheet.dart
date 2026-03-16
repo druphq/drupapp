@@ -1,31 +1,30 @@
 import 'package:drup/core/widgets/custom_shimmer_widget.dart';
 import 'package:drup/features/passenger/model/delivery_api_models.dart';
-import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/features/passenger/ui/widgets/location_map_widget.dart';
-import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
-class RideConfirmationBottomSheet extends StatelessWidget {
+class DeliveryConfirmationBottomSheet extends ConsumerWidget {
   final String pickupLocation;
   final String destinationLocation;
-  final VehicleEstimate? estimate;
   final DeliveryEstimate? deliveryEstimate;
   final bool isLoading;
   final VoidCallback? onScheduleRide;
   final VoidCallback? onEditRide;
 
-  const RideConfirmationBottomSheet({
+  const DeliveryConfirmationBottomSheet({
     super.key,
     required this.pickupLocation,
     required this.destinationLocation,
-    this.estimate,
     this.deliveryEstimate,
     this.isLoading = false,
     this.onScheduleRide,
@@ -33,7 +32,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.lg)),
@@ -50,10 +49,10 @@ class RideConfirmationBottomSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                isLoading && estimate == null
+                isLoading && deliveryEstimate == null
                     ? Shimmer.fromColors(
-                        baseColor: Colors.grey.withOpacity(0.5),
-                        highlightColor: Colors.grey.withOpacity(0.8),
+                        baseColor: Colors.grey.withValues(alpha: 0.5),
+                        highlightColor: Colors.grey.withValues(alpha: 0.8),
                         child: Container(
                           width: 100,
                           height: 30,
@@ -64,7 +63,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
                         ),
                       )
                     : Text(
-                        '₦${formatThousand(estimate?.fare.totalFare ?? 0)}',
+                        '₦${formatThousand(deliveryEstimate?.fare.totalFare ?? 0)}',
                         style: TextStyles.t1.copyWith(
                           fontSize: FontSizes.s24,
                           fontWeight: FontWeight.w700,
@@ -72,12 +71,12 @@ class RideConfirmationBottomSheet extends StatelessWidget {
                         ),
                       ),
 
-                if (estimate != null) ...[
+                if (deliveryEstimate != null) ...[
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${formatDistance(estimate?.distanceKm ?? 0)}, ${formatDuration(estimate?.durationMinutes ?? 0)}',
+                        '${formatDistance(deliveryEstimate?.distanceKm ?? 0)}, ${formatDuration(deliveryEstimate?.durationMinutes ?? 0)}',
                         style: TextStyles.t1.copyWith(
                           fontSize: FontSizes.s18,
                           fontWeight: FontWeight.w700,
@@ -192,21 +191,22 @@ class RideConfirmationBottomSheet extends StatelessWidget {
 
           // Schedule Ride Button
           CustomButton(
-            text: 'Schedule Ride',
-            onPressed: estimate != null ? onScheduleRide : () {},
-            backgroundColor: estimate != null
+            text: 'Continue',
+            onPressed: deliveryEstimate != null
+                ? () {
+                    context.push(AppRoutes.registerDeliveryRoute);
+                  }
+                : null,
+            backgroundColor: deliveryEstimate != null
                 ? AppColors.white
-                : AppColors.white.withOpacity(0.2),
+                : AppColors.white.withValues(alpha: 0.2),
             textStyle: TextStyles.btnStyle.copyWith(color: AppColors.onAccent),
-            icon: ImageIcon(
-              AssetImage(AppAssets.scheduleIcon),
-              size: 20,
-              color: AppColors.onAccent,
-            ),
           ),
           Gap(MediaQuery.of(context).size.height * 0.06),
         ],
       ),
     );
   }
+
+
 }

@@ -1,5 +1,5 @@
 import 'package:drup/core/animation/page_route_animation.dart';
-import 'package:drup/features/passenger/ui/screens/delivery_recipient_screen.dart';
+import 'package:drup/features/passenger/ui/screens/register_delivery_screen.dart';
 import 'package:drup/features/passenger/ui/screens/pick_delivery_location_screen.dart';
 import 'package:drup/router/app_router.dart';
 import 'package:drup/features/drivers/ui/screens/driver_main_screen.dart';
@@ -57,7 +57,7 @@ class AppRoutes {
   static const String rideStatusRoute = '/ride-status';
   static const String nigeriaAirportsRoute = '/nigeria-airports';
   static const String rideHistoryRoute = '/ride-history';
-  static const String deliveryRecipientRoute = '/delivery-recipient';
+  static const String registerDeliveryRoute = '/delivery-recipient';
   static const String messagesRoute = '/messages';
   static const String supportRoute = '/support';
   static const String aboutRoute = '/about';
@@ -244,13 +244,13 @@ class AppScreens {
     ),
   );
 
-  static final deliveryRecipientRoute = GoRoute(
+  static final registerDeliveryRoute = GoRoute(
     parentNavigatorKey: rootNavigator,
-    path: AppRoutes.deliveryRecipientRoute,
+    path: AppRoutes.registerDeliveryRoute,
     pageBuilder: (context, state) {
-      return slideRightTransitionPage(
+      return slideUpTransitionPage(
         key: state.pageKey,
-        child: const DeliveryRecipientScreen(),
+        child: const RegisterDeliveryScreen(),
       );
     },
   );

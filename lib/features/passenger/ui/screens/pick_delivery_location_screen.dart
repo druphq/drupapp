@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
-import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -249,17 +248,18 @@ class _PickDeliveryLocationScreenState
     _checkAndPopIfBothLocationsSelected();
   }
 
-  void _checkAndPopIfBothLocationsSelected() {
+  void _checkAndPopIfBothLocationsSelected() async {
     if (_pickupController.text.isNotEmpty &&
         _dropoffController.text.isNotEmpty) {
       final rideRef = ref.read(rideNotifierProvider.notifier);
+
+      // Set ride type to delivery
+      rideRef.setIsDelivery(true);
+
       rideRef.setPickupLocation(_selectedPickupLocation!);
       rideRef.setDropoffLocation(_selectedDropOffLocation!);
 
       context.pop(true);
-
-      // Navigate to a book where user enters recipient details and confirms the delivery
-      
     }
   }
 

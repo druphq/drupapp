@@ -2,6 +2,7 @@ import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/di/notifiers.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/features/passenger/provider/ride_notifier.dart';
+import 'package:drup/features/passenger/ui/bottomsheets/delivery_confirm_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_confirmation_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_detail_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/widgets/connect_driver_widget.dart';
@@ -68,7 +69,7 @@ class _RideBookingBottomsheetState
           },
         );
 
-      case RideScheduleState.showConfirmRoutes:
+      case RideScheduleState.showRideConfirmRoutes:
         return RideConfirmationBottomSheet(
           pickupLocation: rideState.pickupLocation?.name ?? '',
           destinationLocation: rideState.dropoffLocation?.name ?? '',
@@ -76,6 +77,18 @@ class _RideBookingBottomsheetState
           estimate: rideState.fareEstimates.isNotEmpty
               ? rideState.fareEstimates[0]
               : null,
+          onScheduleRide: widget.onScheduleRide,
+          onEditRide: () {
+            widget.onEditRide?.call();
+          },
+        );
+
+      case RideScheduleState.showDeliveryConfirmRoutes:
+        return DeliveryConfirmationBottomSheet(
+          pickupLocation: rideState.pickupLocation?.name ?? '',
+          destinationLocation: rideState.dropoffLocation?.name ?? '',
+          isLoading: rideState.isLoading,
+          deliveryEstimate: rideState.deliveryEstimate,
           onScheduleRide: widget.onScheduleRide,
           onEditRide: () {
             widget.onEditRide?.call();

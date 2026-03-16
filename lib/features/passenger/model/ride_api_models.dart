@@ -1,3 +1,4 @@
+import 'package:drup/features/passenger/model/delivery_api_models.dart';
 import 'package:equatable/equatable.dart';
 
 // ============================================================================
@@ -485,6 +486,9 @@ class BookRideRequest extends Equatable {
   final String? rideType;
   final String? vehicleType; // for individual rides
   final DateTime? scheduledTime;
+  final DeliveryRecipient? recipient; // for delivery rides
+  final DeliveryPackage? packageDetails; // for delivery rides
+  final String? userNotes; // for delivery rides
   final List<RideLocation>? stops;
 
   const BookRideRequest({
@@ -494,6 +498,9 @@ class BookRideRequest extends Equatable {
     this.rideType,
     this.vehicleType,
     this.scheduledTime,
+    this.recipient,
+    this.packageDetails,
+    this.userNotes,
     this.stops,
   });
 
@@ -507,6 +514,10 @@ class BookRideRequest extends Equatable {
       'scheduledTime': scheduledTime!.toUtc().toIso8601String(),
     if (stops != null && stops!.isNotEmpty)
       'stops': stops!.map((s) => {'location': s.toJson()}).toList(),
+    if (recipient != null) 'recipient': recipient!.toJson(),
+    if (packageDetails != null) 'package': packageDetails!.toJson(),
+    if (userNotes != null) 'userNotes': userNotes,
+    if(vehicleType != null) 'vehicleType': vehicleType,
   };
 
   @override
@@ -516,6 +527,9 @@ class BookRideRequest extends Equatable {
     joinRideId,
     rideType,
     scheduledTime,
+    recipient,
+    packageDetails,
+    userNotes,
     stops,
   ];
 }

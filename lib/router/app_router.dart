@@ -82,7 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       AppScreens.mainRoute,
       AppScreens.pickRideLocationRoute,
       AppScreens.pickDeliveryLocationRoute,
-      AppScreens.deliveryRecipientRoute,
+      AppScreens.registerDeliveryRoute,
       AppScreens.nigeriaAirportsRoute,
       AppScreens.rideHistoryRoute,
       AppScreens.messagesRoute,

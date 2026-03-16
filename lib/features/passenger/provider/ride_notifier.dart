@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:drup/core/constants/constants.dart';
+import 'package:drup/features/passenger/model/delivery_api_models.dart';
+import 'package:drup/features/passenger/repository/delivery_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../model/ride.dart';
@@ -11,6 +14,7 @@ import '../../../di/providers.dart';
 class RideState {
   final Ride? currentRide;
   final BookedRide? bookedRide;
+  final RideType rideType;
   final RideRequest? currentRequest;
   final List<LatLng> routePoints;
   final LocationModel? pickupLocation;
@@ -25,14 +29,20 @@ class RideState {
   final LocationModel? driverLocation;
   final RideSlot? selectedRideSlot;
   final List<VehicleEstimate> fareEstimates;
+  final DeliveryEstimate? deliveryEstimate;
   final List<SavedCard> savedCards;
   final WalletBalanceResponse? walletBalance;
   final List<BookedRide> rideHistory;
   final List<RideSlot> rideSlots;
+  final String? recipientName;
+  final String? recipientPhone;
+  final String? packageDescription;
+  final String? comment;
 
   RideState({
     this.currentRide,
     this.bookedRide,
+    this.rideType = RideType.ride,
     this.currentRequest,
     this.routePoints = const [],
     this.pickupLocation,
@@ -46,10 +56,15 @@ class RideState {
     this.driverLocation,
     this.selectedRideSlot,
     this.fareEstimates = const [],
+    this.deliveryEstimate,
     this.savedCards = const [],
     this.walletBalance,
     this.rideHistory = const [],
     this.rideSlots = const [],
+    this.recipientName,
+    this.recipientPhone,
+    this.packageDescription,
+    this.comment,
     this.rideScheduleState = RideScheduleState.idle,
   });
 
@@ -59,7 +74,7 @@ class RideState {
     RideRequest? currentRequest,
     List<LatLng>? routePoints,
     LocationModel? pickupLocation,
-    LocationModel? destinationLocation,
+    LocationModel? dropoffLocation,
     DateTime? scheduleTime,
     bool? isLoading,
     String? errorMessage,
@@ -68,20 +83,28 @@ class RideState {
     double? estimatedFare,
     LocationModel? driverLocation,
     List<VehicleEstimate>? fareEstimates,
+    DeliveryEstimate? deliveryEstimate,
     List<SavedCard>? savedCards,
     WalletBalanceResponse? walletBalance,
     List<BookedRide>? rideHistory,
     RideSlot? selectedRideSlot,
     List<RideSlot>? rideSlots,
     RideScheduleState? rideScheduleState,
+    RideType? rideType,
+    String? recipientName,
+    String? recipientPhone,
+    String? packageDescription,
+    String? comment,
   }) {
     return RideState(
       currentRide: currentRide ?? this.currentRide,
       bookedRide: bookedRide ?? this.bookedRide,
+      rideType: rideType ?? this.rideType,
       currentRequest: currentRequest ?? this.currentRequest,
       routePoints: routePoints ?? this.routePoints,
       pickupLocation: pickupLocation ?? this.pickupLocation,
-      dropoffLocation: destinationLocation ?? this.dropoffLocation,
+      dropoffLocation: dropoffLocation ?? this.dropoffLocation,
+      deliveryEstimate: deliveryEstimate ?? this.deliveryEstimate,
       scheduleTime: scheduleTime ?? this.scheduleTime,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
@@ -105,7 +128,8 @@ class RideState {
 }
 
 enum RideScheduleState {
-  showConfirmRoutes,
+  showRideConfirmRoutes,
+  showDeliveryConfirmRoutes,
   showSearchingRide,
   showAvailableRides,
   // showRideBooked,
@@ -120,6 +144,9 @@ class RideNotifier extends StateNotifier<RideState> {
   StreamSubscription? _activeRideSubscription;
 
   RideRepository get _repository => ref.read(rideRepositoryProvider);
+
+  DeliveryRepository get _deliveryRepository =>
+      ref.read(deliveryRepositoryProvider);
 
   RideNotifier(this.ref) : super(RideState()) {
     _listenToActiveRide();
@@ -161,24 +188,46 @@ class RideNotifier extends StateNotifier<RideState> {
   Future<void> setPickupLocation(LocationModel location) async {
     state = state.copyWith(pickupLocation: location);
     if (state.dropoffLocation != null) {
-      //scheduleRide show the confirm buttom.
+      bool isDelivery = state.rideType == RideType.delivery;
+
+      // show the confirm buttom.
       state = state.copyWith(
-        rideScheduleState: RideScheduleState.showConfirmRoutes,
+        rideScheduleState: isDelivery
+            ? RideScheduleState.showDeliveryConfirmRoutes
+            : RideScheduleState.showRideConfirmRoutes,
       );
-      Future.wait([calculateRoute(), calculateFare()]);
+      Future.wait([
+        calculateRoute(),
+        if (isDelivery) ...[calculateDeliveryFare()] else ...[calculateFare()],
+      ]);
     }
   }
 
   Future<void> setDropoffLocation(LocationModel location) async {
-    state = state.copyWith(destinationLocation: location);
+    state = state.copyWith(dropoffLocation: location);
     if (state.pickupLocation != null) {
-      //scheduleRide show the confirm buttom.
+      bool isDelivery = state.rideType == RideType.delivery;
+
       state = state.copyWith(
-        rideScheduleState: RideScheduleState.showConfirmRoutes,
+        rideScheduleState: isDelivery
+            ? RideScheduleState.showDeliveryConfirmRoutes
+            : RideScheduleState.showRideConfirmRoutes,
       );
-      Future.wait([calculateRoute(), calculateFare()]);
+
+      Future.wait([
+        calculateRoute(),
+        if (isDelivery) ...[calculateDeliveryFare()] else ...[calculateFare()],
+      ]);
     }
   }
+
+  void setIsDelivery(bool isDelivery) {
+    state = state.copyWith(
+      rideType: isDelivery ? RideType.delivery : RideType.ride,
+    );
+  }
+
+  Future<void> setRecipientContact(String contact) async {}
 
   void clearPickupLocation() {
     state = RideState(
@@ -188,6 +237,7 @@ class RideNotifier extends StateNotifier<RideState> {
       routePoints: state.routePoints,
       pickupLocation: null,
       dropoffLocation: state.dropoffLocation,
+      deliveryEstimate: state.deliveryEstimate,
       scheduleTime: state.scheduleTime,
       isLoading: state.isLoading,
       errorMessage: state.errorMessage,
@@ -210,6 +260,7 @@ class RideNotifier extends StateNotifier<RideState> {
       routePoints: state.routePoints,
       pickupLocation: state.pickupLocation,
       dropoffLocation: null,
+      deliveryEstimate: null,
       scheduleTime: state.scheduleTime,
       isLoading: state.isLoading,
       errorMessage: state.errorMessage,
@@ -313,6 +364,62 @@ class RideNotifier extends StateNotifier<RideState> {
       } else {
         state = state.copyWith(
           errorMessage: response.message ?? 'Failed to get fare estimates',
+          isLoading: false,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      return false;
+    }
+  }
+
+  /// Fetch fare estimates from API
+  Future<bool> calculateDeliveryFare() async {
+    if (state.pickupLocation == null || state.dropoffLocation == null) {
+      state = state.copyWith(
+        errorMessage: 'Please select pickup and destination',
+      );
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final request = DeliveryEstimateRequest(
+        pickup: RideLocation(
+          address: state.pickupLocation!.address ?? '',
+          name: state.pickupLocation!.name ?? '',
+          placeId: state.pickupLocation!.placeId ?? '',
+          coordinates: RideCoordinates(
+            latitude: state.pickupLocation!.latitude,
+            longitude: state.pickupLocation!.longitude,
+          ),
+        ),
+        dropoff: RideLocation(
+          address: state.dropoffLocation!.address ?? '',
+          name: state.dropoffLocation!.name ?? '',
+          placeId: state.dropoffLocation!.placeId ?? '',
+          coordinates: RideCoordinates(
+            latitude: state.dropoffLocation!.latitude,
+            longitude: state.dropoffLocation!.longitude,
+          ),
+        ),
+        vehicleType: 'motorcycle',
+        packageSize: 'small',
+      );
+
+      final response = await _deliveryRepository.getDeliveryEstimate(request);
+
+      if (response.success && response.data != null) {
+        state = state.copyWith(
+          deliveryEstimate: response.data!.estimate,
+          isLoading: false,
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          errorMessage: response.message ?? 'Failed to get delivery estimate',
           isLoading: false,
         );
         return false;
@@ -433,6 +540,76 @@ class RideNotifier extends StateNotifier<RideState> {
       } else {
         state = state.copyWith(
           errorMessage: response.message ?? 'Failed to book ride',
+          isLoading: false,
+        );
+        return null;
+      }
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      return null;
+    }
+  }
+
+  /// Book a delivery with selected vehicle type
+  Future<BookedDelivery?> bookDelivery({
+    required String recipientName,
+    required String recipientPhone,
+    required String packageDescription,
+    String? comment,
+  }) async {
+    if (state.pickupLocation == null || state.dropoffLocation == null) {
+      state = state.copyWith(
+        errorMessage: 'Please select pickup and destination',
+      );
+      return null;
+    }
+
+    state = state.copyWith(
+      isLoading: true,
+      recipientName: recipientName,
+      recipientPhone: recipientPhone,
+      packageDescription: packageDescription,
+      comment: comment,
+      errorMessage: null,
+    );
+
+    try {
+      final request = BookDeliveryRequest(
+        pickup: RideLocation(
+          name: state.pickupLocation!.name ?? '',
+          address: state.pickupLocation!.address ?? '',
+          coordinates: RideCoordinates(
+            latitude: state.pickupLocation!.latitude,
+            longitude: state.pickupLocation!.longitude,
+          ),
+        ),
+        dropoff: RideLocation(
+          name: state.dropoffLocation!.name ?? '',
+          address: state.dropoffLocation!.address ?? '',
+          coordinates: RideCoordinates(
+            latitude: state.dropoffLocation!.latitude,
+            longitude: state.dropoffLocation!.longitude,
+          ),
+        ),
+        recipient: DeliveryRecipient(
+          name: recipientName,
+          phone: recipientPhone,
+          notes: comment,
+        ),
+        package: DeliveryPackage(description: packageDescription),
+        vehicleType: 'motorcycle',
+        scheduledTime: DateTime.now().add(Duration(hours: 2)),
+        userNotes: comment,
+      );
+
+      final response = await _deliveryRepository.bookDelivery(request);
+
+      if (response.success && response.data != null) {
+        state = RideState(); // back to first state
+        return response.data!.delivery;
+      } else {
+        state = state.copyWith(
+          errorMessage: response.message ?? 'Failed to book delivery',
           isLoading: false,
         );
         return null;
@@ -882,4 +1059,3 @@ class RideNotifier extends StateNotifier<RideState> {
     state = state.copyWith(errorMessage: null);
   }
 }
-

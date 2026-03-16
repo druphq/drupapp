@@ -1,6 +1,6 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/di/notifiers.dart';
-import 'package:drup/features/passenger/model/ride_api_models.dart';
+import 'package:drup/features/passenger/model/delivery_api_models.dart';
 import 'package:drup/features/passenger/ui/widgets/driver_info_card.dart';
 import 'package:drup/features/passenger/ui/widgets/ride_map_widget.dart';
 import 'package:drup/resources/app_dimen.dart';
@@ -15,17 +15,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
-class RideDetailBottomsheet extends ConsumerWidget {
-  const RideDetailBottomsheet({super.key, required this.bookedRide});
-  final BookedRide? bookedRide;
+class DeliveryDetailBottomsheet extends ConsumerWidget {
+  const DeliveryDetailBottomsheet({super.key, required this.bookedDelivery});
+  final BookedDelivery? bookedDelivery;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (bookedRide == null) {
+    if (bookedDelivery == null) {
       return SizedBox.shrink();
     }
 
-    final ride = bookedRide!;
+    final ride = bookedDelivery!;
     final rideState = ref.watch(rideNotifierProvider);
 
     return SafeArea(
@@ -56,10 +56,9 @@ class RideDetailBottomsheet extends ConsumerWidget {
             Expanded(
               child: ListView(
                 children: [
-                  if (ride.driver != null) Gap(16),
+                  // if (ride.driver != null) Gap(16),
 
-                  if (ride.driver != null) DriverInfoCard(bookedRide: ride),
-
+                  // if (ride.driver != null) DriverInfoCard(bookedRide: ride),
                   Gap(10),
                   Container(
                     decoration: BoxDecoration(
@@ -147,9 +146,9 @@ class RideDetailBottomsheet extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Gap(10),
-                      RideMapWidget(ride: ride),
 
+                      // Gap(10),
+                      // RideMapWidget(ride: ride),
                       Gap(20),
                       CustomButton(
                         text: 'Get help with ride',
@@ -202,14 +201,14 @@ class RideDetailBottomsheet extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Ride Fees',
+                            'Delivery Fees',
                             style: TextStyles.body1.copyWith(
                               fontSize: FontSizes.s16,
                               color: AppColors.onAccent,
                             ),
                           ),
                           Text(
-                            '₦${formatThousand(ride.fare.totalBeforeDiscount)}',
+                            '₦${formatThousand(ride.fare.totalFare)}',
                             style: TextStyles.t1.copyWith(
                               fontSize: FontSizes.s18,
                               fontWeight: FontWeight.w600,
@@ -240,13 +239,13 @@ class RideDetailBottomsheet extends ConsumerWidget {
 
                       Gap(10.0),
 
-                      Text(
-                        'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
-                        style: TextStyles.t2.copyWith(
-                          fontSize: FontSizes.s14,
-                          color: AppColors.orange400,
-                        ),
-                      ),
+                      // Text(
+                      //   'Kindly make payment before ${formatDateTime(ride.paymentDeadline ?? DateTime.now())} to avoid cancellation.',
+                      //   style: TextStyles.t2.copyWith(
+                      //     fontSize: FontSizes.s14,
+                      //     color: AppColors.orange400,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ],

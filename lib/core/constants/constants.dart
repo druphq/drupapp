@@ -28,7 +28,6 @@ class AppConstants {
   static const String userTypeKey = 'userType';
   static const String isLoggedInKey = 'isLoggedIn';
 
-
   // Cache Keys
   static const String airportsKey = 'app_cachedAirports';
 }
@@ -45,3 +44,5 @@ enum RideStatus {
 }
 
 enum PaymentMethod { cash, card, wallet }
+
+enum RideType { ride, delivery }
