@@ -1,3 +1,4 @@
+import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -57,7 +58,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         elevation: 0,
         centerTitle: true,
@@ -190,15 +194,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               ),
             );
           } else if (item is PaymentHistoryItem) {
-            // Add divider below each payment except the last in the group
-            final isLastInGroup =
-                (index + 1 >= items.length) || (items[index + 1] is String);
-            return Column(
-              children: [
-                _buildPaymentCard(item),
-                if (!isLastInGroup) _buildDivider(),
-              ],
-            );
+            return _buildPaymentCard(item);
           } else {
             return const SizedBox.shrink();
           }
@@ -210,19 +206,21 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   Widget _buildPaymentCard(PaymentHistoryItem payment) {
     final formattedDate = formatTimeDate(payment.createdAt);
     final formattedAmount = '₦${formatThousand(payment.amount)}';
-    final statusColor = _getStatusColor(payment.status);
+    final statusColor = _statusColor(payment.status);
+    final statusBgColor = _statusBg(payment.status);
     final statusLabel = _capitalizeFirst(payment.status);
 
-    // Location info from entity
     final pickupName = payment.entityId?.pickup?.name ?? '';
     final dropoffName = payment.entityId?.dropoff?.name ?? '';
 
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.transparent,
-      elevation: 0.0,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Corners.lg),
+      ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(Corners.lg),
         onTap: () {
           context.push(AppRoutes.paymentDetailRoute, extra: payment);
         },
@@ -231,17 +229,21 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date & Amount
+              // Reference & Amount
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    payment.reference,
-                    style: TextStyles.t2.copyWith(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+                  Flexible(
+                    child: Text(
+                      payment.reference,
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const Gap(8),
                   Text(
                     formattedAmount,
                     style: TextStyles.t1.copyWith(
@@ -253,28 +255,68 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
               ),
               const Gap(12),
 
-              // Pickup & Dropoff
+              // Pickup & Dropoff (dot-line)
               if (pickupName.isNotEmpty || dropoffName.isNotEmpty) ...[
-                _buildLocationRow(
-                  Icons.circle,
-                  pickupName.isNotEmpty ? pickupName : 'Pickup',
-                  AppColors.pickupMarker,
-                ),
-                Container(
-                  margin: const EdgeInsets.only(left: 11),
-                  height: 20,
-                  width: 2,
-                  color: AppColors.divider,
-                ),
-                _buildLocationRow(
-                  Icons.location_on,
-                  dropoffName.isNotEmpty ? dropoffName : 'Dropoff',
-                  AppColors.destinationMarker,
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            height: 14,
+                            width: 14,
+                            decoration: const BoxDecoration(
+                              color: AppColors.pickupMarker,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.circle,
+                              color: Colors.white,
+                              size: 6,
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              width: 2,
+                              color: AppColors.divider,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.location_on,
+                            size: 18,
+                            color: AppColors.red400,
+                          ),
+                        ],
+                      ),
+                      const Gap(10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              pickupName.isNotEmpty ? pickupName : 'Pickup',
+                              style: TextStyles.t2.copyWith(fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Gap(12),
+                            Text(
+                              dropoffName.isNotEmpty ? dropoffName : 'Dropoff',
+                              style: TextStyles.t2.copyWith(fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const Gap(12),
               ],
 
-              // Status & Payment method
+              // Status badge & Date
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -284,7 +326,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusBgColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -292,7 +334,7 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
                       style: TextStyles.t2.copyWith(
                         fontSize: 12,
                         color: statusColor,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -312,40 +354,34 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
     );
   }
 
-  Widget _buildLocationRow(IconData icon, String address, Color color) {
-    return Row(
-      children: [
-        Icon(icon, size: 24, color: color),
-        const Gap(12),
-        Expanded(
-          child: Text(
-            address,
-            style: TextStyles.t2.copyWith(fontSize: 14),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
+  // ---------------------------------------------------------------------------
+  // Status helpers
+  // ---------------------------------------------------------------------------
 
-  Color _getStatusColor(String status) {
+  Color _statusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'success':
-      case 'completed':
-        return Colors.green;
+      case 'success' || 'completed':
+        return AppColors.green400;
       case 'pending':
-        return Colors.orange;
-      case 'failed':
-      case 'cancelled':
-        return Colors.red;
+        return AppColors.orange400;
+      case 'failed' || 'cancelled':
+        return AppColors.red400;
       default:
         return AppColors.textSecondary;
     }
   }
 
-  Widget _buildDivider() {
-    return const Divider(height: 1, color: AppColors.divider);
+  Color _statusBg(String status) {
+    switch (status.toLowerCase()) {
+      case 'success' || 'completed':
+        return AppColors.green50;
+      case 'pending':
+        return AppColors.orange50;
+      case 'failed' || 'cancelled':
+        return AppColors.red50;
+      default:
+        return AppColors.grey50;
+    }
   }
 
   String _capitalizeFirst(String text) {

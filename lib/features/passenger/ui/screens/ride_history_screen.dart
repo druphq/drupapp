@@ -1,5 +1,6 @@
 import 'package:drup/di/notifiers.dart';
 import 'package:drup/resources/app_assets.dart';
+import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -136,6 +137,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         elevation: 0,
@@ -360,15 +362,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
               ),
             );
           } else if (item is BookedRide) {
-            // Add divider below each ride except the last in the group
-            final isLastInGroup =
-                (index + 1 >= items.length) || (items[index + 1] is String);
-            return Column(
-              children: [
-                _buildRideCard(item),
-                if (!isLastInGroup) _buildDivider(),
-              ],
-            );
+            return _buildRideCard(item);
           } else {
             return const SizedBox.shrink();
           }
@@ -378,145 +372,214 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   }
 
   Widget _buildRideCard(BookedRide ride) {
-    final dateFormat = DateFormat('dd MMM  •  hh:mm a');
-    final formattedDate = dateFormat.format(ride.createdAt);
-    final scheduleDate = formatDate(ride.scheduledTime!);
-    final pickupTime = formatTime(ride.pickupWindow!.start);
+    final formattedDate = DateFormat(
+      'dd MMM yyyy  •  hh:mm a',
+    ).format(ride.createdAt);
     final formattedFare = '₦${formatThousand(ride.fare.totalFare)}';
+    final isDelivery = _isDelivery(ride);
 
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.transparent,
-      elevation: 0.0,
-      child: InkWell(
-        onTap: () {
-          if (_isDelivery(ride)) {
-            context.push(AppRoutes.deliveryDetailsRoute, extra: ride.id);
-          } else {
-            context.push(AppRoutes.rideDetailsRoute, extra: ride);
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        ride.rideType.toUpperCase(),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Corners.lg),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(Corners.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Corners.lg),
+          onTap: () {
+            if (isDelivery) {
+              context.push(AppRoutes.deliveryDetailsRoute, extra: ride.id);
+            } else {
+              context.push(AppRoutes.rideDetailsRoute, extra: ride);
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Top row: status chip + fare ──
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _statusBg(ride.status),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        ride.status.replaceAll('_', ' ').capitalizeFirstChar(),
                         style: TextStyles.t2.copyWith(
-                          fontSize: 12,
-                          color: AppColors.textPrimary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: _statusColor(ride.status),
                         ),
                       ),
-                      Gap(10.0),
-                      Icon(
-                        Icons.drive_eta,
-                        size: 20,
+                    ),
+                    const Gap(8),
+                    Icon(
+                      isDelivery
+                          ? Icons.local_shipping_outlined
+                          : Icons.drive_eta,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
+                    const Gap(4),
+                    Text(
+                      ride.vehicleType.capitalizeFirstChar(),
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
-                      Gap(4.0),
-                      Text(
-                        ride.vehicleType.capitalizeFirstChar(),
-                        style: TextStyles.t2.copyWith(
-                          fontSize: 12,
-                          color: AppColors.textPrimary,
+                    ),
+                    const Spacer(),
+                    Text(
+                      formattedFare,
+                      style: TextStyles.t1.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Gap(14),
+
+                // ── Route: pickup → dropoff ──
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            height: 14,
+                            width: 14,
+                            decoration: const BoxDecoration(
+                              color: AppColors.pickupMarker,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.circle,
+                              color: Colors.white,
+                              size: 6,
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              width: 2,
+                              color: AppColors.divider,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.location_on,
+                            size: 18,
+                            color: AppColors.red400,
+                          ),
+                        ],
+                      ),
+                      const Gap(10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ride.pickup.name.isNotEmpty
+                                  ? ride.pickup.name
+                                  : ride.pickup.address,
+                              style: TextStyles.t2.copyWith(fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const Gap(14),
+                            Text(
+                              ride.dropoff.name.isNotEmpty
+                                  ? ride.dropoff.name
+                                  : ride.dropoff.address,
+                              style: TextStyles.t2.copyWith(fontSize: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
+                ),
 
-                  Text(
-                    formattedFare,
-                    style: TextStyles.t1.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const Gap(12),
-              _buildLocationRow(
-                Icons.circle,
-                ride.pickup.name.isNotEmpty
-                    ? ride.pickup.name
-                    : ride.pickup.address,
-                AppColors.pickupMarker,
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 11),
-                height: 20,
-                width: 2,
-                color: AppColors.divider,
-              ),
-              _buildLocationRow(
-                Icons.location_on,
-                ride.dropoff.name.isNotEmpty
-                    ? ride.dropoff.name
-                    : ride.dropoff.address,
-                AppColors.destinationMarker,
-              ),
-              const Gap(12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
+                const Gap(12),
+
+                // ── Bottom row: schedule info + date ──
+                Row(
+                  children: [
+                    if (ride.scheduledTime != null) ...[
                       ImageIcon(
                         AssetImage(AppAssets.scheduleIcon),
-                        size: 18,
+                        size: 16,
                         color: AppColors.accent,
                       ),
                       const Gap(4),
                       Text(
-                        '$scheduleDate • $pickupTime',
+                        '${formatDate(ride.scheduledTime!)}${ride.pickupWindow != null ? ' • ${formatTime(ride.pickupWindow!.start)}' : ''}',
                         style: TextStyles.t2.copyWith(
-                          fontSize: 14,
-                          color: AppColors.textPrimary,
+                          fontSize: 12,
+                          color: AppColors.accent,
                         ),
                       ),
+                      const Spacer(),
+                    ] else ...[
+                      const Spacer(),
                     ],
-                  ),
-                  Text(
-                    formattedDate,
-                    style: TextStyles.t2.copyWith(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+                    Text(
+                      formattedDate,
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDivider() {
-    return const Divider(height: 1, color: AppColors.divider);
+  // ---------------------------------------------------------------------------
+  // Status color helpers
+  // ---------------------------------------------------------------------------
+
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return AppColors.green400;
+      case 'cancelled':
+        return AppColors.red400;
+      case 'in_progress' || 'matched' || 'picked_up':
+        return AppColors.accent;
+      default:
+        return AppColors.orange400;
+    }
   }
 
-  Widget _buildLocationRow(IconData icon, String address, Color color) {
-    return Row(
-      children: [
-        Icon(icon, size: 24, color: color),
-        const Gap(12),
-        Expanded(
-          child: Text(
-            address,
-            style: TextStyles.t2.copyWith(fontSize: 14),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
+  Color _statusBg(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return AppColors.green50;
+      case 'cancelled':
+        return AppColors.red50;
+      case 'in_progress' || 'matched' || 'picked_up':
+        return AppColors.accent.withValues(alpha: 0.1);
+      default:
+        return AppColors.orange50;
+    }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
+import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/extension.dart';
@@ -19,217 +20,397 @@ class PaymentDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
+  // ---------------------------------------------------------------------------
+  // Status helpers
+  // ---------------------------------------------------------------------------
+
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'success' || 'completed':
+        return AppColors.green400;
+      case 'failed' || 'cancelled':
+        return AppColors.red400;
+      case 'pending':
+        return AppColors.orange400;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  Color _statusBg(String status) {
+    switch (status.toLowerCase()) {
+      case 'success' || 'completed':
+        return AppColors.green50;
+      case 'failed' || 'cancelled':
+        return AppColors.red50;
+      case 'pending':
+        return AppColors.orange50;
+      default:
+        return AppColors.grey50;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-    final pickUpAddress = widget.paymentInfo.entityId?.pickup?.name ?? '';
-    final dropOffAddress = widget.paymentInfo.entityId?.dropoff?.name ?? '';
+    final payment = widget.paymentInfo;
+    final pickUpAddress = payment.entityId?.pickup?.name ?? '';
+    final dropOffAddress = payment.entityId?.dropoff?.name ?? '';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         title: Text(
           'Payment Details',
-          style: TextStyles.t1.copyWith(fontSize: FontSizes.s18),
+          style: TextStyles.t1.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.close, color: AppColors.onAccent),
+          icon: const Icon(Icons.close, color: AppColors.onAccent),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Trip Detail',
-                textAlign: TextAlign.center,
-                style: TextStyles.t1.copyWith(
-                  fontSize: FontSizes.s18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.onAccent,
-                ),
-              ),
-              Gap(16.0),
-              // Pickup & Dropoff
-              if (pickUpAddress.isNotEmptyOrNull ||
-                  dropOffAddress.isNotEmptyOrNull) ...[
-                _buildLocationRow(
-                  Icons.circle,
-                  pickUpAddress,
-                  AppColors.pickupMarker,
-                ),
-                Container(
-                  margin: const EdgeInsets.only(left: 11),
-                  height: 20,
-                  width: 2,
-                  color: AppColors.divider,
-                ),
-                _buildLocationRow(
-                  Icons.location_on,
-                  dropOffAddress,
-                  AppColors.destinationMarker,
-                ),
-                const Gap(12),
-              ],
-            ],
-          ),
+          // ── Header card ────────────────────────────────────────────────
+          _buildHeaderCard(payment),
+          const Gap(12),
 
-          Gap(20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Payment',
-                textAlign: TextAlign.center,
-                style: TextStyles.t1.copyWith(
-                  fontSize: FontSizes.s18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.onAccent,
-                ),
-              ),
-              Gap(16.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Amount Paid',
-                    style: TextStyles.h2.copyWith(
-                      fontSize: FontSizes.s16,
-                      color: AppColors.onAccent,
-                    ),
-                  ),
-                  Text(
-                    '₦${formatThousand(widget.paymentInfo.amount)}',
-                    style: TextStyles.t1.copyWith(
-                      fontSize: FontSizes.s20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              Gap(12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Date',
-                    style: TextStyles.h2.copyWith(
-                      fontSize: FontSizes.s16,
-                      color: AppColors.onAccent,
-                    ),
-                  ),
-                  Text(
-                    formatDateTime(widget.paymentInfo.createdAt),
-                    style: TextStyles.t1.copyWith(
-                      fontSize: FontSizes.s16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              Gap(12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Status',
-                    style: TextStyles.h2.copyWith(
-                      fontSize: FontSizes.s16,
-                      color: AppColors.onAccent,
-                    ),
-                  ),
-                  Text(
-                    widget.paymentInfo.status.capitalizeFirstChar(),
-                    style: TextStyles.t1.copyWith(
-                      fontSize: FontSizes.s16,
-                      fontWeight: FontWeight.w600,
-                      color:
-                          widget.paymentInfo.status.toLowerCase() == 'success'
-                          ? Colors.green
-                          : AppColors.error,
-                    ),
-                  ),
-                ],
-              ),
-              Gap(12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Reference',
-                    style: TextStyles.h2.copyWith(
-                      fontSize: FontSizes.s16,
-                      color: AppColors.onAccent,
-                    ),
-                  ),
-                  Flexible(
-                    child: GestureDetector(
-                      onTap: () {
-                        // Copy reference to clipboard
-                        Clipboard.setData(
-                          ClipboardData(text: widget.paymentInfo.reference),
-                        );
-                        showSnackbar('Reference copied to clipboard');
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            widget.paymentInfo.reference,
-                            style: TextStyles.t1.copyWith(
-                              fontSize: FontSizes.s16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Gap(4),
-                          Icon(
-                            Icons.copy,
-                            size: 16,
-                            color: AppColors.textSecondary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          // ── Route card ─────────────────────────────────────────────────
+          if (pickUpAddress.isNotEmptyOrNull ||
+              dropOffAddress.isNotEmptyOrNull) ...[
+            _buildRouteCard(pickUpAddress, dropOffAddress),
+            const Gap(12),
+          ],
+
+          // ── Payment info card ──────────────────────────────────────────
+          _buildPaymentInfoCard(payment),
+          const Gap(12),
+
+          // ── Reference card ─────────────────────────────────────────────
+          _buildReferenceCard(payment),
+          const Gap(24),
+
+          // ── View Receipt button ────────────────────────────────────────
+          CustomButton(
+            text: 'View Receipt',
+            onPressed: () {},
+            backgroundColor: AppColors.accent,
+            textStyle: TextStyles.btnStyle.copyWith(
+              color: Colors.white,
+              fontSize: 16,
+            ),
           ),
-          Gap(32),
-          CustomButton(text: 'View Receipt', onPressed: () {}),
         ],
       ),
     );
   }
 
-  showSnackbar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  // ---------------------------------------------------------------------------
+  // Header card – amount + status badge
+  // ---------------------------------------------------------------------------
+
+  Widget _buildHeaderCard(PaymentHistoryItem payment) {
+    final statusLabel = payment.status.capitalizeFirstChar();
+    final statusClr = _statusColor(payment.status);
+    final statusBgClr = _statusBg(payment.status);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Corners.lg),
+      ),
+      child: Column(
+        children: [
+          // Amount
+          Text(
+            '₦${formatThousand(payment.amount)}',
+            style: TextStyles.t1.copyWith(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const Gap(8),
+          // Status badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            decoration: BoxDecoration(
+              color: statusBgClr,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              statusLabel,
+              style: TextStyles.t2.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: statusClr,
+              ),
+            ),
+          ),
+          const Gap(8),
+          // Date
+          Text(
+            formatDateTime(payment.createdAt),
+            style: TextStyles.t2.copyWith(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _buildLocationRow(IconData icon, String address, Color color) {
-    return Row(
-      children: [
-        Icon(icon, size: 24, color: color),
-        const Gap(12),
-        Expanded(
-          child: Text(
-            address,
-            style: TextStyles.t2.copyWith(fontSize: 16),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+  // ---------------------------------------------------------------------------
+  // Route card – pickup & dropoff with dot-line
+  // ---------------------------------------------------------------------------
+
+  Widget _buildRouteCard(String pickup, String dropoff) {
+    return _card(
+      title: 'Route',
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Dots + line
+            Column(
+              children: [
+                Container(
+                  height: 18,
+                  width: 18,
+                  decoration: const BoxDecoration(
+                    color: AppColors.pickupMarker,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.circle, color: Colors.white, size: 8),
+                ),
+                Expanded(child: Container(width: 2, color: AppColors.divider)),
+                const Icon(
+                  Icons.location_on,
+                  size: 22,
+                  color: AppColors.red400,
+                ),
+              ],
+            ),
+            const Gap(12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pickup',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const Gap(2),
+                  Text(
+                    pickup.isNotEmpty ? pickup : 'Pickup',
+                    style: TextStyles.t2.copyWith(fontSize: 14),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const Gap(16),
+                  Text(
+                    'Dropoff',
+                    style: TextStyles.t2.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const Gap(2),
+                  Text(
+                    dropoff.isNotEmpty ? dropoff : 'Dropoff',
+                    style: TextStyles.t2.copyWith(fontSize: 14),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Payment info card – date, status
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPaymentInfoCard(PaymentHistoryItem payment) {
+    return _card(
+      title: 'Payment Info',
+      child: Column(
+        children: [
+          _infoRow(
+            Icons.calendar_today_outlined,
+            'Date',
+            formatDateTime(payment.createdAt),
           ),
+          const Gap(10),
+          _infoRow(
+            Icons.payments_outlined,
+            'Amount',
+            '₦${formatThousand(payment.amount)}',
+          ),
+          const Gap(10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+              const Gap(10),
+              SizedBox(
+                width: 80,
+                child: Text(
+                  'Status',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: _statusBg(payment.status),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  payment.status.capitalizeFirstChar(),
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _statusColor(payment.status),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reference card – tap to copy
+  // ---------------------------------------------------------------------------
+
+  Widget _buildReferenceCard(PaymentHistoryItem payment) {
+    return _card(
+      title: 'Reference',
+      child: GestureDetector(
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: payment.reference));
+          _showSnackbar('Reference copied to clipboard');
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(Corners.md),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  payment.reference,
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Gap(8),
+              Icon(
+                Icons.copy_rounded,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reusable helpers
+  // ---------------------------------------------------------------------------
+
+  Widget _card({required String title, required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Corners.lg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyles.t1.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const Gap(12),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: AppColors.textSecondary),
+        const Gap(10),
+        SizedBox(
+          width: 80,
+          child: Text(
+            label,
+            style: TextStyles.t2.copyWith(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(value, style: TextStyles.t2.copyWith(fontSize: 14)),
         ),
       ],
     );
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
