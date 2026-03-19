@@ -154,7 +154,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
@@ -215,7 +214,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
                     activeFieldBorderColor: AppColors.primary,
                     filledFieldBorderColor: AppColors.primary,
                     fieldBorderWidth: 1,
-                    fieldBorderRadius: Corners.md,
+                    fieldBorderRadius: Corners.c8,
                     fieldPadding: 8,
                   ),
                   otpPinFieldDecoration: OtpPinFieldDecoration.custom,

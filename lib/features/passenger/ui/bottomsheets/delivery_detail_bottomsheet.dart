@@ -33,8 +33,8 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(Corners.lg),
-            topRight: Radius.circular(Corners.lg),
+            topLeft: Radius.circular(Corners.c20),
+            topRight: Radius.circular(Corners.c20),
           ),
         ),
         child: Column(
@@ -46,8 +46,8 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(Corners.lg),
-                  topRight: Radius.circular(Corners.lg),
+                  topLeft: Radius.circular(Corners.c20),
+                  topRight: Radius.circular(Corners.c20),
                 ),
               ),
               child: Column(
@@ -61,7 +61,7 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const Gap(16),
+                  const Gap(50),
                   Text(
                     'Delivery Booked',
                     textAlign: TextAlign.center,
@@ -150,6 +150,8 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
                               'authorizationUrl': result!.authorizationUrl!,
                               'onPaymentComplete': () async {
                                 context.pop();
+                                context.pop();
+
                                 await context.push(
                                   AppRoutes.deliveryDetailsRoute,
                                   extra: delivery.id,
@@ -200,7 +202,7 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +216,7 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.accent.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(Corners.md),
+                  borderRadius: BorderRadius.circular(Corners.c8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -276,7 +278,7 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(Corners.md),
+                borderRadius: BorderRadius.circular(Corners.c8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -486,6 +488,7 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
           ),
           const Gap(8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Icon(Icons.schedule, size: 16, color: AppColors.orange400),
               const Gap(4),
@@ -521,7 +524,7 @@ class DeliveryDetailBottomsheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

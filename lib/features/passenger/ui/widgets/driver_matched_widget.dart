@@ -108,7 +108,7 @@ class DriverMatchedWidget extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(color: AppColors.accent),
-                              borderRadius: BorderRadius.circular(Corners.sm),
+                              borderRadius: BorderRadius.circular(Corners.c4),
                               color: AppColors.grey50,
                             ),
                             child: Text(

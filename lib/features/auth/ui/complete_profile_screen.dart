@@ -136,7 +136,7 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 if (!_isPhoneVerified)
                   AppPhoneField(
                     hint: 'Phone Number',
-                    borderRadius: Corners.mmd,
+                    borderRadius: Corners.c10,
                     controller: _phoneController,
                     style: TextStyles.h3.copyWith(
                       color: Colors.black,

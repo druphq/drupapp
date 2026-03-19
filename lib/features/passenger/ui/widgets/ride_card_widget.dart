@@ -27,11 +27,11 @@ class RideCardWidget extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         child: Container(
           decoration: BoxDecoration(
             color: isSelected ? AppColors.surface : Colors.transparent,
-            borderRadius: BorderRadius.circular(Corners.md),
+            borderRadius: BorderRadius.circular(Corners.c8),
             border: Border.all(
               color: isSelected ? AppColors.greyStrong : Colors.transparent,
               width: 1.5,
@@ -45,7 +45,7 @@ class RideCardWidget extends StatelessWidget {
                     ? null
                     : BoxDecoration(
                         color: AppColors.green400,
-                        borderRadius: BorderRadius.circular(Corners.mmd),
+                        borderRadius: BorderRadius.circular(Corners.c10),
                       ),
                 padding: EdgeInsets.only(left: 16.0, right: 8.0, top: 16.0),
                 width: 99,

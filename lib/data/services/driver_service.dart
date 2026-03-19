@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:drup/features/auth/model/auth.dart';
 import 'package:flutter/foundation.dart';
 import '../api/api_routes.dart';
 import '../api/api_service.dart';
@@ -90,7 +91,7 @@ class DriverService {
 
   /// Switch between user and driver modes
   /// Returns new tokens and optionally driverProfile when switching to driver
-  Future<ApiResponse<Map<String, dynamic>>> switchRole(String role) async {
+  Future<ApiResponse<SwitchRoleResponse>> switchRole(String role) async {
     try {
       final response = await _apiService.post<Map<String, dynamic>>(
         ApiRoutes.switchRole,
@@ -101,7 +102,7 @@ class DriverService {
         final responseData = response.data!['data'] as Map<String, dynamic>?;
         if (responseData != null) {
           return ApiResponse.success(
-            data: responseData,
+            data: SwitchRoleResponse.fromJson(responseData),
             message: response.message,
             statusCode: response.statusCode,
           );

@@ -149,8 +149,8 @@ class _ScheduleDetailBottomSheetState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(Corners.lg),
-          topRight: Radius.circular(Corners.lg),
+          topLeft: Radius.circular(Corners.c20),
+          topRight: Radius.circular(Corners.c20),
         ),
       ),
       padding: EdgeInsets.all(20),
@@ -190,10 +190,10 @@ class _ScheduleDetailBottomSheetState
             // Pickup Date
             InkWell(
               onTap: _selectDate,
-              borderRadius: BorderRadius.circular(Corners.lg),
+              borderRadius: BorderRadius.circular(Corners.c20),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.lg),
+                  borderRadius: BorderRadius.circular(Corners.c20),
                   color: AppColors.grey50,
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -241,10 +241,10 @@ class _ScheduleDetailBottomSheetState
             // Pickup Date
             InkWell(
               onTap: _selectTime,
-              borderRadius: BorderRadius.circular(Corners.lg),
+              borderRadius: BorderRadius.circular(Corners.c20),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.lg),
+                  borderRadius: BorderRadius.circular(Corners.c20),
                   color: AppColors.grey50,
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -1,6 +1,7 @@
 import 'package:drup/core/animation/drup_animation.dart';
 import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
+import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
@@ -33,7 +34,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     final currentUser = ref.read(currentUserProvider);
     final isLoggedIn = ref.read(isLoggedInProvider);
-    final isDriver = ref.read(isDriverProvider);
     final userRepo = ref.read(userRepositoryProvider);
     final userMode = await userRepo.getUserMode();
 
@@ -55,7 +55,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
 
         // Handle driver mode navigation
-        if (userMode == AppStrings.driverMode || isDriver) {
+        if (userMode == AppStrings.driverMode) {
           await _handleDriverNavigation();
         } else {
           // Passenger mode
@@ -72,18 +72,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _handleDriverNavigation() async {
     final userRepo = ref.read(userRepositoryProvider);
-
     // Check if driver onboarding has been shown
     final hasSeenOnboarding = await userRepo.getDriverOnboardingShown();
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    final isDriver = ref.read(isDriverProvider);
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
-    if (!hasSeenOnboarding) {
-      // First time driver mode, show onboarding
+    if (isDriver) {
+      final canProceed = await driverNotifier.switchRole(AppStrings.driverRole);
+      if (canProceed && mounted) {
+        if (hasSeenOnboarding) {
+          context.go(AppRoutes.driverHomeRoute);
+        } else {
+          context.go(AppRoutes.driverOnboardRoute);
+        }
+        return;
+      }
+    }
+
+    if (!hasSeenOnboarding && mounted) {
+      // first time driver mode, show onboarding
       context.go(AppRoutes.driverOnboardRoute);
       return;
     }
-    context.go(AppRoutes.driverHomeRoute);
+
+    if (mounted) context.go(AppRoutes.driverHomeRoute);
   }
 
   @override

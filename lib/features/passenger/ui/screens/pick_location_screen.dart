@@ -12,18 +12,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../di/providers.dart';
+import '../../provider/ride_notifier.dart';
+import '../../provider/user_notifier.dart';
 import '../../model/location_model.dart';
 
-class PickRideLocationScreen extends ConsumerStatefulWidget {
-  const PickRideLocationScreen({super.key});
+class PickLocationScreen extends ConsumerStatefulWidget {
+  const PickLocationScreen({super.key});
 
   @override
-  ConsumerState<PickRideLocationScreen> createState() =>
-      _PickRideLocationScreenState();
+  ConsumerState<PickLocationScreen> createState() => _PickLocationScreenState();
 }
 
-class _PickRideLocationScreenState
-    extends ConsumerState<PickRideLocationScreen> {
+class _PickLocationScreenState extends ConsumerState<PickLocationScreen> {
   final _pickupController = TextEditingController();
   final _dropoffController = TextEditingController();
   List<Map<String, dynamic>> _searchResults = [];
@@ -306,7 +306,10 @@ class _PickRideLocationScreenState
                     child: Text(
                       AppStrings.scheduleYourRideTitleTxt,
                       textAlign: TextAlign.center,
-                      style: TextStyles.t1,
+                      style: TextStyles.t1.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const Gap(48),

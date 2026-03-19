@@ -10,11 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import '../../provider/user_notifier.dart';
 import 'package:drup/utils/extension.dart';
 
-class AppDrawer extends ConsumerWidget {
-  const AppDrawer({super.key});
+class PassengerAppDrawer extends ConsumerWidget {
+  const PassengerAppDrawer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

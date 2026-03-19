@@ -33,6 +33,7 @@ class DriverAppDrawer extends ConsumerWidget {
             // Drawer Header
             Container(
               clipBehavior: Clip.hardEdge,
+              padding: const EdgeInsets.all(24.0),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(
@@ -45,7 +46,7 @@ class DriverAppDrawer extends ConsumerWidget {
                 children: [
                   //Driver Profile Section
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 70, 24, 16),
+                    padding: const EdgeInsets.only(top: 70, left: 24),
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
@@ -156,112 +157,112 @@ class DriverAppDrawer extends ConsumerWidget {
                   ),
 
                   // Verification Status Banner
-                  if (!isVerified)
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push(AppRoutes.verifyDriverRoute);
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.warning.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.warning,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.warning_amber_rounded,
-                                    size: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const Gap(12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Complete your profile',
-                                        style: TextStyles.t1.copyWith(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                      const Gap(2),
-                                      Text(
-                                        'Verify to start accepting rides',
-                                        style: TextStyles.t2.copyWith(
-                                          fontSize: 12,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 14,
-                                  color: AppColors.warning,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  // if (!isVerified)
+                  //   GestureDetector(
+                  //     onTap: () {
+                  //       Navigator.pop(context);
+                  //       context.push(AppRoutes.verifyDriverRoute);
+                  //     },
+                  //     child: Container(
+                  //       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  //       padding: const EdgeInsets.all(16),
+                  //       decoration: BoxDecoration(
+                  //         borderRadius: BorderRadius.circular(12),
+                  //         border: Border.all(
+                  //           color: AppColors.warning.withOpacity(0.3),
+                  //           width: 1,
+                  //         ),
+                  //       ),
+                  //       child: Column(
+                  //         crossAxisAlignment: CrossAxisAlignment.start,
+                  //         children: [
+                  //           Row(
+                  //             children: [
+                  //               Container(
+                  //                 padding: const EdgeInsets.all(8),
+                  //                 decoration: BoxDecoration(
+                  //                   color: AppColors.warning,
+                  //                   borderRadius: BorderRadius.circular(8),
+                  //                 ),
+                  //                 child: const Icon(
+                  //                   Icons.warning_amber_rounded,
+                  //                   size: 20,
+                  //                   color: Colors.white,
+                  //                 ),
+                  //               ),
+                  //               const Gap(12),
+                  //               Expanded(
+                  //                 child: Column(
+                  //                   crossAxisAlignment:
+                  //                       CrossAxisAlignment.start,
+                  //                   children: [
+                  //                     Text(
+                  //                       'Complete your profile',
+                  //                       style: TextStyles.t1.copyWith(
+                  //                         fontSize: 14,
+                  //                         fontWeight: FontWeight.w600,
+                  //                         color: AppColors.textPrimary,
+                  //                       ),
+                  //                     ),
+                  //                     const Gap(2),
+                  //                     Text(
+                  //                       'Verify to start accepting rides',
+                  //                       style: TextStyles.t2.copyWith(
+                  //                         fontSize: 12,
+                  //                         color: AppColors.textSecondary,
+                  //                       ),
+                  //                     ),
+                  //                   ],
+                  //                 ),
+                  //               ),
+                  //               Icon(
+                  //                 Icons.arrow_forward_ios,
+                  //                 size: 14,
+                  //                 color: AppColors.warning,
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
 
                   // Verified badge (shown when verified)
-                  if (isVerified)
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.success.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Verified Driver',
-                              style: TextStyles.t1.copyWith(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.success,
-                              ),
-                            ),
-                          ),
-                          const Icon(
-                            Icons.verified,
-                            size: 16,
-                            color: Colors.green,
-                          ),
-                        ],
-                      ),
-                    ),
+                  // if (isVerified)
+                  // Container(
+                  //   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 16,
+                  //     vertical: 12,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: AppColors.success.withOpacity(0.1),
+                  //     borderRadius: BorderRadius.circular(12),
+                  //     border: Border.all(
+                  //       color: AppColors.success.withOpacity(0.3),
+                  //       width: 1,
+                  //     ),
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //       Expanded(
+                  //         child: Text(
+                  //           'Verified Driver',
+                  //           style: TextStyles.t1.copyWith(
+                  //             fontSize: 14,
+                  //             fontWeight: FontWeight.w600,
+                  //             color: AppColors.success,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       const Icon(
+                  //         Icons.verified,
+                  //         size: 16,
+                  //         color: Colors.green,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
             ),

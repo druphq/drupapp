@@ -7,6 +7,7 @@ import 'package:drup/features/drivers/ui/screens/driver_splash_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_onboard_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
 import 'package:drup/features/drivers/ui/screens/verify_driver_screen.dart';
+import 'package:drup/features/drivers/ui/screens/apply_driver_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_account_screen.dart';
 import 'package:drup/features/passenger/ui/screens/home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/pick_ride_location_screen.dart';
@@ -53,6 +54,7 @@ class AppRoutes {
   static const String driverOnboardRoute = '/driver-onboard';
   static const String driverHomeRoute = '/driver-home';
   static const String verifyDriverRoute = '/verify-driver';
+  static const String applyDriverRoute = '/apply-driver';
   static const String driverAccountRoute = '/driver-account';
   static const String userTrackingRoute = '/user-tracking';
   static const String rideStatusRoute = '/ride-status';
@@ -356,6 +358,15 @@ class AppScreens {
     pageBuilder: (context, state) => slideRightTransitionPage(
       key: state.pageKey,
       child: const VerifyDriverScreen(),
+    ),
+  );
+
+  static final applyDriverRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.applyDriverRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const ApplyDriverScreen(),
     ),
   );
 

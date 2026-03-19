@@ -172,13 +172,28 @@ class DriverNotifier extends StateNotifier<DriverState> {
   }
 
   /// Switch user role between 'driver' and 'passenger'
+  /// Caches tokens & user, and sets driver state from the response
   Future<bool> switchRole(String role) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final repo = ref.read(driverRepositoryProvider);
       final response = await repo.switchRole(role);
-      state = state.copyWith(isLoading: false);
-      return response.success;
+
+      if (response.success && response.data != null) {
+        final data = response.data!;
+        state = state.copyWith(
+          driver: data.driverProfile,
+          isOnline: data.driverProfile?.isOnline ?? false,
+          isLoading: false,
+        );
+        return true;
+      }
+
+      state = state.copyWith(
+        errorMessage: response.message ?? 'Failed to switch role',
+        isLoading: false,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
       return false;

@@ -69,7 +69,8 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 });
 
 final driverRepositoryProvider = Provider<DriverRepository>((ref) {
-  return DriverRepository();
+  final authRepo = ref.watch(authRepositoryProvider);
+  return DriverRepository(authRepository: authRepo);
 });
 
 /// Provider for ride operations (both local and API)

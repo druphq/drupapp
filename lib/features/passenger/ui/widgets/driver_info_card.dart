@@ -18,7 +18,7 @@ class DriverInfoCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
         border: Border.all(color: AppColors.grey50),
       ),
       padding: EdgeInsets.all(16.0),
@@ -60,7 +60,7 @@ class DriverInfoCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(color: AppColors.accent),
-                              borderRadius: BorderRadius.circular(Corners.sm),
+                              borderRadius: BorderRadius.circular(Corners.c4),
                               color: AppColors.grey50,
                             ),
                             child: Text(

@@ -141,7 +141,7 @@ class _NigeriaAirportsScreenState extends ConsumerState<NigeriaAirportsScreen> {
   Widget _buildAirportCard(Map<String, dynamic> airport) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         color: Colors.transparent,
       ),
       child: ListTile(

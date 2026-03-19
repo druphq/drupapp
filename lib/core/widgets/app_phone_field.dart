@@ -53,7 +53,7 @@ class AppPhoneField extends StatelessWidget {
                   height: 40.0,
                   width: 25,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Corners.md),
+                    borderRadius: BorderRadius.circular(Corners.c8),
                   ),
                   child: Image.asset(AppAssets.ngFlag.assetName),
                 ),
@@ -70,10 +70,10 @@ class AppPhoneField extends StatelessWidget {
               ],
             ),
             hintText: hint,
-            hintStyle:TextStyles.body2.copyWith(
+            hintStyle: TextStyles.body2.copyWith(
               color: Colors.grey,
               fontWeight: FontWeight.w300,
-              fontSize: 18
+              fontSize: 18,
             ),
             disabledBorder: const OutlineInputBorder(borderSide: BorderSide()),
             border: OutlineInputBorder(

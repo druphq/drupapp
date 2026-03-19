@@ -195,7 +195,7 @@ class _EmailVerificationScreenState
                   activeFieldBorderColor: AppColors.primary,
                   filledFieldBorderColor: AppColors.primary,
                   fieldBorderWidth: 1,
-                  fieldBorderRadius: Corners.md,
+                  fieldBorderRadius: Corners.c8,
                   fieldPadding: 8,
                 ),
                 otpPinFieldDecoration: OtpPinFieldDecoration.custom,

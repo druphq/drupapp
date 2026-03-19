@@ -83,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             AppPhoneField(
               hint: 'Phone Number',
               controller: phoneController,
-              borderRadius: Corners.mmd,
+              borderRadius: Corners.c10,
             ),
           ],
         ),
@@ -224,7 +224,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const Gap(20.0),
                   AppPhoneField(
                     hint: 'Phone Number',
-                    borderRadius: Corners.mmd,
+                    borderRadius: Corners.c10,
                     controller: _phoneController,
                     style: TextStyles.h3.copyWith(
                       color: Colors.black,
@@ -302,7 +302,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               side: BorderSide(color: Colors.grey.shade300),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
-                                  Corners.vLg,
+                                  Corners.c50,
                                 ),
                               ),
                               padding: const EdgeInsets.symmetric(

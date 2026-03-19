@@ -35,7 +35,7 @@ class DeliveryConfirmationBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.lg)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.c20)),
         color: AppColors.accent500,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -207,6 +207,4 @@ class DeliveryConfirmationBottomSheet extends ConsumerWidget {
       ),
     );
   }
-
-
 }

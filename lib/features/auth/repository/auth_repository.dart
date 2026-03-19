@@ -61,7 +61,7 @@ class AuthRepository {
         final verifyResponse = VerifyOtpResponse.fromJson(data);
 
         // Store tokens and user
-        await _storeAuthData(
+        await storeAuthData(
           accessToken: verifyResponse.token,
           refreshToken: verifyResponse.refreshToken,
           user: verifyResponse.user,
@@ -128,7 +128,7 @@ class AuthRepository {
         final completeResponse = GoogleCompleteResponse.fromJson(data);
 
         // Store tokens and user
-        await _storeAuthData(
+        await storeAuthData(
           accessToken: completeResponse.token,
           refreshToken: completeResponse.refreshToken,
           user: completeResponse.user,
@@ -290,7 +290,7 @@ class AuthRepository {
 
   /// Store authentication data locally
 
-  Future<void> _storeAuthData({
+  Future<void> storeAuthData({
     required String accessToken,
     required String refreshToken,
     required User user,

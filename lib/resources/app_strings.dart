@@ -3,6 +3,10 @@ class AppStrings {
   static const appNameTxt = 'drup';
   static const ngCode = '+234';
 
+  // roles
+  static const passengerRole = 'user';
+  static const driverRole = 'driver';
+
   // event states
   static const errorTag = 'Error';
   static const successTag = 'Success';

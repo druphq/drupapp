@@ -34,8 +34,8 @@ class RideDetailBottomsheet extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(Corners.lg),
-            topRight: Radius.circular(Corners.lg),
+            topLeft: Radius.circular(Corners.c20),
+            topRight: Radius.circular(Corners.c20),
           ),
         ),
         child: Column(
@@ -47,8 +47,8 @@ class RideDetailBottomsheet extends ConsumerWidget {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(Corners.lg),
-                  topRight: Radius.circular(Corners.lg),
+                  topLeft: Radius.circular(Corners.c20),
+                  topRight: Radius.circular(Corners.c20),
                 ),
               ),
               child: Column(
@@ -199,7 +199,7 @@ class RideDetailBottomsheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +213,7 @@ class RideDetailBottomsheet extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.accent.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(Corners.md),
+                  borderRadius: BorderRadius.circular(Corners.c8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -290,7 +290,7 @@ class RideDetailBottomsheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Row(
         children: [
@@ -495,7 +495,7 @@ class RideDetailBottomsheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

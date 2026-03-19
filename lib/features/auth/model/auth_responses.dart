@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../drivers/model/driver.dart';
 import '../../passenger/model/user.dart';
 import 'auth_requests.dart';
 
@@ -136,4 +137,33 @@ enum ProfileStatus {
 
   bool get isComplete => this == ProfileStatus.complete;
   bool get isIncomplete => this == ProfileStatus.incomplete;
+}
+
+/// Response model for role switching (user ↔ driver)
+class SwitchRoleResponse extends Equatable {
+  final String accessToken;
+  final String refreshToken;
+  final User user;
+  final Driver? driverProfile;
+
+  const SwitchRoleResponse({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.user,
+    this.driverProfile,
+  });
+
+  factory SwitchRoleResponse.fromJson(Map<String, dynamic> json) {
+    return SwitchRoleResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
+      driverProfile: json['driverProfile'] != null
+          ? Driver.fromJson(json['driverProfile'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  @override
+  List<Object?> get props => [accessToken, refreshToken, user, driverProfile];
 }

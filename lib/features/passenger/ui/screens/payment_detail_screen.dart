@@ -130,7 +130,7 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         children: [
@@ -328,7 +328,7 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(Corners.md),
+            borderRadius: BorderRadius.circular(Corners.c8),
           ),
           child: Row(
             children: [
@@ -366,7 +366,7 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

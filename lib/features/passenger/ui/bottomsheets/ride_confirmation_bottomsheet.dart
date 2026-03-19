@@ -36,7 +36,7 @@ class RideConfirmationBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.lg)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.c20)),
         color: AppColors.accent500,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0),

@@ -16,8 +16,8 @@ class SearchRideWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(Corners.lg),
-          topRight: Radius.circular(Corners.lg),
+          topLeft: Radius.circular(Corners.c20),
+          topRight: Radius.circular(Corners.c20),
         ),
       ),
       child: Padding(

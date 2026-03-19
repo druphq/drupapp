@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:drup/features/auth/model/auth.dart';
+import 'package:drup/features/auth/repository/auth_repository.dart';
 import '../../../data/api/api_service.dart';
 import '../../../data/services/driver_service.dart';
 
@@ -6,9 +8,13 @@ import '../../../data/services/driver_service.dart';
 /// Acts as the single source of truth for driver data in the app
 class DriverRepository {
   final DriverService _driverService;
+  final AuthRepository _authRepository;
 
-  DriverRepository({DriverService? driverService})
-    : _driverService = driverService ?? DriverService();
+  DriverRepository({
+    DriverService? driverService,
+    required AuthRepository authRepository,
+  }) : _driverService = driverService ?? DriverService(),
+       _authRepository = authRepository;
 
   // ===========================================================================
   // 1. DRIVER APPLICATION (from user mode)
@@ -41,9 +47,21 @@ class DriverRepository {
 
   /// Switch between user and driver modes
   /// [role] - either 'user' or 'driver'
-  /// Returns new tokens and optionally driverProfile when switching to driver
-  Future<ApiResponse<Map<String, dynamic>>> switchRole(String role) async {
-    return await _driverService.switchRole(role);
+  /// Caches new tokens and user data, returns parsed response
+  Future<ApiResponse<SwitchRoleResponse>> switchRole(String role) async {
+    final response = await _driverService.switchRole(role);
+
+    if (response.success && response.data != null) {
+      final data = response.data!;
+      // Store new tokens + user just like verifyOtp does
+      await _authRepository.storeAuthData(
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: data.user,
+      );
+    }
+
+    return response;
   }
 
   // ===========================================================================

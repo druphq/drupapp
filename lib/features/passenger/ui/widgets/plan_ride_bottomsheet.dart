@@ -33,7 +33,7 @@ class _BottomSheetWidgetState extends ConsumerState<PlanRideBottomsheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.lg)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.c20)),
         color: AppColors.accent500,
       ),
       child: Column(

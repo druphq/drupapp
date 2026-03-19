@@ -23,7 +23,7 @@ class HomeContentWidget extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.lg)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.c20)),
         color: AppColors.accent500,
       ),
       child: Column(
@@ -155,7 +155,7 @@ class ContentItemWidget extends StatelessWidget {
     return Material(
       clipBehavior: Clip.hardEdge,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       color: AppColors.accentLighter,
       child: InkWell(

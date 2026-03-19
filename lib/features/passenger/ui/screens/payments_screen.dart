@@ -217,10 +217,10 @@ class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
         onTap: () {
           context.push(AppRoutes.paymentDetailRoute, extra: payment);
         },

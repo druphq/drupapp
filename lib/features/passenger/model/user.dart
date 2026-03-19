@@ -31,6 +31,8 @@ class User extends Equatable {
   final UserStatus status;
   final ProfileCompletionStatus profileStatus;
   final UserType userType;
+  final List<String> roles;
+  final String? activeRole;
   final List<SavedPlace> savedPlaces;
   final List<EmergencyContact> emergencyContacts;
   final NotificationPreferences notificationPreferences;
@@ -52,6 +54,8 @@ class User extends Equatable {
     this.status = UserStatus.active,
     this.profileStatus = ProfileCompletionStatus.incomplete,
     this.userType = UserType.rider,
+    this.roles = const [],
+    this.activeRole,
     this.savedPlaces = const [],
     this.emergencyContacts = const [],
     this.notificationPreferences = const NotificationPreferences(),
@@ -78,6 +82,10 @@ class User extends Equatable {
         json['profileStatus'] as String? ?? 'incomplete',
       ),
       userType: UserType.fromString(json['userType'] as String? ?? 'rider'),
+      roles:
+          (json['roles'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          [],
+      activeRole: json['activeRole'] as String?,
       savedPlaces:
           (json['savedPlaces'] as List<dynamic>?)
               ?.map((e) => SavedPlace.fromJson(e as Map<String, dynamic>))
@@ -120,6 +128,8 @@ class User extends Equatable {
       'status': status.name,
       'profileStatus': profileStatus.name,
       'userType': userType.name,
+      'roles': roles,
+      'activeRole': activeRole,
       'savedPlaces': savedPlaces.map((e) => e.toJson()).toList(),
       'emergencyContacts': emergencyContacts.map((e) => e.toJson()).toList(),
       'notificationPreferences': notificationPreferences.toJson(),
@@ -143,6 +153,8 @@ class User extends Equatable {
     UserStatus? status,
     ProfileCompletionStatus? profileStatus,
     UserType? userType,
+    List<String>? roles,
+    String? activeRole,
     List<SavedPlace>? savedPlaces,
     List<EmergencyContact>? emergencyContacts,
     NotificationPreferences? notificationPreferences,
@@ -164,6 +176,8 @@ class User extends Equatable {
       status: status ?? this.status,
       profileStatus: profileStatus ?? this.profileStatus,
       userType: userType ?? this.userType,
+      roles: roles ?? this.roles,
+      activeRole: activeRole ?? this.activeRole,
       savedPlaces: savedPlaces ?? this.savedPlaces,
       emergencyContacts: emergencyContacts ?? this.emergencyContacts,
       notificationPreferences:
@@ -173,6 +187,9 @@ class User extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  /// Check if user has driver role
+  bool get isDriver => roles.contains('driver') || activeRole == 'driver';
 
   /// Check if profile is complete
   bool get isProfileComplete =>
@@ -202,6 +219,8 @@ class User extends Equatable {
     status,
     profileStatus,
     userType,
+    roles,
+    activeRole,
     savedPlaces,
     emergencyContacts,
     notificationPreferences,

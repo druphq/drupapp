@@ -45,7 +45,7 @@ class _RegisterDeliveryScreenState
         scrolledUnderElevation: 0.0,
         centerTitle: true,
         title: Text(
-          'Fill Delivery Request',
+          'Fill delivery form',
           style: TextStyles.t1.copyWith(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -303,7 +303,7 @@ class _RegisterDeliveryScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,23 +342,23 @@ class _RegisterDeliveryScreenState
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         borderSide: const BorderSide(color: AppColors.divider),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         borderSide: const BorderSide(color: AppColors.divider),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         borderSide: const BorderSide(color: AppColors.red400),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(Corners.md),
+        borderRadius: BorderRadius.circular(Corners.c8),
         borderSide: const BorderSide(color: AppColors.red400, width: 1.5),
       ),
       filled: true,

@@ -325,7 +325,7 @@ class _PickDeliveryLocationScreenState
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.lg),
+                  borderRadius: BorderRadius.circular(Corners.c20),
                   color: AppColors.surface,
                 ),
                 height: Sizes.tfieldHeight,
@@ -341,15 +341,15 @@ class _PickDeliveryLocationScreenState
                   },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.lg),
+                      borderRadius: BorderRadius.circular(Corners.c20),
                       borderSide: BorderSide(color: AppColors.grey),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.lg),
+                      borderRadius: BorderRadius.circular(Corners.c20),
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.lg),
+                      borderRadius: BorderRadius.circular(Corners.c20),
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     prefixIcon: Row(
@@ -424,7 +424,7 @@ class _PickDeliveryLocationScreenState
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(Corners.lg),
+                  borderRadius: BorderRadius.circular(Corners.c20),
                   color: AppColors.surface,
                 ),
                 height: Sizes.tfieldHeight,
@@ -445,11 +445,11 @@ class _PickDeliveryLocationScreenState
                   },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.lg),
+                      borderRadius: BorderRadius.circular(Corners.c20),
                       borderSide: BorderSide(color: AppColors.grey),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(Corners.lg),
+                      borderRadius: BorderRadius.circular(Corners.c20),
                       borderSide: BorderSide(color: AppColors.accent, width: 2),
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -612,7 +612,7 @@ class _PickDeliveryLocationScreenState
                                       clipBehavior: Clip.hardEdge,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
-                                          Corners.md,
+                                          Corners.c8,
                                         ),
                                       ),
                                       color: Colors.transparent,

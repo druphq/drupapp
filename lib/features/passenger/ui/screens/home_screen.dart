@@ -4,7 +4,7 @@ import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/schedule_form_bottomsheet.dart';
 import 'package:drup/features/passenger/ui/bottomsheets/ride_booking_bottomsheet.dart';
-import 'package:drup/features/passenger/ui/widgets/app_drawer.dart';
+import 'package:drup/features/passenger/ui/widgets/passenger_app_drawer.dart';
 import 'package:drup/features/passenger/ui/widgets/location_permission_bottom_sheet.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
@@ -369,7 +369,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       resizeToAvoidBottomInset: false,
       extendBody: true,
       extendBodyBehindAppBar: true,
-      drawer: const AppDrawer(),
+      drawer: const PassengerAppDrawer(),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: Stack(

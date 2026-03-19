@@ -6,6 +6,7 @@ import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/convert_util.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
@@ -64,36 +65,13 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   bool get _isPending =>
       _ride != null && _ride!.paymentStatus.toLowerCase() == 'pending';
 
+  bool get _isExpired =>
+      _ride != null && _ride!.status.toLowerCase() == 'expired';
+
   bool get _canCancel {
     if (_ride == null) return false;
     final s = _ride!.status.toLowerCase();
     return s == 'booked' || s == 'pending';
-  }
-
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return AppColors.green400;
-      case 'cancelled':
-        return AppColors.red400;
-      case 'in_progress' || 'matched':
-        return AppColors.accent;
-      default:
-        return AppColors.orange400;
-    }
-  }
-
-  Color _statusBg(String status) {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return AppColors.green50;
-      case 'cancelled':
-        return AppColors.red50;
-      case 'in_progress' || 'matched':
-        return AppColors.accent.withValues(alpha: 0.1);
-      default:
-        return AppColors.orange50;
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -200,7 +178,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +192,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: _statusBg(ride.status),
+                  color: statusBg(ride.status),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -222,7 +200,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   style: TextStyles.t2.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: _statusColor(ride.status),
+                    color: statusColor(ride.status),
                   ),
                 ),
               ),
@@ -278,7 +256,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: AppColors.accent.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(Corners.md),
+              borderRadius: BorderRadius.circular(Corners.c8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -307,7 +285,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
 
   Widget _buildMapPreview(BookedRide ride) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(Corners.lg),
+      borderRadius: BorderRadius.circular(Corners.c20),
       child: SizedBox(
         height: 150,
         child: Stack(
@@ -336,7 +314,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(Corners.lg),
+                  borderRadius: BorderRadius.circular(Corners.c20),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.08),
@@ -463,7 +441,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Row(
         children: [
@@ -576,16 +554,30 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
           Row(
             children: [
               Icon(
-                _isPending ? Icons.schedule : Icons.check_circle_outline,
+                _isExpired
+                    ? Icons.error_outline
+                    : _isPending
+                    ? Icons.schedule
+                    : Icons.check_circle_outline,
                 size: 16,
-                color: _isPending ? AppColors.orange400 : AppColors.green400,
+                color: _isExpired
+                    ? AppColors.red400
+                    : _isPending
+                    ? AppColors.orange400
+                    : AppColors.green400,
               ),
               const Gap(4),
               Text(
-                'Payment: ${ride.paymentStatus.capitalizeFirstChar()}',
+                _isExpired
+                    ? 'Payment Expired'
+                    : 'Payment: ${ride.paymentStatus.capitalizeFirstChar()}',
                 style: TextStyles.t2.copyWith(
                   fontSize: 13,
-                  color: _isPending ? AppColors.orange400 : AppColors.green400,
+                  color: _isExpired
+                      ? AppColors.red400
+                      : _isPending
+                      ? AppColors.orange400
+                      : AppColors.green400,
                 ),
               ),
               const Spacer(),
@@ -621,13 +613,13 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
         child: InkWell(
-          borderRadius: BorderRadius.circular(Corners.lg),
+          borderRadius: BorderRadius.circular(Corners.c20),
           onTap: () {},
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -665,7 +657,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
   // ---------------------------------------------------------------------------
 
   Widget? _buildBottomActions() {
-    if (!_isPending && !_canCancel) return null;
+    if (!_isPending && !_canCancel && !_isExpired) return null;
 
     return SafeArea(
       child: Padding(
@@ -673,9 +665,40 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_isPending)
+            if (_isExpired)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.red50,
+                  borderRadius: BorderRadius.circular(Corners.c8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 20,
+                      color: AppColors.red400,
+                    ),
+                    const Gap(8),
+                    Expanded(
+                      child: Text(
+                        'This ride has expired. Payment is no longer available.',
+                        style: TextStyles.t2.copyWith(
+                          fontSize: 13,
+                          color: AppColors.red400,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (!_isExpired && _isPending)
               CustomButton(text: 'Make Payment', onPressed: _handlePayment),
-            if (_isPending && _canCancel) const Gap(10),
+            if (!_isExpired && _isPending && _canCancel) const Gap(10),
             if (_canCancel)
               CustomButton(
                 text: 'Cancel Ride',
@@ -780,7 +803,7 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

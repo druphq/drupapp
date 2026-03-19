@@ -22,7 +22,7 @@ class BottomSheetItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
         color: context.colorScheme.surface,
       ),
       margin: margin,

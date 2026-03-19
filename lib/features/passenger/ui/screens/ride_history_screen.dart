@@ -98,11 +98,20 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
 
     switch (filter) {
       case _StatusFilter.upcoming:
-        // Active / upcoming rides from the separate endpoint
-        final upcoming = _upcomingRides
+        final activeByCategory = _upcomingRides
             .where((r) => delivery ? _isDelivery(r) : !_isDelivery(r))
             .toList();
-        return upcoming;
+
+        final seenIds = activeByCategory.map((r) => r.id).toSet();
+
+        final historyUpcoming = byCategory.where((r) {
+          final s = r.status.toLowerCase();
+          return s != 'completed' &&
+              s != 'cancelled' &&
+              !seenIds.contains(r.id);
+        }).toList();
+
+        return [...activeByCategory, ...historyUpcoming];
       case _StatusFilter.completed:
         return byCategory.where((r) => r.status == 'completed').toList();
       case _StatusFilter.cancelled:
@@ -113,7 +122,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
   Future<void> Function() _refreshForFilter(_StatusFilter filter) {
     switch (filter) {
       case _StatusFilter.upcoming:
-        return _fetchUpcomingRides;
+        return _fetchAllData;
       case _StatusFilter.completed:
       case _StatusFilter.cancelled:
         return _fetchRideHistory;
@@ -382,13 +391,13 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(Corners.lg),
+        borderRadius: BorderRadius.circular(Corners.c20),
         child: InkWell(
-          borderRadius: BorderRadius.circular(Corners.lg),
+          borderRadius: BorderRadius.circular(Corners.c20),
           onTap: () {
             if (isDelivery) {
               context.push(AppRoutes.deliveryDetailsRoute, extra: ride.id);
@@ -561,9 +570,11 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     switch (status.toLowerCase()) {
       case 'completed':
         return AppColors.green400;
-      case 'cancelled':
+      case 'cancelled' || 'expired':
         return AppColors.red400;
       case 'in_progress' || 'matched' || 'picked_up':
+        return AppColors.accent;
+      case 'confirmed':
         return AppColors.accent;
       default:
         return AppColors.orange400;
@@ -574,9 +585,11 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     switch (status.toLowerCase()) {
       case 'completed':
         return AppColors.green50;
-      case 'cancelled':
+      case 'cancelled' || 'expired':
         return AppColors.red50;
       case 'in_progress' || 'matched' || 'picked_up':
+        return AppColors.accent.withValues(alpha: 0.1);
+      case 'confirmed':
         return AppColors.accent.withValues(alpha: 0.1);
       default:
         return AppColors.orange50;

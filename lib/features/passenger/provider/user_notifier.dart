@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../drivers/provider/driver_notifier.dart';
 import '../model/user.dart';
 import '../model/location_model.dart';
 import '../../../di/providers.dart';
@@ -71,8 +72,18 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
+  /// Check if the driver application is approved (status == 'active')
   Future<bool> isDriverVerified() async {
-    return false;
+    try {
+      final driverNotifier = ref.read(driverNotifierProvider.notifier);
+      await driverNotifier.fetchApplicationStatus();
+      final appStatus = ref.read(driverNotifierProvider).applicationStatus;
+      if (appStatus == null) return false;
+      final status = appStatus['status'] as String?;
+      return status == 'active';
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Clear any messages
