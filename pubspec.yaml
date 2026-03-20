@@ -52,6 +52,7 @@ dependencies:
   pdf: ^3.12.0
   printing: ^5.14.3
   path_provider: ^2.1.5
+  shorebird_code_push: ^2.0.5
 
 dev_dependencies:
   flutter_test:

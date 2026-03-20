@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/provider/auth_notifier.dart';
+import '../../provider/driver_notifier.dart';
 
 class DriverAppDrawer extends ConsumerWidget {
   const DriverAppDrawer({super.key});
@@ -21,7 +22,8 @@ class DriverAppDrawer extends ConsumerWidget {
     final userState = ref.watch(userNotifierProvider);
     final user = userState.user;
     final userName = (user?.fullName.takeFirst) ?? 'Guest User';
-    final bool isVerified = false;
+    final driverState = ref.watch(driverNotifierProvider);
+    final bool isVerified = driverState.driver?.isActive ?? false;
 
     return Drawer(
       backgroundColor: AppColors.surface,
@@ -48,10 +50,12 @@ class DriverAppDrawer extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 70),
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        context.push(AppRoutes.driverAccountRoute);
-                      },
+                      onTap: isVerified
+                          ? () {
+                              Navigator.pop(context);
+                              context.push(AppRoutes.driverAccountRoute);
+                            }
+                          : null,
                       child: Row(
                         children: [
                           // Profile Image with status indicator
@@ -282,73 +286,136 @@ class DriverAppDrawer extends ConsumerWidget {
                 child: Column(
                   children: [
                     Expanded(
-                      child: Container(
-                        padding: EdgeInsets.only(top: 16.0, left: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: ListView(
-                                padding: EdgeInsets.zero,
-                                children: [
-                                  _buildDrawerItem(
-                                    icon: AppAssets.scheduleIcon,
-                                    title: 'Ride Requests',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      context.push(
-                                        AppRoutes.driverRideRequestsRoute,
-                                      );
-                                    },
+                      child: Stack(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(top: 16.0, left: 24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Pending-verification banner
+                                if (!isVerified)
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      right: 24,
+                                      bottom: 8,
+                                    ),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.warning.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: AppColors.warning.withValues(
+                                            alpha: 0.4,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.info_outline_rounded,
+                                            size: 18,
+                                            color: AppColors.warning,
+                                          ),
+                                          const Gap(10),
+                                          Expanded(
+                                            child: Text(
+                                              'Your account is pending verification. '
+                                              'Features will unlock once approved.',
+                                              style: TextStyles.t2.copyWith(
+                                                fontSize: 12,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                  _buildDrawerItem(
-                                    icon: AppAssets.historyIcon,
-                                    title: 'Ride History',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      context.push(
-                                        AppRoutes.driverRideHistoryRoute,
-                                      );
-                                    },
+                                Expanded(
+                                  child: ListView(
+                                    padding: EdgeInsets.zero,
+                                    children: [
+                                      _buildDrawerItem(
+                                        icon: AppAssets.scheduleIcon,
+                                        title: 'Ride Requests',
+                                        enabled: isVerified,
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          context.push(
+                                            AppRoutes.driverRideRequestsRoute,
+                                          );
+                                        },
+                                      ),
+                                      _buildDrawerItem(
+                                        icon: AppAssets.historyIcon,
+                                        title: 'Ride History',
+                                        enabled: isVerified,
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          context.push(
+                                            AppRoutes.driverRideHistoryRoute,
+                                          );
+                                        },
+                                      ),
+                                      _buildDrawerItem(
+                                        icon: AppAssets.messageIcon,
+                                        title: 'Messages',
+                                        enabled: isVerified,
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _showMessage(
+                                            context,
+                                            'Messages - Coming Soon',
+                                          );
+                                        },
+                                      ),
+                                      _buildDrawerItem(
+                                        icon: AppAssets.supportIcon,
+                                        title: 'Support',
+                                        enabled: isVerified,
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _showMessage(
+                                            context,
+                                            'Support - Coming Soon',
+                                          );
+                                        },
+                                      ),
+                                      _buildDrawerItem(
+                                        icon: AppAssets.infoIcon,
+                                        title: 'About',
+                                        enabled: isVerified,
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _showMessage(
+                                            context,
+                                            'About - Coming Soon',
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  _buildDrawerItem(
-                                    icon: AppAssets.messageIcon,
-                                    title: 'Messages',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _showMessage(
-                                        context,
-                                        'Messages - Coming Soon',
-                                      );
-                                    },
-                                  ),
-                                  _buildDrawerItem(
-                                    icon: AppAssets.supportIcon,
-                                    title: 'Support',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _showMessage(
-                                        context,
-                                        'Support - Coming Soon',
-                                      );
-                                    },
-                                  ),
-                                  _buildDrawerItem(
-                                    icon: AppAssets.infoIcon,
-                                    title: 'About',
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _showMessage(
-                                        context,
-                                        'About - Coming Soon',
-                                      );
-                                    },
-                                  ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Subtle overlay when not verified
+                          if (!isVerified)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: Container(
+                                  color: Colors.white.withValues(alpha: 0.45),
+                                ),
                               ),
                             ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
                     Padding(
@@ -378,22 +445,26 @@ class DriverAppDrawer extends ConsumerWidget {
     required String icon,
     required String title,
     required VoidCallback onTap,
+    bool enabled = true,
     Color? textColor,
   }) {
+    final effectiveColor = enabled
+        ? (textColor ?? AppColors.accent)
+        : AppColors.textSecondary.withValues(alpha: 0.4);
+
     return ListTile(
-      leading: ImageIcon(
-        AssetImage(icon),
-        color: textColor ?? AppColors.accent,
-        size: 18,
-      ),
+      leading: ImageIcon(AssetImage(icon), color: effectiveColor, size: 18),
       title: Text(
         title,
         style: TextStyles.h3.copyWith(
           fontSize: 16,
           fontWeight: FontWeight.w400,
+          color: enabled
+              ? null
+              : AppColors.textSecondary.withValues(alpha: 0.5),
         ),
       ),
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
     );
   }
 

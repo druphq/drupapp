@@ -1,7 +1,9 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/providers.dart';
 import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/features/drivers/ui/widgets/driver_app_drawer.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
@@ -314,7 +316,12 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
 
           Center(
             child: TextButton(
-              onPressed: () => context.pop(),
+              onPressed: () {
+                final userRepo = ref.read(userRepositoryProvider);
+                userRepo.storeUserMode(AppStrings.passengerMode);
+
+                context.go(AppRoutes.homeRoute);
+              },
               child: Text(
                 'Maybe later',
                 style: TextStyles.t2.copyWith(
