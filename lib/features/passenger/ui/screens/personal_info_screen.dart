@@ -1,12 +1,15 @@
+import 'dart:io';
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/di/notifiers.dart';
+import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import '../../provider/user_notifier.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../auth/provider/auth_notifier.dart';
 
 class PersonalInfoScreen extends ConsumerStatefulWidget {
   const PersonalInfoScreen({super.key});
@@ -21,6 +24,9 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   bool _isEditing = false;
+  bool _isUploadingPhoto = false;
+  File? _pickedPhoto;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -88,14 +94,19 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                       shape: BoxShape.circle,
                       color: AppColors.accent.withOpacity(0.1),
                       border: Border.all(color: AppColors.accent, width: 3),
-                      image: user?.profileImage != null
+                      image: _pickedPhoto != null
+                          ? DecorationImage(
+                              image: FileImage(_pickedPhoto!),
+                              fit: BoxFit.cover,
+                            )
+                          : user?.profileImage != null
                           ? DecorationImage(
                               image: NetworkImage(user!.profileImage!),
                               fit: BoxFit.cover,
                             )
                           : null,
                     ),
-                    child: user?.profileImage == null
+                    child: _pickedPhoto == null && user?.profileImage == null
                         ? const Icon(
                             Icons.person,
                             size: 50,
@@ -108,25 +119,27 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                       bottom: 0,
                       right: 0,
                       child: GestureDetector(
-                        onTap: () {
-                          // TODO: Implement image picker
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Change photo coming soon!'),
-                            ),
-                          );
-                        },
+                        onTap: _pickPhoto,
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
                             color: AppColors.accent,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            size: 18,
-                            color: Colors.white,
-                          ),
+                          child: _isUploadingPhoto
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.camera_alt,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
                         ),
                       ),
                     ),
@@ -259,11 +272,103 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     );
   }
 
-  void _saveChanges() {
-    // TODO: Implement save changes to API
-    setState(() => _isEditing = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile updated successfully!')),
+  Future<void> _pickPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Gap(16),
+              Text(
+                'Select Source',
+                style: TextStyles.t1.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Gap(16),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: AppColors.accent,
+                ),
+                title: Text(
+                  'Gallery',
+                  style: TextStyles.t1.copyWith(fontSize: 16),
+                ),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: AppColors.accent),
+                title: Text(
+                  'Camera',
+                  style: TextStyles.t1.copyWith(fontSize: 16),
+                ),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
+    if (source == null) return;
+
+    final XFile? picked = await _picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+
+    setState(() => _pickedPhoto = File(picked.path));
+  }
+
+  Future<void> _saveChanges() async {
+    setState(() => _isEditing = false);
+
+    // Check if running as a driver — upload photo via driver notifier
+    final isDriver = ref.read(isDriverProvider);
+
+    if (_pickedPhoto != null && isDriver) {
+      setState(() => _isUploadingPhoto = true);
+      final success = await ref
+          .read(driverNotifierProvider.notifier)
+          .uploadProfilePhoto(_pickedPhoto!);
+      setState(() => _isUploadingPhoto = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success ? 'Profile photo updated!' : 'Failed to upload photo',
+            ),
+            backgroundColor: success ? AppColors.success : AppColors.warning,
+          ),
+        );
+      }
+      _pickedPhoto = null;
+      return;
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully!')),
+      );
+    }
   }
 }

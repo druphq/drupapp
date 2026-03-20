@@ -1,4 +1,5 @@
 import 'package:drup/di/notifiers.dart';
+import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -10,14 +11,33 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/provider/auth_notifier.dart';
 
-class DriverAccountScreen extends ConsumerWidget {
+class DriverAccountScreen extends ConsumerStatefulWidget {
   const DriverAccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DriverAccountScreen> createState() =>
+      _DriverAccountScreenState();
+}
+
+class _DriverAccountScreenState extends ConsumerState<DriverAccountScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(driverNotifierProvider.notifier).loadDriverProfile();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userState = ref.watch(userNotifierProvider);
     final user = userState.user;
-    final bool isVerified = false;
+    final driverState = ref.watch(driverNotifierProvider);
+    final driver = driverState.driver;
+
+    final rating = driver?.rating.average ?? 0.0;
+    final totalTrips = driver?.stats.completedRides ?? 0;
+    final profilePhoto = driver?.profilePhoto ?? user?.profileImage;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,15 +65,15 @@ class DriverAccountScreen extends ConsumerWidget {
                         height: 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.accent.withOpacity(0.1),
-                          image: user?.profileImage != null
+                          color: AppColors.accent.withValues(alpha: 0.1),
+                          image: profilePhoto != null
                               ? DecorationImage(
-                                  image: NetworkImage(user!.profileImage!),
+                                  image: NetworkImage(profilePhoto),
                                   fit: BoxFit.cover,
                                 )
                               : null,
                         ),
-                        child: user?.profileImage == null
+                        child: profilePhoto == null
                             ? const Icon(
                                 Icons.person,
                                 size: 40,
@@ -61,59 +81,32 @@ class DriverAccountScreen extends ConsumerWidget {
                               )
                             : null,
                       ),
-                      // Camera button
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Change photo coming soon!'),
-                              ),
-                            );
-                          },
+                      // Verification badge
+                      if (driver?.isActive == true)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
                           child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(
-                              color: AppColors.accent,
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
                               shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: const Icon(
-                              Icons.add_a_photo,
-                              size: 14,
+                              Icons.verified,
+                              size: 12,
                               color: Colors.white,
                             ),
                           ),
                         ),
-                      ),
-                      // Verification badge
-                      Positioned(
-                        top: 0,
-                        right: -4,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: isVerified
-                                ? AppColors.success
-                                : AppColors.warning,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: Icon(
-                            isVerified ? Icons.check : Icons.priority_high,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   const Gap(16),
 
                   // Name
                   Text(
-                    user?.fullName ?? 'Guest User',
+                    driver?.fullName ?? user?.fullName ?? 'Guest User',
                     style: TextStyles.t1.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -129,7 +122,7 @@ class DriverAccountScreen extends ConsumerWidget {
                       Icon(Icons.star, size: 20, color: AppColors.accent),
                       const Gap(4),
                       Text(
-                        '4.5',
+                        rating.toStringAsFixed(1),
                         style: TextStyles.t1.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -137,7 +130,7 @@ class DriverAccountScreen extends ConsumerWidget {
                       ),
                       const Gap(4),
                       Text(
-                        '(50 trips)',
+                        '($totalTrips trips)',
                         style: TextStyles.h2.copyWith(
                           fontSize: FontSizes.s14,
                           color: AppColors.textSecondary,
@@ -147,99 +140,9 @@ class DriverAccountScreen extends ConsumerWidget {
                   ),
 
                   const Gap(8),
-
-                  // Verification status chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isVerified
-                          ? AppColors.success.withOpacity(0.1)
-                          : AppColors.warning.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isVerified ? Icons.verified : Icons.pending,
-                          size: 16,
-                          color: isVerified
-                              ? AppColors.success
-                              : AppColors.warning,
-                        ),
-                        const Gap(6),
-                        Text(
-                          isVerified
-                              ? 'Verified Driver'
-                              : 'Pending Verification',
-                          style: TextStyles.t2.copyWith(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isVerified
-                                ? AppColors.success
-                                : AppColors.warning,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
-
-            // Verification Banner (if not verified)
-            if (!isVerified)
-              GestureDetector(
-                onTap: () => context.push(AppRoutes.verifyDriverRoute),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: const Icon(
-                          Icons.verified_user_outlined,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const Gap(14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Complete Verification',
-                              style: TextStyles.t1.copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const Gap(2),
-                            Text(
-                              'Verify your identity to start driving',
-                              style: TextStyles.t2.copyWith(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios, size: 16),
-                    ],
-                  ),
-                ),
-              ),
 
             const Gap(16),
 
@@ -255,41 +158,19 @@ class DriverAccountScreen extends ConsumerWidget {
                 _buildMenuItem(
                   icon: AppAssets.vehicleIcon,
                   title: 'Vehicle Info',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Vehicle Information coming soon!'),
-                      ),
-                    );
-                  },
+                  onTap: () => context.push(AppRoutes.vehicleInfoRoute),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
                   icon: AppAssets.fileIcon,
                   title: 'Documents',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Documents coming soon!')),
-                    );
-                  },
+                  onTap: () => context.push(AppRoutes.documentsRoute),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
                   icon: AppAssets.bankIcon,
                   title: 'Bank Details',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Bank Details coming soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: AppAssets.starIcon,
-                  title: 'Reviews',
-                  onTap: () => context.push(AppRoutes.reviewsRoute),
+                  onTap: () => context.push(AppRoutes.bankDetailRoute),
                 ),
                 _buildDivider(),
                 _buildMenuItem(

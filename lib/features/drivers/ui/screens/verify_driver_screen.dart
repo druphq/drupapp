@@ -165,25 +165,10 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
         children: [
           const Gap(32),
 
-          // Illustration
-          // Container(
-          //   width: 160,
-          //   height: 160,
-          //   decoration: BoxDecoration(
-          //     color: AppColors.accent.withValues(alpha: 0.08),
-          //     shape: BoxShape.circle,
-          //   ),
-          //   child: const Icon(
-          //     Icons.drive_eta_outlined,
-          //     size: 72,
-          //     color: AppColors.accent,
-          //   ),
-          // ),
-          
           Center(
             child: Container(
-              width: 220,
-              height: 220,
+              width: 160,
+              height: 160,
               decoration: BoxDecoration(
                 color: AppColors.accentLight.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -193,16 +178,16 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                 children: [
                   // Phone illustration
                   Container(
-                    width: 100,
-                    height: 160,
+                    width: 72,
+                    height: 116,
                     decoration: BoxDecoration(
                       color: AppColors.accent,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.accent.withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          blurRadius: 14,
+                          offset: const Offset(0, 7),
                         ),
                       ],
                     ),
@@ -210,8 +195,8 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 50,
-                          height: 50,
+                          width: 36,
+                          height: 36,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             shape: BoxShape.circle,
@@ -219,25 +204,25 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                           child: const Icon(
                             Icons.person,
                             color: Colors.white,
-                            size: 30,
+                            size: 22,
                           ),
                         ),
-                        const Gap(12),
+                        const Gap(8),
                         Container(
-                          width: 60,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const Gap(6),
-                        Container(
-                          width: 40,
+                          width: 44,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const Gap(4),
+                        Container(
+                          width: 28,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ],
@@ -245,19 +230,19 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                   ),
                   // Checkmark badge
                   Positioned(
-                    right: 40,
-                    top: 50,
+                    right: 28,
+                    top: 36,
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: AppColors.success,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: const Icon(
                         Icons.check,
                         color: Colors.white,
-                        size: 20,
+                        size: 14,
                       ),
                     ),
                   ),
@@ -289,7 +274,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             ),
           ),
 
-          const Gap(40),
+          const Gap(30),
 
           // Benefits
           _benefitCard(
@@ -325,7 +310,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             },
           ),
 
-          const Gap(16),
+          const Gap(10),
 
           Center(
             child: TextButton(
@@ -359,16 +344,16 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(Corners.c8),
-            ),
-            child: Icon(icon, color: AppColors.accent, size: 22),
-          ),
-          const Gap(14),
+          // Container(
+          //   width: 44,
+          //   height: 44,
+          //   decoration: BoxDecoration(
+          //     color: AppColors.accent.withValues(alpha: 0.08),
+          //     borderRadius: BorderRadius.circular(Corners.c8),
+          //   ),
+          //   child: Icon(icon, color: AppColors.accent, size: 22),
+          // ),
+          // const Gap(14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,6 +390,8 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
     switch (_status) {
       case 'active':
         return _buildApprovedView();
+      case 'rejected':
+        return _buildRejectedView();
       case 'suspended':
       case 'deactivated':
       case 'banned':
@@ -630,6 +617,187 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                 ),
               ),
               onPressed: _fetchStatus,
+            ),
+          ),
+
+          const Gap(32),
+        ],
+      ),
+    );
+  }
+
+  // ── Rejected ──
+
+  Widget _buildRejectedView() {
+    final documents = _driverProfile?['documents'] as List<dynamic>? ?? [];
+    final rejectedDocs = documents
+        .where(
+          (d) =>
+              (d as Map<String, dynamic>)['verificationStatus'] == 'rejected',
+        )
+        .toList();
+
+    final rejectionNote = _driverProfile?['rejectionReason'] as String?;
+
+    return RefreshIndicator(
+      color: AppColors.accent,
+      onRefresh: _fetchStatus,
+      child: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          const Gap(16),
+
+          // Status hero
+          Center(
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.cancel_outlined,
+                size: 56,
+                color: AppColors.error,
+              ),
+            ),
+          ),
+
+          const Gap(24),
+
+          Text(
+            'Application Rejected',
+            textAlign: TextAlign.center,
+            style: TextStyles.h1.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+
+          const Gap(8),
+
+          Text(
+            rejectionNote ??
+                'Your application was not approved.\nPlease review the issues below and reapply.',
+            textAlign: TextAlign.center,
+            style: TextStyles.t2.copyWith(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+
+          const Gap(24),
+
+          // Status badge
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(Corners.c50),
+              ),
+              child: Text(
+                'Rejected',
+                style: TextStyles.t1.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.error,
+                ),
+              ),
+            ),
+          ),
+
+          // Rejected documents list
+          if (rejectedDocs.isNotEmpty) ...[
+            const Gap(24),
+            _card(
+              icon: Icons.warning_amber_rounded,
+              title: 'Issues Found',
+              children: [
+                ...rejectedDocs.map((d) {
+                  final doc = d as Map<String, dynamic>;
+                  final type = _capitalize(
+                    (doc['type'] as String? ?? 'document').replaceAll('_', ' '),
+                  );
+                  final reason = doc['rejectionReason'] as String?;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 18,
+                          color: AppColors.error,
+                        ),
+                        const Gap(8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                type,
+                                style: TextStyles.t1.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (reason != null)
+                                Text(
+                                  reason,
+                                  style: TextStyles.t2.copyWith(
+                                    fontSize: 13,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ],
+
+          const Gap(32),
+
+          // Reapply button
+          CustomButton(
+            text: 'Update & Reapply',
+            onPressed: () async {
+              final result = await context.push<bool>(
+                AppRoutes.applyDriverRoute,
+              );
+              if (result == true && mounted) {
+                _fetchStatus();
+              }
+            },
+          ),
+
+          const Gap(12),
+
+          // Upload documents button
+          Center(
+            child: TextButton.icon(
+              icon: const Icon(
+                Icons.upload_file,
+                size: 18,
+                color: AppColors.accent,
+              ),
+              label: Text(
+                'Upload / Fix Documents',
+                style: TextStyles.t2.copyWith(
+                  fontSize: 14,
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onPressed: () => context.push(AppRoutes.documentsRoute),
             ),
           ),
 

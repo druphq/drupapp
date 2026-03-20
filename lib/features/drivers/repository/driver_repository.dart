@@ -421,4 +421,54 @@ class DriverRepository {
       notes: notes,
     );
   }
+
+  // ===========================================================================
+  // EARNINGS
+  // ===========================================================================
+
+  Future<ApiResponse<Map<String, dynamic>>> getEarnings({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    return await _driverService.getEarnings(
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  // ===========================================================================
+  // BANK ACCOUNT
+  // ===========================================================================
+
+  Future<ApiResponse<Map<String, dynamic>>> getBankAccount() async {
+    return await _driverService.getBankAccount();
+  }
+
+  Future<ApiResponse<Map<String, dynamic>>> updateBankAccount({
+    required String bankName,
+    required String bankCode,
+    required String accountNumber,
+    required String accountName,
+  }) async {
+    return await _driverService.updateBankAccount(
+      bankName: bankName,
+      bankCode: bankCode,
+      accountNumber: accountNumber,
+      accountName: accountName,
+    );
+  }
+
+  Future<ApiResponse<List<dynamic>>> getBankList() async {
+    return await _driverService.getBankList();
+  }
+
+  Future<ApiResponse<Map<String, dynamic>>> verifyBankAccount({
+    required String bankCode,
+    required String accountNumber,
+  }) async {
+    return await _driverService.verifyBankAccount(
+      bankCode: bankCode,
+      accountNumber: accountNumber,
+    );
+  }
 }

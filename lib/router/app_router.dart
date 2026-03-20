@@ -105,7 +105,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       AppScreens.paymentDetailRoute,
       AppScreens.rideDetailsRoute,
       AppScreens.deliveryDetailsRoute,
+      AppScreens.paymentReceiptRoute,
       AppScreens.paymentWebViewRoute,
+      AppScreens.vehicleInfoRoute,
+      AppScreens.documentsRoute,
+      AppScreens.bankDetailRoute,
+      AppScreens.driverRideHistoryRoute,
+      AppScreens.driverRideDetailRoute,
+      AppScreens.driverRideRequestsRoute,
+      AppScreens.rideRequestDetailRoute,
     ],
   );
 });

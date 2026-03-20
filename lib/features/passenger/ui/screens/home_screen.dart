@@ -277,7 +277,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     await _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 80),
+      CameraUpdate.newLatLngBounds(bounds, 120),
     );
   }
 
@@ -296,7 +296,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ];
 
     final bounds = MapHelper.calculateBounds(allPoints);
-    const double boundsPadding = 80.0;
+    const double boundsPadding = 120.0;
 
     await _mapController!.animateCamera(
       CameraUpdate.newLatLngBounds(bounds, boundsPadding),

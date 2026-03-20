@@ -1145,4 +1145,177 @@ class DriverService {
       return ApiResponse.failure(message: e.toString());
     }
   }
+
+  // ===========================================================================
+  // 18. EARNINGS
+  // ===========================================================================
+
+  /// Get driver earnings summary
+  /// Optional date range filter via [startDate] and [endDate]
+  Future<ApiResponse<Map<String, dynamic>>> getEarnings({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final params = <String, dynamic>{};
+      if (startDate != null) params['startDate'] = startDate.toIso8601String();
+      if (endDate != null) params['endDate'] = endDate.toIso8601String();
+
+      final response = await _apiService.get<Map<String, dynamic>>(
+        ApiRoutes.driverEarnings,
+        queryParameters: params.isNotEmpty ? params : null,
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          return ApiResponse.success(
+            data: responseData,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to fetch earnings',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error fetching earnings: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
+
+  // ===========================================================================
+  // 19. BANK ACCOUNT
+  // ===========================================================================
+
+  /// Get driver bank account details
+  Future<ApiResponse<Map<String, dynamic>>> getBankAccount() async {
+    try {
+      final response = await _apiService.get<Map<String, dynamic>>(
+        ApiRoutes.driverBankAccount,
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          return ApiResponse.success(
+            data: responseData,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to fetch bank account',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error fetching bank account: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
+
+  /// Update driver bank account
+  Future<ApiResponse<Map<String, dynamic>>> updateBankAccount({
+    required String bankName,
+    required String bankCode,
+    required String accountNumber,
+    required String accountName,
+  }) async {
+    try {
+      final response = await _apiService.patch<Map<String, dynamic>>(
+        ApiRoutes.driverBankAccount,
+        data: {
+          'bankName': bankName,
+          'bankCode': bankCode,
+          'accountNumber': accountNumber,
+          'accountName': accountName,
+        },
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          return ApiResponse.success(
+            data: responseData,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to update bank account',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error updating bank account: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
+
+  /// Get list of supported banks
+  Future<ApiResponse<List<dynamic>>> getBankList() async {
+    try {
+      final response = await _apiService.get<Map<String, dynamic>>(
+        ApiRoutes.bankList,
+      );
+
+      if (response.success && response.data != null) {
+        final data = response.data!['data'];
+        final banks = data is List
+            ? data
+            : (data as Map<String, dynamic>?)?['banks'] as List? ?? [];
+        return ApiResponse.success(
+          data: banks,
+          message: response.message,
+          statusCode: response.statusCode,
+        );
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to fetch bank list',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error fetching bank list: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
+
+  /// Verify bank account before saving
+  Future<ApiResponse<Map<String, dynamic>>> verifyBankAccount({
+    required String bankCode,
+    required String accountNumber,
+  }) async {
+    try {
+      final response = await _apiService.post<Map<String, dynamic>>(
+        ApiRoutes.verifyBankAccount,
+        data: {'bankCode': bankCode, 'accountNumber': accountNumber},
+      );
+
+      if (response.success && response.data != null) {
+        final responseData = response.data!['data'] as Map<String, dynamic>?;
+        if (responseData != null) {
+          return ApiResponse.success(
+            data: responseData,
+            message: response.message,
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to verify bank account',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error verifying bank account: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
 }

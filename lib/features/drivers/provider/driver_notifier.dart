@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../di/providers.dart';
+import '../../../network/socket_models.dart';
 import '../../passenger/model/location_model.dart';
 import '../model/driver.dart';
 import '../model/vehicle.dart';
@@ -30,6 +33,15 @@ class DriverState {
   /// Ride history
   final List<Map<String, dynamic>> rideHistory;
 
+  /// Earnings summary
+  final Map<String, dynamic>? earnings;
+
+  /// Bank account details
+  final Map<String, dynamic>? bankAccount;
+
+  /// List of supported banks
+  final List<dynamic> bankList;
+
   /// Application status snapshot (from /driver/status)
   final Map<String, dynamic>? applicationStatus;
 
@@ -47,6 +59,9 @@ class DriverState {
     this.activeRide,
     this.scheduledRides = const [],
     this.rideHistory = const [],
+    this.earnings,
+    this.bankAccount,
+    this.bankList = const [],
     this.applicationStatus,
     this.verificationStatus,
     this.isLoading = false,
@@ -65,6 +80,10 @@ class DriverState {
     bool clearActiveRide = false,
     List<Map<String, dynamic>>? scheduledRides,
     List<Map<String, dynamic>>? rideHistory,
+    Map<String, dynamic>? earnings,
+    Map<String, dynamic>? bankAccount,
+    bool clearBankAccount = false,
+    List<dynamic>? bankList,
     Map<String, dynamic>? applicationStatus,
     Map<String, dynamic>? verificationStatus,
     bool? isLoading,
@@ -78,6 +97,9 @@ class DriverState {
       activeRide: clearActiveRide ? null : (activeRide ?? this.activeRide),
       scheduledRides: scheduledRides ?? this.scheduledRides,
       rideHistory: rideHistory ?? this.rideHistory,
+      earnings: earnings ?? this.earnings,
+      bankAccount: clearBankAccount ? null : (bankAccount ?? this.bankAccount),
+      bankList: bankList ?? this.bankList,
       applicationStatus: applicationStatus ?? this.applicationStatus,
       verificationStatus: verificationStatus ?? this.verificationStatus,
       isLoading: isLoading ?? this.isLoading,
@@ -93,6 +115,7 @@ class DriverState {
 class DriverNotifier extends StateNotifier<DriverState> {
   final Ref ref;
   StreamSubscription? _locationSubscription;
+  StreamSubscription<RideNewEvent>? _rideNewSubscription;
   Timer? _nearbyRidesTimer;
 
   DriverNotifier(this.ref) : super(DriverState());
@@ -100,6 +123,7 @@ class DriverNotifier extends StateNotifier<DriverState> {
   @override
   void dispose() {
     _locationSubscription?.cancel();
+    _rideNewSubscription?.cancel();
     _nearbyRidesTimer?.cancel();
     super.dispose();
   }
@@ -315,6 +339,22 @@ class DriverNotifier extends StateNotifier<DriverState> {
     }
   }
 
+  /// Convenience: fetch the FCM token from Firebase and register it
+  /// with the driver device-token endpoint.
+  Future<void> registerDeviceToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        final deviceType = defaultTargetPlatform == TargetPlatform.iOS
+            ? 'ios'
+            : 'android';
+        await updateDeviceToken(token, deviceType: deviceType);
+      }
+    } catch (_) {
+      // Silent — non-critical
+    }
+  }
+
   // ===========================================================================
   // 3. VEHICLE MANAGEMENT
   // ===========================================================================
@@ -425,18 +465,18 @@ class DriverNotifier extends StateNotifier<DriverState> {
     }
   }
 
-  /// Get all documents
-  Future<List<dynamic>> fetchDocuments() async {
+  /// Get all documents (returns full response with documents, requiredDocuments, etc.)
+  Future<Map<String, dynamic>?> fetchDocuments() async {
     try {
       final repo = ref.read(driverRepositoryProvider);
       final response = await repo.getDocuments();
 
       if (response.success && response.data != null) {
-        return response.data!['documents'] as List<dynamic>? ?? [];
+        return response.data;
       }
-      return [];
+      return null;
     } catch (_) {
-      return [];
+      return null;
     }
   }
 
@@ -490,10 +530,13 @@ class DriverNotifier extends StateNotifier<DriverState> {
         if (newStatus) {
           _startLocationTracking();
           _startNearbyRidesPolling();
+          _startListeningForRides();
+          fetchActiveRide();
         } else {
           _stopLocationTracking();
           _stopNearbyRidesPolling();
-          state = state.copyWith(nearbyRides: []);
+          _stopListeningForRides();
+          state = state.copyWith(nearbyRides: [], clearActiveRide: true);
         }
       } else {
         state = state.copyWith(
@@ -581,6 +624,46 @@ class DriverNotifier extends StateNotifier<DriverState> {
   void _stopNearbyRidesPolling() {
     _nearbyRidesTimer?.cancel();
     _nearbyRidesTimer = null;
+  }
+
+  // ===========================================================================
+  // 8b. SOCKET — REAL-TIME RIDE REQUESTS
+  // ===========================================================================
+
+  /// Start listening for `ride:new` socket events and merge them into
+  /// [nearbyRides] so the driver sees them instantly.
+  void _startListeningForRides() {
+    _rideNewSubscription?.cancel();
+    final socket = ref.read(socketClientProvider);
+    _rideNewSubscription = socket.onRideNew.listen((event) {
+      // Convert socket event to the same Map shape the nearby-rides API uses
+      final rideMap = <String, dynamic>{
+        '_id': event.rideId,
+        'rideNumber': event.rideNumber,
+        'rideType': event.rideType,
+        'vehicleType': event.vehicleType,
+        'pickup': event.pickup.toJson(),
+        'dropoff': event.dropoff.toJson(),
+        'fare': event.fare.toJson(),
+        'estimatedDistance': event.estimatedDistance,
+        'estimatedDuration': event.estimatedDuration,
+        'isScheduled': event.isScheduled,
+        'status': 'confirmed',
+        if (event.package != null) 'package': event.package!.toJson(),
+      };
+
+      // Avoid duplicates by rideId
+      final current = List<Map<String, dynamic>>.from(state.nearbyRides);
+      if (!current.any((r) => (r['_id'] ?? r['id']) == event.rideId)) {
+        current.insert(0, rideMap);
+        state = state.copyWith(nearbyRides: current);
+      }
+    });
+  }
+
+  void _stopListeningForRides() {
+    _rideNewSubscription?.cancel();
+    _rideNewSubscription = null;
   }
 
   // ===========================================================================
@@ -968,6 +1051,123 @@ class DriverNotifier extends StateNotifier<DriverState> {
       }
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+    }
+  }
+
+  // ===========================================================================
+  // 16. EARNINGS
+  // ===========================================================================
+
+  /// Fetch driver earnings summary
+  Future<void> fetchEarnings({DateTime? startDate, DateTime? endDate}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final repo = ref.read(driverRepositoryProvider);
+      final response = await repo.getEarnings(
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      if (response.success && response.data != null) {
+        state = state.copyWith(earnings: response.data, isLoading: false);
+      } else {
+        state = state.copyWith(
+          errorMessage: response.message,
+          isLoading: false,
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+    }
+  }
+
+  // ===========================================================================
+  // 17. BANK ACCOUNT
+  // ===========================================================================
+
+  /// Fetch driver bank account details
+  Future<void> fetchBankAccount() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final repo = ref.read(driverRepositoryProvider);
+      final response = await repo.getBankAccount();
+
+      if (response.success && response.data != null) {
+        state = state.copyWith(bankAccount: response.data, isLoading: false);
+      } else {
+        state = state.copyWith(isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+    }
+  }
+
+  /// Update driver bank account
+  Future<bool> updateBankAccount({
+    required String bankName,
+    required String bankCode,
+    required String accountNumber,
+    required String accountName,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final repo = ref.read(driverRepositoryProvider);
+      final response = await repo.updateBankAccount(
+        bankName: bankName,
+        bankCode: bankCode,
+        accountNumber: accountNumber,
+        accountName: accountName,
+      );
+
+      if (response.success && response.data != null) {
+        state = state.copyWith(bankAccount: response.data, isLoading: false);
+        return true;
+      } else {
+        state = state.copyWith(
+          errorMessage: response.message,
+          isLoading: false,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      return false;
+    }
+  }
+
+  /// Fetch list of supported banks
+  Future<void> fetchBankList() async {
+    try {
+      final repo = ref.read(driverRepositoryProvider);
+      final response = await repo.getBankList();
+
+      if (response.success && response.data != null) {
+        state = state.copyWith(bankList: response.data);
+      }
+    } catch (e) {
+      debugPrint('Error fetching bank list: $e');
+    }
+  }
+
+  /// Verify bank account number
+  Future<Map<String, dynamic>?> verifyBankAccount({
+    required String bankCode,
+    required String accountNumber,
+  }) async {
+    try {
+      final repo = ref.read(driverRepositoryProvider);
+      final response = await repo.verifyBankAccount(
+        bankCode: bankCode,
+        accountNumber: accountNumber,
+      );
+
+      if (response.success && response.data != null) {
+        return response.data;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error verifying bank account: $e');
+      return null;
     }
   }
 

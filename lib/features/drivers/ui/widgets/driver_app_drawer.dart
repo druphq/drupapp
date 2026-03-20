@@ -46,7 +46,7 @@ class DriverAppDrawer extends ConsumerWidget {
                 children: [
                   //Driver Profile Section
                   Padding(
-                    padding: const EdgeInsets.only(top: 70, left: 24),
+                    padding: const EdgeInsets.only(top: 70),
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
@@ -62,7 +62,9 @@ class DriverAppDrawer extends ConsumerWidget {
                                 height: 56,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.accent.withOpacity(0.1),
+                                  color: AppColors.accent.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   image: user?.profileImage != null
                                       ? DecorationImage(
                                           image: NetworkImage(
@@ -132,7 +134,7 @@ class DriverAppDrawer extends ConsumerWidget {
                                     ),
                                     const Gap(4),
                                     Text(
-                                      '4.5',
+                                      '0.0',
                                       style: TextStyles.t1.copyWith(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -140,7 +142,7 @@ class DriverAppDrawer extends ConsumerWidget {
                                     ),
                                     const Gap(4),
                                     Text(
-                                      '(50 trips)',
+                                      '(0 trip)',
                                       style: TextStyles.t2.copyWith(
                                         fontSize: 12,
                                         color: AppColors.textSecondary,
@@ -277,78 +279,76 @@ class DriverAppDrawer extends ConsumerWidget {
                     top: Radius.circular(15.0),
                   ),
                 ),
-                padding: EdgeInsets.only(top: 16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: ListView(
-                        padding: EdgeInsets.zero,
-                        children: [
-                          _buildDrawerItem(
-                            icon: AppAssets.scheduleIcon,
-                            title: 'Ride Requests',
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showMessage(
-                                context,
-                                'Ride Requests - Coming Soon',
-                              );
-                            },
-                          ),
-                          _buildDrawerItem(
-                            icon: AppAssets.historyIcon,
-                            title: 'Ride History',
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showMessage(
-                                context,
-                                'Ride History - Coming Soon',
-                              );
-                            },
-                          ),
-                          _buildDrawerItem(
-                            icon: AppAssets.messageIcon,
-                            title: 'Messages',
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showMessage(context, 'Messages - Coming Soon');
-                            },
-                          ),
-                          _buildDrawerItem(
-                            icon: AppAssets.supportIcon,
-                            title: 'Support',
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showMessage(context, 'Support - Coming Soon');
-                            },
-                          ),
-                          _buildDrawerItem(
-                            icon: AppAssets.infoIcon,
-                            title: 'About',
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showMessage(context, 'About - Coming Soon');
-                            },
-                          ),
-                          // _buildDrawerItem(
-                          //   icon: AppAssets.exitIcon,
-                          //   title: 'Logout',
-                          //   onTap: () {
-                          //     Navigator.pop(context);
-                          //     _handleLogout(context, ref);
-                          //   },
-                          // ),
-                          // _buildDrawerItem(
-                          //   icon: AppAssets.deleteIcon,
-                          //   title: 'Delete Account',
-                          //   textColor: Colors.red[300],
-                          //   onTap: () {
-                          //     Navigator.pop(context);
-                          //     _showDeleteAccountDialog(context);
-                          //   },
-                          // ),
-                        ],
+                      child: Container(
+                        padding: EdgeInsets.only(top: 16.0, left: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: ListView(
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  _buildDrawerItem(
+                                    icon: AppAssets.scheduleIcon,
+                                    title: 'Ride Requests',
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      context.push(
+                                        AppRoutes.driverRideRequestsRoute,
+                                      );
+                                    },
+                                  ),
+                                  _buildDrawerItem(
+                                    icon: AppAssets.historyIcon,
+                                    title: 'Ride History',
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      context.push(
+                                        AppRoutes.driverRideHistoryRoute,
+                                      );
+                                    },
+                                  ),
+                                  _buildDrawerItem(
+                                    icon: AppAssets.messageIcon,
+                                    title: 'Messages',
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _showMessage(
+                                        context,
+                                        'Messages - Coming Soon',
+                                      );
+                                    },
+                                  ),
+                                  _buildDrawerItem(
+                                    icon: AppAssets.supportIcon,
+                                    title: 'Support',
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _showMessage(
+                                        context,
+                                        'Support - Coming Soon',
+                                      );
+                                    },
+                                  ),
+                                  _buildDrawerItem(
+                                    icon: AppAssets.infoIcon,
+                                    title: 'About',
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _showMessage(
+                                        context,
+                                        'About - Coming Soon',
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Padding(

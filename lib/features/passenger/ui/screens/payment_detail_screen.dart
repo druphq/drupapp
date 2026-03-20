@@ -1,6 +1,7 @@
 import 'package:drup/core/widgets/custom_button.dart';
 import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/extension.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class PaymentDetailScreen extends ConsumerStatefulWidget {
   const PaymentDetailScreen({super.key, required this.paymentInfo});
@@ -104,7 +106,9 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
           // ── View Receipt button ────────────────────────────────────────
           CustomButton(
             text: 'View Receipt',
-            onPressed: () {},
+            onPressed: () {
+              context.push(AppRoutes.paymentReceiptRoute, extra: payment);
+            },
             backgroundColor: AppColors.accent,
             textStyle: TextStyles.btnStyle.copyWith(
               color: Colors.white,

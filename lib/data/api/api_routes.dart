@@ -120,4 +120,14 @@ class ApiRoutes {
       '/rides/$rideId/passengers/$passengerId/arriving-dropoff';
   static String passengerDroppedOff(String rideId, String passengerId) =>
       '/rides/$rideId/passengers/$passengerId/dropped-off';
+
+  // ============== DRIVER EARNINGS ==============
+  static const String driverEarnings = '/drivers/earnings';
+
+  // ============== DRIVER BANK ACCOUNT ==============
+  static const String driverBankAccount = '/drivers/bank-account';
+
+  // ============== BANK LIST & VERIFICATION ==============
+  static const String bankList = '/payments/banks';
+  static const String verifyBankAccount = '/payments/verify-bank';
 }

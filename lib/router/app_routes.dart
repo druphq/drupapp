@@ -9,6 +9,14 @@ import 'package:drup/features/drivers/ui/screens/driver_home_screen.dart';
 import 'package:drup/features/drivers/ui/screens/verify_driver_screen.dart';
 import 'package:drup/features/drivers/ui/screens/apply_driver_screen.dart';
 import 'package:drup/features/drivers/ui/screens/driver_account_screen.dart';
+import 'package:drup/features/drivers/ui/screens/vehicle_info_screen.dart';
+import 'package:drup/features/drivers/ui/screens/documents_screen.dart';
+import 'package:drup/features/drivers/ui/screens/bank_detail_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_ride_history_screen.dart';
+import 'package:drup/features/drivers/ui/screens/driver_ride_detail_screen.dart';
+import 'package:drup/features/drivers/ui/screens/ride_request_screen.dart'
+    as driver_requests;
+import 'package:drup/features/drivers/ui/screens/ride_request_detail_screen.dart';
 import 'package:drup/features/passenger/ui/screens/home_screen.dart';
 import 'package:drup/features/passenger/ui/screens/pick_ride_location_screen.dart';
 import 'package:drup/features/auth/ui/login_screen.dart';
@@ -38,6 +46,7 @@ import 'package:drup/features/passenger/model/ride_api_models.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drup/features/auth/model/auth.dart';
 import 'package:drup/features/passenger/ui/screens/payment_detail_screen.dart';
+import 'package:drup/features/passenger/ui/screens/payment_receipt_screen.dart';
 
 class AppRoutes {
   // Routes
@@ -74,6 +83,14 @@ class AppRoutes {
   static const String deliveryDetailsRoute = '/delivery-details';
   static const String paymentDetailRoute = '/payment-detail';
   static const String paymentWebViewRoute = '/payment-webview';
+  static const String vehicleInfoRoute = '/vehicle-info';
+  static const String documentsRoute = '/documents';
+  static const String bankDetailRoute = '/bank-detail';
+  static const String paymentReceiptRoute = '/payment-receipt';
+  static const String driverRideHistoryRoute = '/driver-ride-history';
+  static const String driverRideDetailRoute = '/driver-ride-detail';
+  static const String driverRideRequestsRoute = '/driver-ride-requests';
+  static const String rideRequestDetailRoute = '/ride-request-detail';
 }
 
 class AppScreens {
@@ -424,6 +441,18 @@ class AppScreens {
     },
   );
 
+  static final paymentReceiptRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.paymentReceiptRoute,
+    pageBuilder: (context, state) {
+      final payment = state.extra as PaymentHistoryItem;
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: PaymentReceiptScreen(payment: payment),
+      );
+    },
+  );
+
   static final paymentWebViewRoute = GoRoute(
     parentNavigatorKey: rootNavigator,
     path: AppRoutes.paymentWebViewRoute,
@@ -437,6 +466,75 @@ class AppScreens {
           authorizationUrl: authorizationUrl,
           onPaymentComplete: onPaymentComplete,
         ),
+      );
+    },
+  );
+
+  static final vehicleInfoRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.vehicleInfoRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const VehicleInfoScreen(),
+    ),
+  );
+
+  static final documentsRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.documentsRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const DocumentsScreen(),
+    ),
+  );
+
+  static final bankDetailRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.bankDetailRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const BankDetailScreen(),
+    ),
+  );
+
+  static final driverRideHistoryRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.driverRideHistoryRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const DriverRideHistoryScreen(),
+    ),
+  );
+
+  static final driverRideDetailRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.driverRideDetailRoute,
+    pageBuilder: (context, state) {
+      final ride = state.extra as Map<String, dynamic>;
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: DriverRideDetailScreen(ride: ride),
+      );
+    },
+  );
+
+  static final driverRideRequestsRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.driverRideRequestsRoute,
+    pageBuilder: (context, state) => slideRightTransitionPage(
+      key: state.pageKey,
+      child: const driver_requests.RideRequestScreen(),
+    ),
+  );
+
+  static final rideRequestDetailRoute = GoRoute(
+    parentNavigatorKey: rootNavigator,
+    path: AppRoutes.rideRequestDetailRoute,
+    pageBuilder: (context, state) {
+      final ride = state.extra as Map<String, dynamic>;
+      return slideRightTransitionPage(
+        key: state.pageKey,
+        child: RideRequestDetailScreen(ride: ride),
       );
     },
   );
