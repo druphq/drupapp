@@ -147,23 +147,6 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
             ),
           ),
           const Gap(8),
-          // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-            decoration: BoxDecoration(
-              color: statusBgClr,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              statusLabel,
-              style: TextStyles.t2.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: statusClr,
-              ),
-            ),
-          ),
-          const Gap(8),
           // Date
           Text(
             formatDateTime(payment.createdAt),

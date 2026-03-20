@@ -469,34 +469,34 @@ class _DeliveryDetailsScreenState extends ConsumerState<DeliveryDetailsScreen> {
       child: Column(
         children: [
           _infoRow(Icons.inventory_2_outlined, 'Description', p.description),
-          if (p.size != null && p.size!.isNotEmpty) ...[
-            const Gap(10),
-            _infoRow(
-              Icons.straighten_outlined,
-              'Size',
-              p.size!.capitalizeFirstChar(),
-            ),
-          ],
-          if (p.weight != null) ...[
-            const Gap(10),
-            _infoRow(
-              Icons.fitness_center_outlined,
-              'Weight',
-              '${p.weight!.toStringAsFixed(1)} kg',
-            ),
-          ],
-          if (p.quantity != null) ...[
-            const Gap(10),
-            _infoRow(Icons.numbers_outlined, 'Quantity', '${p.quantity}'),
-          ],
-          if (p.fragile) ...[
-            const Gap(10),
-            _infoRow(Icons.warning_amber_rounded, 'Fragile', 'Yes'),
-          ],
-          if (delivery.userNotes != null && delivery.userNotes!.isNotEmpty) ...[
-            const Gap(10),
-            _infoRow(Icons.comment_outlined, 'Comment', delivery.userNotes!),
-          ],
+          // if (p.size != null && p.size!.isNotEmpty) ...[
+          //   const Gap(10),
+          //   _infoRow(
+          //     Icons.straighten_outlined,
+          //     'Size',
+          //     p.size!.capitalizeFirstChar(),
+          //   ),
+          // ],
+          // if (p.weight != null) ...[
+          //   const Gap(10),
+          //   _infoRow(
+          //     Icons.fitness_center_outlined,
+          //     'Weight',
+          //     '${p.weight!.toStringAsFixed(1)} kg',
+          //   ),
+          // ],
+          // if (p.quantity != null) ...[
+          //   const Gap(10),
+          //   _infoRow(Icons.numbers_outlined, 'Quantity', '${p.quantity}'),
+          // ],
+          // if (p.fragile) ...[
+          //   const Gap(10),
+          //   _infoRow(Icons.warning_amber_rounded, 'Fragile', 'Yes'),
+          // ],
+          // if (delivery.userNotes != null && delivery.userNotes!.isNotEmpty) ...[
+          //   const Gap(10),
+          //   _infoRow(Icons.comment_outlined, 'Comment', delivery.userNotes!),
+          // ],
         ],
       ),
     );
@@ -545,25 +545,19 @@ class _DeliveryDetailsScreenState extends ConsumerState<DeliveryDetailsScreen> {
           ),
           const Gap(8),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                _isExpired
-                    ? Icons.error_outline
-                    : _isPending
-                    ? Icons.schedule
-                    : Icons.check_circle_outline,
-                size: 16,
-                color: _isExpired
-                    ? AppColors.red400
-                    : _isPending
-                    ? AppColors.orange400
-                    : AppColors.green400,
+              Text(
+                'Payment Status:',
+                style: TextStyles.t2.copyWith(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
               ),
-              const Gap(4),
               Text(
                 _isExpired
-                    ? 'Payment Expired'
-                    : 'Payment: ${delivery.paymentStatus.capitalizeFirstChar()}',
+                    ? 'Expired'
+                    : delivery.paymentStatus.capitalizeFirstChar(),
                 style: TextStyles.t2.copyWith(
                   fontSize: 13,
                   color: _isExpired
@@ -571,14 +565,6 @@ class _DeliveryDetailsScreenState extends ConsumerState<DeliveryDetailsScreen> {
                       : _isPending
                       ? AppColors.orange400
                       : AppColors.green400,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                delivery.paymentMethod.capitalizeFirstChar(),
-                style: TextStyles.t2.copyWith(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
                 ),
               ),
             ],

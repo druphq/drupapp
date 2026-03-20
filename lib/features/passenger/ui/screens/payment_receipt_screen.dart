@@ -101,23 +101,6 @@ class PaymentReceiptScreen extends StatelessWidget {
           icon: const Icon(Icons.close, color: AppColors.onAccent),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.picture_as_pdf_rounded,
-              color: AppColors.onAccent,
-            ),
-            tooltip: 'Save as PDF',
-            onPressed: () => _savePdf(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: AppColors.onAccent),
-            tooltip: 'Share receipt',
-            onPressed: () {
-              _shareReceipt(context);
-            },
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -264,12 +247,7 @@ class PaymentReceiptScreen extends StatelessWidget {
                       _detailRow(
                         'Payment Type',
                         _formatType(payment.paymentType),
-                      ),
-                      const Gap(10),
-                      _detailRow(
-                        'Payment Method',
-                        payment.paymentMethod.capitalizeFirstChar(),
-                      ),
+                      ),                     
                       const Gap(10),
                       _detailRow('Currency', payment.currency.toUpperCase()),
                       const Gap(10),
@@ -756,13 +734,6 @@ class PaymentReceiptScreen extends StatelessWidget {
                     _pdfDetailRow(
                       'Payment Type',
                       _formatType(payment.paymentType),
-                      grey,
-                      black,
-                    ),
-                    pw.SizedBox(height: 6),
-                    _pdfDetailRow(
-                      'Payment Method',
-                      payment.paymentMethod.capitalizeFirstChar(),
                       grey,
                       black,
                     ),
