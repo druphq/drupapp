@@ -1,7 +1,141 @@
 import '../../passenger/model/location_model.dart';
 import 'vehicle.dart';
 
-/// Driver rating info from API
+// =============================================================================
+// DRIVER DOCUMENT MODEL
+// =============================================================================
+
+/// Represents a single document returned by GET /drivers/documents.
+class DriverDocument {
+  final String type;
+  final String name;
+  final String? description;
+  final bool required;
+  final bool hasExpiry;
+  final bool uploaded;
+  final String? status; // null | 'pending' | 'approved' | 'rejected'
+  final String? url;
+  final DateTime? expiryDate;
+  final String? rejectionReason;
+  final DateTime? uploadedAt;
+
+  const DriverDocument({
+    required this.type,
+    required this.name,
+    this.description,
+    this.required = false,
+    this.hasExpiry = false,
+    this.uploaded = false,
+    this.status,
+    this.url,
+    this.expiryDate,
+    this.rejectionReason,
+    this.uploadedAt,
+  });
+
+  factory DriverDocument.fromJson(Map<String, dynamic> json) {
+    return DriverDocument(
+      type: json['type'] as String,
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String?,
+      required: json['required'] as bool? ?? false,
+      hasExpiry: json['hasExpiry'] as bool? ?? false,
+      uploaded: json['uploaded'] as bool? ?? false,
+      status: json['status'] as String?,
+      url: json['url'] as String?,
+      expiryDate: json['expiryDate'] != null
+          ? DateTime.tryParse(json['expiryDate'] as String)
+          : null,
+      rejectionReason: json['rejectionReason'] as String?,
+      uploadedAt: json['uploadedAt'] != null
+          ? DateTime.tryParse(json['uploadedAt'] as String)
+          : null,
+    );
+  }
+
+  /// Whether this document can be (re-)uploaded.
+  bool get canUpload => !uploaded || status == 'rejected' || status == null;
+
+  /// Whether the review is still in progress.
+  bool get isPending => status == 'pending';
+
+  /// Whether the document was approved.
+  bool get isApproved => status == 'approved';
+
+  /// Whether the document was rejected (user should re-upload).
+  bool get isRejected => status == 'rejected';
+
+  DriverDocument copyWith({
+    String? type,
+    String? name,
+    String? description,
+    bool? required,
+    bool? hasExpiry,
+    bool? uploaded,
+    String? status,
+    String? url,
+    DateTime? expiryDate,
+    String? rejectionReason,
+    DateTime? uploadedAt,
+  }) {
+    return DriverDocument(
+      type: type ?? this.type,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      required: required ?? this.required,
+      hasExpiry: hasExpiry ?? this.hasExpiry,
+      uploaded: uploaded ?? this.uploaded,
+      status: status ?? this.status,
+      url: url ?? this.url,
+      expiryDate: expiryDate ?? this.expiryDate,
+      rejectionReason: rejectionReason ?? this.rejectionReason,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
+    );
+  }
+}
+
+// =============================================================================
+// DRIVER APPLICATION STATUS
+// =============================================================================
+
+/// Status values returned by GET /users/driver-status.
+enum DriverApplicationStatus {
+  pending('pending'),
+  underReview('under_review'),
+  approved('approved'),
+  rejected('rejected'),
+  expired('expired'),
+  pendingVerification('pending_verification'),
+  suspended('suspended'),
+  deactivated('deactivated'),
+  banned('banned');
+
+  final String value;
+  const DriverApplicationStatus(this.value);
+
+  /// Parse a raw API string into an enum value, returns `null` for unknown.
+  static DriverApplicationStatus? fromString(String? raw) {
+    if (raw == null) return null;
+    return DriverApplicationStatus.values
+        .cast<DriverApplicationStatus?>()
+        .firstWhere((e) => e!.value == raw, orElse: () => null);
+  }
+
+  /// Whether this status means the driver has an active application.
+  bool get hasApplication =>
+      this != DriverApplicationStatus.rejected &&
+      this != DriverApplicationStatus.expired;
+
+  /// Whether the driver can switch to driver mode (not blocked).
+  bool get canSwitchToDriver =>
+      this != DriverApplicationStatus.suspended &&
+      this != DriverApplicationStatus.deactivated &&
+      this != DriverApplicationStatus.banned;
+}
+
+// =============================================================================
+// DRIVER RATING
+// =============================================================================
 class DriverRating {
   final double average;
   final int count;

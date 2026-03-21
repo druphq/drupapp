@@ -48,6 +48,9 @@ class DriverState {
   /// Verification status snapshot
   final Map<String, dynamic>? verificationStatus;
 
+  /// Documents returned by GET /drivers/documents
+  final List<DriverDocument> documents;
+
   final bool isLoading;
   final String? errorMessage;
 
@@ -64,6 +67,7 @@ class DriverState {
     this.bankList = const [],
     this.applicationStatus,
     this.verificationStatus,
+    this.documents = const [],
     this.isLoading = false,
     this.errorMessage,
   });
@@ -86,6 +90,7 @@ class DriverState {
     List<dynamic>? bankList,
     Map<String, dynamic>? applicationStatus,
     Map<String, dynamic>? verificationStatus,
+    List<DriverDocument>? documents,
     bool? isLoading,
     String? errorMessage,
   }) {
@@ -102,6 +107,7 @@ class DriverState {
       bankList: bankList ?? this.bankList,
       applicationStatus: applicationStatus ?? this.applicationStatus,
       verificationStatus: verificationStatus ?? this.verificationStatus,
+      documents: documents ?? this.documents,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -434,13 +440,13 @@ class DriverNotifier extends StateNotifier<DriverState> {
   // 4. DOCUMENT MANAGEMENT
   // ===========================================================================
 
-  /// Upload a new document
+  /// Upload a single document immediately, then refresh the list.
   Future<bool> uploadDocument({
     required File documentFile,
     required String type,
     String? expiryDate,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(errorMessage: null);
     try {
       final repo = ref.read(driverRepositoryProvider);
       final response = await repo.uploadDocument(
@@ -450,33 +456,35 @@ class DriverNotifier extends StateNotifier<DriverState> {
       );
 
       if (response.success) {
-        // Refresh driver profile to get updated document list
-        await loadDriverProfile();
+        // Refresh the documents list so status is up-to-date
+        await fetchDocuments();
         return true;
       }
       state = state.copyWith(
         errorMessage: response.message ?? 'Failed to upload document',
-        isLoading: false,
       );
       return false;
     } catch (e) {
-      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
-  /// Get all documents (returns full response with documents, requiredDocuments, etc.)
-  Future<Map<String, dynamic>?> fetchDocuments() async {
+  /// Fetch documents from GET /drivers/documents and store typed list in state.
+  Future<void> fetchDocuments() async {
     try {
       final repo = ref.read(driverRepositoryProvider);
       final response = await repo.getDocuments();
 
       if (response.success && response.data != null) {
-        return response.data;
+        final rawDocs = response.data!['documents'] as List<dynamic>? ?? [];
+        final docs = rawDocs
+            .map((e) => DriverDocument.fromJson(e as Map<String, dynamic>))
+            .toList();
+        state = state.copyWith(documents: docs);
       }
-      return null;
     } catch (_) {
-      return null;
+      // Non-fatal — the UI can still show empty list
     }
   }
 

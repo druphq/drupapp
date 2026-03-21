@@ -1,6 +1,7 @@
 import 'package:drup/core/animation/drup_animation.dart';
 import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
+import 'package:drup/features/drivers/model/driver.dart';
 import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
@@ -28,8 +29,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
-    await Future.delayed(const Duration(seconds: 4));
-
     if (!mounted) return;
 
     final currentUser = ref.read(currentUserProvider);
@@ -37,69 +36,82 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final userRepo = ref.read(userRepositoryProvider);
     final userMode = await userRepo.getUserMode();
 
-    // Check if user is logged in
-    if (isLoggedIn && currentUser != null) {
-      // Initialize user data
-      await ref.read(userNotifierProvider.notifier).loadUserProfile();
+    // Not logged in → login screen
+    if (!isLoggedIn || currentUser == null) {
+      if (mounted) context.go(AppRoutes.loginRoute);
+      return;
+    }
 
-      // Re-read user after loadUserProfile to get updated data
-      final updatedUser = ref.read(currentUserProvider);
+    // Load user profile
+    await ref.read(userNotifierProvider.notifier).loadUserProfile();
+    if (!mounted) return;
 
-      // Navigate to appropriate screen
-      if (mounted) {
-        // Check for incomplete profile first
-        if (updatedUser?.isEmailVerified == false ||
-            updatedUser?.isPhoneVerified == false) {
-          context.go(AppRoutes.completeProfileRoute);
-          return;
-        }
+    // Check for incomplete profile
+    final updatedUser = ref.read(currentUserProvider);
+    if (updatedUser?.isEmailVerified == false ||
+        updatedUser?.isPhoneVerified == false) {
+      context.go(AppRoutes.completeProfileRoute);
+      return;
+    }
 
-        // Handle driver mode navigation
-        if (userMode == AppStrings.driverMode) {
-          await _handleDriverNavigation();
-        } else {
-          // Passenger mode
-          context.go(AppRoutes.homeRoute);
-        }
-      }
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    // Fetch driver application status
+    await driverNotifier.fetchApplicationStatus();
+    final appStatus = ref.read(driverNotifierProvider).applicationStatus;
+    final rawStatus = appStatus?['status'] as String?;
+    final status = DriverApplicationStatus.fromString(rawStatus);
+
+    // Route based on stored user mode
+    if (userMode == AppStrings.driverMode) {
+      await _handleDriverNavigation(status);
     } else {
-      // Navigate to login
-      if (mounted) {
-        context.go(AppRoutes.loginRoute);
-      }
+      await _handlePassengerNavigation(status);
     }
   }
 
-  Future<void> _handleDriverNavigation() async {
-    final userRepo = ref.read(userRepositoryProvider);
-    // Check if driver onboarding has been shown
-    final hasSeenOnboarding = await userRepo.getDriverOnboardingShown();
+  /// Passenger flow: switch role to 'user' and navigate home.
+  Future<void> _handlePassengerNavigation(
+    DriverApplicationStatus? status,
+  ) async {
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
-    final isDriver = ref.read(isDriverProvider);
+    if (status != null) {
+      await driverNotifier.switchRole(AppStrings.passengerRole);
+    }
+    if (mounted) context.go(AppRoutes.homeRoute);
+  }
 
-    if (!mounted) {
+  Future<void> _handleDriverNavigation(DriverApplicationStatus? status) async {
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    final userRepo = ref.read(userRepositoryProvider);
+
+    if (!mounted) return;
+
+    if (status == null) {
+      final hasSeenOnboarding = await userRepo.getDriverOnboardingShown();
+      if (!mounted) return;
+      context.go(
+        hasSeenOnboarding
+            ? AppRoutes.verifyDriverRoute
+            : AppRoutes.driverOnboardRoute,
+      );
       return;
     }
 
-    if (isDriver) {
-      final canProceed = await driverNotifier.switchRole(AppStrings.driverRole);
-      if (canProceed && mounted) {
-        if (hasSeenOnboarding) {
-          context.go(AppRoutes.driverHomeRoute);
-        } else {
-          context.go(AppRoutes.driverOnboardRoute);
-        }
-        return;
-      }
-    }
+    // Has an application — switch to driver mode
+    final switched = await driverNotifier.switchRole(AppStrings.driverRole);
+    if (!mounted) return;
 
-    if (!hasSeenOnboarding && mounted) {
-      // first time driver mode, show onboarding
-      context.go(AppRoutes.driverOnboardRoute);
-      return;
+    if (switched) {
+      context.go(AppRoutes.driverHomeRoute);
+    } else {
+      // Switch failed (suspended/banned) — fall back to passenger
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your driver account is currently suspended.'),
+        ),
+      );
+      context.go(AppRoutes.homeRoute);
     }
-
-    if (mounted) context.go(AppRoutes.driverHomeRoute);
   }
 
   @override

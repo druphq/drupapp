@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/features/drivers/model/driver.dart';
 import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -40,27 +41,8 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  /// Tracks picked files per document type
-  final Map<String, File> _pickedDocuments = {};
-
-  static const _documentTypes = [
-    ('profile_photo', 'Profile Photo', Icons.person),
-    ('drivers_license', "Driver's License", Icons.badge),
-    ('national_id', 'National ID', Icons.credit_card),
-    ('vehicle_registration', 'Vehicle Registration', Icons.description),
-    (
-      'vehicle_photo_external',
-      'Vehicle Photo (External)',
-      Icons.directions_car,
-    ),
-    (
-      'vehicle_photo_internal',
-      'Vehicle Photo (Internal)',
-      Icons.airline_seat_recline_normal,
-    ),
-    ('insurance', 'Insurance', Icons.shield),
-    ('vehicle_inspection', 'Vehicle Inspection', Icons.fact_check),
-  ];
+  /// Tracks which document types are currently being uploaded.
+  final Map<String, bool> _uploadingDocs = {};
 
   static const _vehicleTypes = [
     ('sedan', 'Sedan'),
@@ -73,7 +55,10 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _prefillFromProfile());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prefillFromProfile();
+      ref.read(driverNotifierProvider.notifier).fetchDocuments();
+    });
   }
 
   /// Prefill form fields from cached driver profile (if reapplying / editing).
@@ -187,16 +172,6 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
     setState(() => _isSubmitting = false);
 
     if (success) {
-      // Upload any picked documents after successful application
-      if (_pickedDocuments.isNotEmpty) {
-        final notifier = ref.read(driverNotifierProvider.notifier);
-        for (final entry in _pickedDocuments.entries) {
-          await notifier.uploadDocument(
-            documentFile: entry.value,
-            type: entry.key,
-          );
-        }
-      }
       // Pop back to verify screen which will refresh and show pending status
       if (mounted) context.pop(true);
       return;
@@ -402,22 +377,40 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
                   ),
                 ),
                 const Gap(12),
-                ...List.generate(_documentTypes.length, (i) {
-                  final (type, label, icon) = _documentTypes[i];
-                  final picked = _pickedDocuments[type];
-                  return Column(
-                    children: [
-                      if (i > 0)
-                        const Divider(height: 1, color: AppColors.divider),
-                      _buildDocumentPickTile(
-                        type: type,
-                        label: label,
-                        icon: icon,
-                        pickedFile: picked,
-                      ),
-                    ],
-                  );
-                }),
+                Builder(
+                  builder: (_) {
+                    final docs = ref.watch(driverNotifierProvider).documents;
+                    if (docs.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Center(
+                          child: Text(
+                            'Loading documents…',
+                            style: TextStyles.t2.copyWith(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    return Column(
+                      children: List.generate(docs.length, (i) {
+                        final doc = docs[i];
+                        return Column(
+                          children: [
+                            if (i > 0)
+                              const Divider(
+                                height: 1,
+                                color: AppColors.divider,
+                              ),
+                            _buildDocumentPickTile(doc: doc),
+                          ],
+                        );
+                      }),
+                    );
+                  },
+                ),
               ],
             ),
 
@@ -533,81 +526,171 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
 
   // ── Document Pick Tile ──
 
-  Widget _buildDocumentPickTile({
-    required String type,
-    required String label,
-    required IconData icon,
-    File? pickedFile,
-  }) {
-    final hasPicked = pickedFile != null;
+  /// Icon for a document type.
+  IconData _docIcon(String type) {
+    switch (type) {
+      case 'profile_photo':
+        return Icons.person;
+      case 'drivers_license':
+        return Icons.badge;
+      case 'national_id':
+        return Icons.credit_card;
+      case 'vehicle_registration':
+        return Icons.description;
+      case 'vehicle_photo_external':
+        return Icons.directions_car;
+      case 'vehicle_photo_internal':
+        return Icons.airline_seat_recline_normal;
+      case 'insurance':
+        return Icons.shield;
+      case 'vehicle_inspection':
+        return Icons.fact_check;
+      default:
+        return Icons.insert_drive_file;
+    }
+  }
+
+  /// Status badge colors.
+  Color _statusColor(DriverDocument doc) {
+    if (doc.isApproved) return AppColors.success;
+    if (doc.isPending) return AppColors.warning;
+    if (doc.isRejected) return AppColors.error;
+    return AppColors.textSecondary;
+  }
+
+  String _statusLabel(DriverDocument doc) {
+    if (doc.isApproved) return 'Approved';
+    if (doc.isPending) return 'Pending';
+    if (doc.isRejected) return 'Rejected';
+    return 'Not uploaded';
+  }
+
+  Widget _buildDocumentPickTile({required DriverDocument doc}) {
+    final isUploading = _uploadingDocs[doc.type] ?? false;
+    final icon = _docIcon(doc.type);
+
+    // Determine leading icon appearance
+    final Color iconBgColor;
+    final Color iconFgColor;
+    final IconData leadingIcon;
+
+    if (doc.isApproved) {
+      iconBgColor = AppColors.success.withValues(alpha: 0.1);
+      iconFgColor = AppColors.success;
+      leadingIcon = Icons.check_circle;
+    } else if (doc.isPending) {
+      iconBgColor = AppColors.warning.withValues(alpha: 0.1);
+      iconFgColor = AppColors.warning;
+      leadingIcon = Icons.hourglass_top;
+    } else if (doc.isRejected) {
+      iconBgColor = AppColors.error.withValues(alpha: 0.1);
+      iconFgColor = AppColors.error;
+      leadingIcon = Icons.error_outline;
+    } else {
+      iconBgColor = AppColors.accent.withValues(alpha: 0.1);
+      iconFgColor = AppColors.accent;
+      leadingIcon = icon;
+    }
 
     return InkWell(
-      onTap: () => _pickDocumentImage(type),
+      onTap: (doc.canUpload && !isUploading)
+          ? () => _pickAndUpload(doc.type)
+          : null,
       borderRadius: BorderRadius.circular(Corners.c8),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: [
+            // Leading icon
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (hasPicked ? AppColors.success : AppColors.accent)
-                    .withValues(alpha: 0.1),
+                color: iconBgColor,
                 borderRadius: BorderRadius.circular(Corners.c8),
               ),
-              child: Icon(
-                hasPicked ? Icons.check_circle : icon,
-                color: hasPicked ? AppColors.success : AppColors.accent,
-                size: 20,
-              ),
+              child: Icon(leadingIcon, color: iconFgColor, size: 20),
             ),
             const Gap(14),
+
+            // Text area
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyles.t1.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          doc.name,
+                          style: TextStyles.t1.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (doc.required) ...[
+                        const Gap(4),
+                        Text(
+                          '*',
+                          style: TextStyles.t1.copyWith(
+                            fontSize: 14,
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const Gap(2),
-                  Text(
-                    hasPicked
-                        ? pickedFile.path.split('/').last
-                        : 'Tap to select',
-                    style: TextStyles.t2.copyWith(
-                      fontSize: 12,
-                      color: hasPicked
-                          ? AppColors.success
-                          : AppColors.textSecondary,
+                  // Subtitle: status or description
+                  if (doc.isRejected && doc.rejectionReason != null)
+                    Text(
+                      doc.rejectionReason!,
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: AppColors.error,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  else
+                    Text(
+                      _statusLabel(doc),
+                      style: TextStyles.t2.copyWith(
+                        fontSize: 12,
+                        color: _statusColor(doc),
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
               ),
             ),
-            Icon(
-              hasPicked ? Icons.close : Icons.cloud_upload_outlined,
-              color: hasPicked ? AppColors.textSecondary : AppColors.accent,
-              size: 20,
-            ),
+
+            // Trailing action
+            if (isUploading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.accent,
+                ),
+              )
+            else if (doc.canUpload)
+              Icon(
+                doc.isRejected ? Icons.refresh : Icons.cloud_upload_outlined,
+                color: doc.isRejected ? AppColors.error : AppColors.accent,
+                size: 20,
+              )
+            else
+              Icon(Icons.check_circle, color: _statusColor(doc), size: 20),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _pickDocumentImage(String type) async {
-    // If already picked, tapping removes it
-    if (_pickedDocuments.containsKey(type)) {
-      setState(() => _pickedDocuments.remove(type));
-      return;
-    }
-
+  /// Pick an image and immediately upload it for the given [type].
+  Future<void> _pickAndUpload(String type) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -670,6 +753,25 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
     );
     if (picked == null) return;
 
-    setState(() => _pickedDocuments[type] = File(picked.path));
+    // Mark uploading
+    setState(() => _uploadingDocs[type] = true);
+
+    final success = await ref
+        .read(driverNotifierProvider.notifier)
+        .uploadDocument(documentFile: File(picked.path), type: type);
+
+    if (mounted) {
+      setState(() => _uploadingDocs[type] = false);
+
+      if (!success) {
+        final error = ref.read(driverNotifierProvider).errorMessage;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Failed to upload document'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }

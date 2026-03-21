@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:drup/features/drivers/model/driver.dart';
 import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -18,22 +19,9 @@ class DocumentsScreen extends ConsumerStatefulWidget {
 
 class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   bool _isLoading = true;
-  Map<String, dynamic>? _documentsData;
   String? _uploadingType;
 
   final ImagePicker _picker = ImagePicker();
-
-  /// All document types the API expects
-  static const List<Map<String, String>> _documentTypes = [
-    {'type': 'profile_photo', 'label': 'Profile Photo'},
-    {'type': 'drivers_license', 'label': "Driver's License"},
-    {'type': 'national_id', 'label': 'National ID'},
-    {'type': 'vehicle_registration', 'label': 'Vehicle Registration'},
-    {'type': 'vehicle_photo_external', 'label': 'Vehicle Photo (External)'},
-    {'type': 'vehicle_photo_internal', 'label': 'Vehicle Photo (Internal)'},
-    {'type': 'insurance', 'label': 'Insurance'},
-    {'type': 'vehicle_inspection', 'label': 'Vehicle Inspection'},
-  ];
 
   @override
   void initState() {
@@ -43,12 +31,8 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
 
   Future<void> _loadDocuments() async {
     setState(() => _isLoading = true);
-    final data =
-        await ref.read(driverNotifierProvider.notifier).fetchDocuments();
-    setState(() {
-      _documentsData = data;
-      _isLoading = false;
-    });
+    await ref.read(driverNotifierProvider.notifier).fetchDocuments();
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _uploadDocument(String type, String label) async {
@@ -76,7 +60,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
             success
                 ? '$label uploaded successfully!'
                 : ref.read(driverNotifierProvider).errorMessage ??
-                    'Failed to upload $label',
+                      'Failed to upload $label',
           ),
           backgroundColor: success ? AppColors.success : AppColors.warning,
         ),
@@ -117,13 +101,22 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               ),
               const Gap(16),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: AppColors.accent),
-                title: Text('Gallery', style: TextStyles.t1.copyWith(fontSize: 16)),
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: AppColors.accent,
+                ),
+                title: Text(
+                  'Gallery',
+                  style: TextStyles.t1.copyWith(fontSize: 16),
+                ),
                 onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: AppColors.accent),
-                title: Text('Camera', style: TextStyles.t1.copyWith(fontSize: 16)),
+                title: Text(
+                  'Camera',
+                  style: TextStyles.t1.copyWith(fontSize: 16),
+                ),
                 onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
             ],
@@ -173,12 +166,25 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   }
 
   Widget _buildSummaryCard() {
-    final uploadedCount = _documentsData?['uploadedCount'] as int? ?? 0;
-    final requiredCount = _documentsData?['requiredCount'] as int? ?? 0;
-    final verificationStatus =
-        _documentsData?['verificationStatus'] as String? ?? 'incomplete';
-    final missingDocs =
-        (_documentsData?['missingDocuments'] as List<dynamic>?) ?? [];
+    final docs = ref.watch(driverNotifierProvider).documents;
+    final requiredDocs = docs.where((d) => d.required).toList();
+    final uploadedCount = docs.where((d) => d.uploaded).length;
+    final requiredCount = requiredDocs.length;
+    final allApproved = requiredDocs.every((d) => d.isApproved);
+    final anyRejected = docs.any((d) => d.isRejected);
+    final anyPending = docs.any((d) => d.isPending);
+    final missingDocs = requiredDocs.where((d) => !d.uploaded).toList();
+
+    final String verificationStatus;
+    if (allApproved && requiredDocs.isNotEmpty) {
+      verificationStatus = 'verified';
+    } else if (anyRejected) {
+      verificationStatus = 'rejected';
+    } else if (anyPending) {
+      verificationStatus = 'pending_review';
+    } else {
+      verificationStatus = 'incomplete';
+    }
 
     final Color statusColor;
     final String statusLabel;
@@ -284,13 +290,13 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
           ),
 
           // Missing documents
-          if (missingDocs.isNotEmpty) ...[
+          if (requiredCount > 0 && missingDocs.isNotEmpty) ...[
             const Gap(12),
             Wrap(
               spacing: 6,
               runSpacing: 6,
               children: missingDocs.map((doc) {
-                final label = _formatDocType(doc.toString());
+                final label = doc.name;
                 return Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -320,17 +326,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   }
 
   Widget _buildDocumentsList() {
-    final uploadedDocs =
-        (_documentsData?['documents'] as List<dynamic>?) ?? [];
-
-    // Build a map of uploaded documents by type for quick lookup
-    final Map<String, Map<String, dynamic>> uploadedMap = {};
-    for (final doc in uploadedDocs) {
-      if (doc is Map<String, dynamic>) {
-        final type = doc['type'] as String?;
-        if (type != null) uploadedMap[type] = doc;
-      }
-    }
+    final docs = ref.watch(driverNotifierProvider).documents;
 
     return Container(
       width: double.infinity,
@@ -351,78 +347,66 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               ),
             ),
           ),
-          ...List.generate(_documentTypes.length, (index) {
-            final docInfo = _documentTypes[index];
-            final type = docInfo['type']!;
-            final label = docInfo['label']!;
-            final uploaded = uploadedMap[type];
-
-            return Column(
-              children: [
-                if (index > 0) const Divider(height: 1, indent: 20, endIndent: 20),
-                _buildDocumentTile(
-                  type: type,
-                  label: label,
-                  uploadedDoc: uploaded,
+          if (docs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No documents available',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ],
-            );
-          }),
+              ),
+            )
+          else
+            ...List.generate(docs.length, (index) {
+              return Column(
+                children: [
+                  if (index > 0)
+                    const Divider(height: 1, indent: 20, endIndent: 20),
+                  _buildDocumentTile(doc: docs[index]),
+                ],
+              );
+            }),
           const Gap(8),
         ],
       ),
     );
   }
 
-  Widget _buildDocumentTile({
-    required String type,
-    required String label,
-    Map<String, dynamic>? uploadedDoc,
-  }) {
-    final isUploading = _uploadingType == type;
-    final status = uploadedDoc?['status'] as String?;
-    final rejectionReason = uploadedDoc?['rejectionReason'] as String?;
+  Widget _buildDocumentTile({required DriverDocument doc}) {
+    final isUploading = _uploadingType == doc.type;
 
     final Color statusColor;
     final String statusText;
     final IconData statusIcon;
 
-    if (uploadedDoc == null) {
+    if (doc.isApproved) {
+      statusColor = AppColors.success;
+      statusText = 'Approved';
+      statusIcon = Icons.check_circle;
+    } else if (doc.isPending) {
+      statusColor = Colors.orange;
+      statusText = 'Pending';
+      statusIcon = Icons.hourglass_top;
+    } else if (doc.isRejected) {
+      statusColor = AppColors.error;
+      statusText = 'Rejected';
+      statusIcon = Icons.cancel;
+    } else if (!doc.uploaded) {
       statusColor = AppColors.textSecondary;
       statusText = 'Not Uploaded';
       statusIcon = Icons.cloud_upload_outlined;
     } else {
-      switch (status) {
-        case 'approved':
-          statusColor = AppColors.success;
-          statusText = 'Approved';
-          statusIcon = Icons.check_circle;
-          break;
-        case 'pending':
-        case 'under_review':
-          statusColor = Colors.orange;
-          statusText = status == 'under_review' ? 'Under Review' : 'Pending';
-          statusIcon = Icons.hourglass_top;
-          break;
-        case 'rejected':
-          statusColor = AppColors.warning;
-          statusText = 'Rejected';
-          statusIcon = Icons.cancel;
-          break;
-        case 'expired':
-          statusColor = AppColors.error;
-          statusText = 'Expired';
-          statusIcon = Icons.timer_off;
-          break;
-        default:
-          statusColor = AppColors.textSecondary;
-          statusText = 'Unknown';
-          statusIcon = Icons.help_outline;
-      }
+      statusColor = AppColors.textSecondary;
+      statusText = 'Uploaded';
+      statusIcon = Icons.insert_drive_file;
     }
 
     return InkWell(
-      onTap: isUploading ? null : () => _onDocumentTap(type, label, uploadedDoc),
+      onTap: isUploading ? null : () => _onDocumentTap(doc),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
@@ -435,7 +419,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                 borderRadius: BorderRadius.circular(Corners.c8),
               ),
               child: isUploading
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -452,12 +436,29 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyles.t1.copyWith(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          doc.name,
+                          style: TextStyles.t1.copyWith(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (doc.required) ...[
+                        const Gap(4),
+                        Text(
+                          '*',
+                          style: TextStyles.t1.copyWith(
+                            fontSize: 15,
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const Gap(2),
                   Text(
@@ -467,14 +468,16 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                       color: statusColor,
                     ),
                   ),
-                  if (status == 'rejected' && rejectionReason != null) ...[
+                  if (doc.isRejected && doc.rejectionReason != null) ...[
                     const Gap(4),
                     Text(
-                      'Reason: $rejectionReason',
+                      'Reason: ${doc.rejectionReason}',
                       style: TextStyles.t2.copyWith(
                         fontSize: 11,
-                        color: AppColors.warning,
+                        color: AppColors.error,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ],
@@ -484,9 +487,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
             // Action icon
             if (!isUploading)
               Icon(
-                uploadedDoc == null ||
-                        status == 'rejected' ||
-                        status == 'expired'
+                doc.canUpload
                     ? Icons.cloud_upload_outlined
                     : Icons.chevron_right,
                 color: AppColors.textSecondary,
@@ -498,30 +499,18 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
     );
   }
 
-  void _onDocumentTap(
-    String type,
-    String label,
-    Map<String, dynamic>? uploadedDoc,
-  ) {
-    final status = uploadedDoc?['status'] as String?;
-
-    // Allow upload if not uploaded, rejected, or expired
-    if (uploadedDoc == null || status == 'rejected' || status == 'expired') {
-      _uploadDocument(type, label);
+  void _onDocumentTap(DriverDocument doc) {
+    // Allow upload if not uploaded, rejected, or status null
+    if (doc.canUpload) {
+      _uploadDocument(doc.type, doc.name);
       return;
     }
 
     // Show details for uploaded documents
-    _showDocumentDetails(label, uploadedDoc);
+    _showDocumentDetails(doc);
   }
 
-  void _showDocumentDetails(String label, Map<String, dynamic> doc) {
-    final status = doc['status'] as String? ?? 'unknown';
-    final url = doc['url'] as String?;
-    final uploadedAt = doc['uploadedAt'] as String?;
-    final expiryDate = doc['expiryDate'] as String?;
-    final reviewedAt = doc['reviewedAt'] as String?;
-
+  void _showDocumentDetails(DriverDocument doc) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -546,7 +535,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               ),
               const Gap(16),
               Text(
-                label,
+                doc.name,
                 style: TextStyles.t1.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -554,11 +543,11 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               ),
               const Gap(16),
 
-              if (url != null) ...[
+              if (doc.url != null) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(Corners.c8),
                   child: Image.network(
-                    url,
+                    doc.url!,
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -566,8 +555,11 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                       height: 200,
                       color: AppColors.surface,
                       child: const Center(
-                        child: Icon(Icons.image_not_supported,
-                            color: AppColors.textSecondary, size: 48),
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.textSecondary,
+                          size: 48,
+                        ),
                       ),
                     ),
                   ),
@@ -575,25 +567,22 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                 const Gap(16),
               ],
 
-              _buildDetailRow('Status', _formatStatus(status)),
-              if (uploadedAt != null)
-                _buildDetailRow('Uploaded', _formatDate(uploadedAt)),
-              if (reviewedAt != null)
-                _buildDetailRow('Reviewed', _formatDate(reviewedAt)),
-              if (expiryDate != null)
-                _buildDetailRow('Expires', _formatDate(expiryDate)),
+              _buildDetailRow('Status', _formatStatus(doc.status ?? 'unknown')),
+              if (doc.uploadedAt != null)
+                _buildDetailRow('Uploaded', _formatDateTime(doc.uploadedAt!)),
+              if (doc.expiryDate != null)
+                _buildDetailRow('Expires', _formatDateTime(doc.expiryDate!)),
 
               const Gap(16),
 
               // Re-upload button for approved docs
-              if (status == 'approved')
+              if (doc.isApproved)
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(ctx);
-                      final type = doc['type'] as String? ?? '';
-                      _uploadDocument(type, label);
+                      _uploadDocument(doc.type, doc.name);
                     },
                     icon: const Icon(Icons.cloud_upload_outlined),
                     label: const Text('Re-upload'),
@@ -628,37 +617,23 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               color: AppColors.textSecondary,
             ),
           ),
-          Text(
-            value,
-            style: TextStyles.t1.copyWith(fontSize: 14),
-          ),
+          Text(value, style: TextStyles.t1.copyWith(fontSize: 14)),
         ],
       ),
     );
-  }
-
-  String _formatDocType(String type) {
-    return type
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-        .join(' ');
   }
 
   String _formatStatus(String status) {
     return status
         .replaceAll('_', ' ')
         .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
         .join(' ');
   }
 
-  String _formatDate(String isoDate) {
-    try {
-      final dt = DateTime.parse(isoDate);
-      return '${dt.day}/${dt.month}/${dt.year}';
-    } catch (_) {
-      return isoDate;
-    }
+  String _formatDateTime(DateTime dt) {
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

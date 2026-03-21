@@ -165,14 +165,13 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Gap(32),
-
+          //////////////
           Center(
             child: Container(
               width: 160,
               height: 160,
               decoration: BoxDecoration(
-                color: AppColors.accentLight.withOpacity(0.1),
+                color: AppColors.accentLight.withValues(alpha: .1),
                 shape: BoxShape.circle,
               ),
               child: Stack(
@@ -187,7 +186,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.accent.withOpacity(0.3),
+                          color: AppColors.accent.withValues(alpha: 0.3),
                           blurRadius: 14,
                           offset: const Offset(0, 7),
                         ),
@@ -200,7 +199,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -214,7 +213,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                           width: 44,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
@@ -223,7 +222,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                           width: 28,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -253,12 +252,12 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             ),
           ),
 
-          const Gap(40),
+          const Gap(20),
 
           Text(
             'Become a Drup Driver',
             style: TextStyles.h1.copyWith(
-              fontSize: 26,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
@@ -270,13 +269,13 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             'Earn money by driving with Drup. Submit your\napplication and start your journey today.',
             textAlign: TextAlign.center,
             style: TextStyles.t2.copyWith(
-              fontSize: 15,
+              fontSize: 13,
               color: AppColors.textSecondary,
               height: 1.5,
             ),
           ),
 
-          const Gap(30),
+          const Gap(20),
 
           // Benefits
           _benefitCard(
@@ -312,7 +311,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             },
           ),
 
-          const Gap(10),
+          const Gap(5),
 
           Center(
             child: TextButton(
