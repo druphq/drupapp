@@ -325,7 +325,7 @@ class DriverAppDrawer extends ConsumerWidget {
                           final userRepo = ref.read(userRepositoryProvider);
                           userRepo.storeUserMode(AppStrings.passengerMode);
 
-                          context.go(AppRoutes.homeRoute);
+                          context.go(AppRoutes.splashRoute);
                         },
                       ),
                     ),

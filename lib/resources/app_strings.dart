@@ -22,8 +22,6 @@ class AppStrings {
   static const passengerMode = 'passenger';
   static const driverMode = 'driver';
 
-  // home screen
-
   // schedule ride screen
   static const scheduleYourRideTitleTxt = 'Plan Airport Ride';
   static const currentLocationHintTxt = 'Current Location';

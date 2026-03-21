@@ -59,8 +59,8 @@ class _DriverOnboardScreenState extends ConsumerState<DriverOnboardScreen> {
   void _onGetStarted() {
     // Mark onboarding as shown
     ref.read(userRepositoryProvider).storeOnboardingShown(true);
-    // Navigate to driver home
-    context.go(AppRoutes.driverHomeRoute);
+    // Navigate to driver verification/application screen
+    context.go(AppRoutes.verifyDriverRoute);
   }
 
   @override

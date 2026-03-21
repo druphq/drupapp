@@ -223,29 +223,4 @@ class PassengerAppDrawer extends ConsumerWidget {
       onTap: onTap,
     );
   }
-
-  // void _showDeleteAccountDialog(BuildContext context) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Delete Account'),
-  //       content: const Text(
-  //         'Are you sure you want to delete your account? This action cannot be undone.',
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () {
-  //             Navigator.pop(context);
-  //           },
-  //           style: TextButton.styleFrom(foregroundColor: Colors.red),
-  //           child: const Text('Delete'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }

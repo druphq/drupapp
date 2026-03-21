@@ -30,6 +30,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _initialize() async {
     await Future.delayed(const Duration(seconds: 1));
+    final currentUser = ref.read(currentUserProvider);
+    final isLoggedIn = ref.read(isLoggedInProvider);
+    
+    // Not logged in → login screen
+    if (!isLoggedIn || currentUser == null) {
+      if (mounted) context.go(AppRoutes.loginRoute);
+      return;
+    }
 
     if (!mounted) return;
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
@@ -48,52 +56,51 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     } else {
       await _handlePassengerNavigation(status);
     }
-
-    print(
-      '======> userMode: $userMode, applicationStatus: $status',
-    ); // Debug log
   }
 
   /// Passenger flow: switch role to 'user' and navigate home.
   Future<void> _handlePassengerNavigation(
     DriverApplicationStatus? status,
   ) async {
-    final currentUser = ref.read(currentUserProvider);
-    final isLoggedIn = ref.read(isLoggedInProvider);
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
 
-    // Not logged in → login screen
-    if (!isLoggedIn || currentUser == null) {
-      if (mounted) context.go(AppRoutes.loginRoute);
-      return;
-    }
-
-    // Load user profile
-    await ref.read(userNotifierProvider.notifier).loadUserProfile();
+    // Has an application — switch to driver mode
+    final switched = await driverNotifier.switchRole(AppStrings.passengerRole);
     if (!mounted) return;
 
-    // Check for incomplete profile
-    final updatedUser = ref.read(currentUserProvider);
-    if (updatedUser?.isEmailVerified == false ||
-        updatedUser?.isPhoneVerified == false) {
-      context.go(AppRoutes.completeProfileRoute);
-      return;
+    if (switched) {
+      // Load user profile
+      await ref.read(userNotifierProvider.notifier).loadUserProfile();
+      if (!mounted) return;
+
+      // Check for incomplete profile
+      final updatedUser = ref.read(currentUserProvider);
+      if (updatedUser?.isEmailVerified == false ||
+          updatedUser?.isPhoneVerified == false) {
+        context.go(AppRoutes.completeProfileRoute);
+        return;
+      }
+      if (mounted) context.go(AppRoutes.homeRoute);
+      //////////////////
+    } else {
+      // Switch failed (suspended/banned) — log out and route to login
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your account is currently suspended.')),
+      );
+      await ref.read(authNotifierProvider.notifier).logout();
+      if (mounted) context.go(AppRoutes.loginRoute);
     }
 
-    final driverNotifier = ref.read(driverNotifierProvider.notifier);
-    if (status != null) {
-      await driverNotifier.switchRole(AppStrings.passengerRole);
-    }
-    if (mounted) context.go(AppRoutes.homeRoute);
+    // final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    // if (status != null) {
+    //   await driverNotifier.switchRole(AppStrings.passengerRole);
+    // }
   }
 
   Future<void> _handleDriverNavigation(DriverApplicationStatus? status) async {
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
     final userRepo = ref.read(userRepositoryProvider);
 
-    if (!mounted) return;
-
-    // Load driver profile early so drawer/UI has the name for all paths
-    await driverNotifier.loadDriverProfile();
     if (!mounted) return;
 
     if (status == null) {
@@ -112,6 +119,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (!mounted) return;
 
     if (switched) {
+      // Load driver profile early so drawer/UI has the name for all paths
+      await driverNotifier.loadDriverProfile();
+      if (!mounted) return;
       // If the driver is approved/active and hasn't seen the congrats screen,
       // route them to verify screen which shows the approval view.
       if (status == DriverApplicationStatus.approved ||

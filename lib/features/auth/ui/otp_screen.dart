@@ -1,6 +1,11 @@
 import 'package:drup/core/widgets/custom_button.dart';
+import 'package:drup/di/notifiers.dart';
+import 'package:drup/di/providers.dart';
+import 'package:drup/features/drivers/model/driver.dart';
+import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/features/passenger/model/user.dart';
 import 'package:drup/resources/app_dimen.dart';
+import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_style.dart';
 import 'package:flutter/gestures.dart';
@@ -55,41 +60,22 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     try {
       bool success;
 
-      // if (widget.isGoogleSignIn && widget.googleData != null) {
-      //   // Google Sign-In completion flow via AuthNotifier
-      //   success = await ref
-      //       .read(authNotifierProvider.notifier)
-      //       .completeGoogleSignIn(
-      //         phone: widget.phoneNumber,
-      //         otp: otp,
-      //         googleData: widget.googleData!,
-      //       );
-      // } else {
-      // Phone-only sign-in flow via AuthNotifier
       success = await ref
           .read(authNotifierProvider.notifier)
           .verifyOTP(widget.phoneNumber, otp);
-      // }
 
       if (success && mounted) {
         // Get the authenticated user from state
         final user = ref.read(authNotifierProvider).value;
 
         if (user != null) {
-          // Load user profile
-          // await ref.read(userNotifierProvider.notifier).loadUserProfile();
-
-          if (user.isProfileComplete) {
-            if (mounted) {
-              final isDriver = user.userType == UserType.driver;
-              context.go(
-                isDriver ? AppRoutes.driverHomeRoute : AppRoutes.homeRoute,
-              );
-            }
-          } else if (mounted) {
-            // Navigate to complete profile screen
-            context.go(AppRoutes.completeProfileRoute);
+          if (!user.isProfileComplete) {
+            if (mounted) context.go(AppRoutes.completeProfileRoute);
+            return;
           }
+
+          // Fetch application status to determine driver/passenger
+          await _navigateByRole(user);
         }
       } else if (mounted) {
         final error = ref.read(authNotifierProvider).error;
@@ -102,6 +88,62 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Navigate based on user role — mirrors splash screen logic.
+  Future<void> _navigateByRole(User user) async {
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    final userRepo = ref.read(userRepositoryProvider);
+
+    // Fetch driver application status
+    await driverNotifier.fetchApplicationStatus();
+    if (!mounted) return;
+
+    final appStatus = ref.read(driverNotifierProvider).applicationStatus;
+    final rawStatus = appStatus?['status'] as String?;
+    final status = DriverApplicationStatus.fromString(rawStatus);
+
+    // Check if user is a driver
+    if (user.isDriver) {
+      // Switch to driver role
+      final switched = await driverNotifier.switchRole(AppStrings.driverRole);
+      if (!mounted) return;
+
+      if (switched) {
+        userRepo.storeUserMode(AppStrings.driverMode);
+        await driverNotifier.loadDriverProfile();
+        if (!mounted) return;
+
+        // If approved/active but hasn't seen approval screen
+        if (status == DriverApplicationStatus.approved ||
+            status == DriverApplicationStatus.active) {
+          final hasSeenApproval = await userRepo.getDriverApprovalSeen();
+          if (!hasSeenApproval) {
+            if (mounted) context.go(AppRoutes.verifyDriverRoute);
+            return;
+          }
+        }
+
+        if (mounted) context.go(AppRoutes.driverHomeRoute);
+      } else {
+        // Driver switch failed — fallback to passenger
+        if (mounted) context.go(AppRoutes.homeRoute);
+      }
+    } else {
+      // Passenger flow
+      final switched = await driverNotifier.switchRole(
+        AppStrings.passengerRole,
+      );
+      if (!mounted) return;
+
+      if (switched) {
+        userRepo.storeUserMode(AppStrings.passengerMode);
+        await ref.read(userNotifierProvider.notifier).loadUserProfile();
+        if (mounted) context.go(AppRoutes.homeRoute);
+      } else {
+        if (mounted) context.go(AppRoutes.homeRoute);
       }
     }
   }
