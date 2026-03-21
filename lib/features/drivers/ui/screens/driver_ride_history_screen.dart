@@ -213,7 +213,7 @@ class _DriverRideHistoryScreenState
           child: _isLoading
               ? Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.2,
+                    top: MediaQuery.of(context).size.height * 0.06,
                   ),
                   child: const Align(
                     alignment: Alignment.topCenter,
@@ -246,30 +246,30 @@ class _DriverRideHistoryScreenState
   }) {
     if (rides.isEmpty) {
       return Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(emptyIcon, size: 80, color: AppColors.textLight),
-              const Gap(16),
-              Text(
-                emptyTitle,
-                style: TextStyles.t2.copyWith(
-                  fontSize: 16,
-                  color: AppColors.textSecondary,
-                ),
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).size.height * 0.06,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(emptyIcon, size: 80, color: AppColors.textLight),
+            const Gap(16),
+            Text(
+              emptyTitle,
+              style: TextStyles.t2.copyWith(
+                fontSize: 16,
+                color: AppColors.textSecondary,
               ),
-              const Gap(8),
-              Text(
-                emptySubtitle,
-                style: TextStyles.t2.copyWith(
-                  fontSize: 14,
-                  color: AppColors.textLight,
-                ),
+            ),
+            const Gap(8),
+            Text(
+              emptySubtitle,
+              style: TextStyles.t2.copyWith(
+                fontSize: 14,
+                color: AppColors.textLight,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }

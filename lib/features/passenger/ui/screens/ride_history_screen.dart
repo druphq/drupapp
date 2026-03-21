@@ -308,7 +308,7 @@ class _RideHistoryScreenState extends ConsumerState<RideHistoryScreen>
     final height = MediaQuery.of(context).size.height;
     if (rides.isEmpty) {
       return Padding(
-        padding: EdgeInsets.only(top: height * 0.2),
+        padding: EdgeInsets.only(top: height * 0.05),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,

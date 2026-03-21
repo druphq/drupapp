@@ -27,6 +27,9 @@ class DriverState {
   /// The current active ride (from API)
   final Map<String, dynamic>? activeRide;
 
+  /// Rides accepted by the driver but not yet started
+  final List<Map<String, dynamic>> acceptedRides;
+
   /// Upcoming scheduled rides
   final List<Map<String, dynamic>> scheduledRides;
 
@@ -60,6 +63,7 @@ class DriverState {
     this.currentLocation,
     this.nearbyRides = const [],
     this.activeRide,
+    this.acceptedRides = const [],
     this.scheduledRides = const [],
     this.rideHistory = const [],
     this.earnings,
@@ -82,6 +86,7 @@ class DriverState {
     List<Map<String, dynamic>>? nearbyRides,
     Map<String, dynamic>? activeRide,
     bool clearActiveRide = false,
+    List<Map<String, dynamic>>? acceptedRides,
     List<Map<String, dynamic>>? scheduledRides,
     List<Map<String, dynamic>>? rideHistory,
     Map<String, dynamic>? earnings,
@@ -100,6 +105,7 @@ class DriverState {
       currentLocation: currentLocation ?? this.currentLocation,
       nearbyRides: nearbyRides ?? this.nearbyRides,
       activeRide: clearActiveRide ? null : (activeRide ?? this.activeRide),
+      acceptedRides: acceptedRides ?? this.acceptedRides,
       scheduledRides: scheduledRides ?? this.scheduledRides,
       rideHistory: rideHistory ?? this.rideHistory,
       earnings: earnings ?? this.earnings,
@@ -691,7 +697,7 @@ class DriverNotifier extends StateNotifier<DriverState> {
   // 9. ACCEPT / DECLINE RIDE
   // ===========================================================================
 
-  /// Accept a ride request
+  /// Accept a ride request — adds it to [acceptedRides] queue
   Future<bool> acceptRide(String rideId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
@@ -699,9 +705,11 @@ class DriverNotifier extends StateNotifier<DriverState> {
       final response = await repo.acceptRide(rideId);
 
       if (response.success && response.data != null) {
-        // Remove from nearby list, set as active ride
+        // Add to accepted queue and remove from nearby list
+        final updated = List<Map<String, dynamic>>.from(state.acceptedRides)
+          ..add(response.data!);
         state = state.copyWith(
-          activeRide: response.data,
+          acceptedRides: updated,
           nearbyRides: state.nearbyRides
               .where((r) => r['_id'] != rideId && r['id'] != rideId)
               .toList(),
@@ -718,6 +726,20 @@ class DriverNotifier extends StateNotifier<DriverState> {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
       return false;
     }
+  }
+
+  /// Move an accepted ride to `activeRide` so the driver can start it.
+  void startAcceptedRide(String rideId) {
+    final ride = state.acceptedRides.firstWhere(
+      (r) => (r['_id'] ?? r['id']).toString() == rideId,
+      orElse: () => <String, dynamic>{},
+    );
+    if (ride.isEmpty) return;
+
+    final remaining = state.acceptedRides
+        .where((r) => (r['_id'] ?? r['id']).toString() != rideId)
+        .toList();
+    state = state.copyWith(activeRide: ride, acceptedRides: remaining);
   }
 
   /// Decline a ride request

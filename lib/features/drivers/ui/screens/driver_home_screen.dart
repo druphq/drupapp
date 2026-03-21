@@ -1,4 +1,7 @@
+import 'package:drup/features/drivers/ui/widgets/accepted_rides_sheet.dart';
 import 'package:drup/features/drivers/ui/widgets/driver_app_drawer.dart';
+import 'package:drup/features/drivers/ui/widgets/incoming_ride_popup.dart';
+import 'package:drup/features/drivers/ui/widgets/ride_detail_sheet.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -24,8 +27,6 @@ class DriverHomeScreen extends ConsumerStatefulWidget {
 
 class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
   GoogleMapController? _mapController;
-  final DraggableScrollableController _sheetController =
-      DraggableScrollableController();
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
@@ -158,6 +159,7 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
     final isOnline = driverState.isOnline;
     final activeRide = driverState.activeRide;
     final nearbyRides = driverState.nearbyRides;
+    final acceptedRides = driverState.acceptedRides;
     final loc = driverState.currentLocation;
     final markers = _buildMarkers(driverState);
 
@@ -182,22 +184,24 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
               zoomControlsEnabled: false,
-              padding: EdgeInsets.only(
-                bottom: activeRide != null
-                    ? 220
-                    : (nearbyRides.isNotEmpty && isOnline ? 300 : 80),
-              ),
+              padding: EdgeInsets.only(bottom: activeRide != null ? 220 : 80),
             ),
 
             // ── Top bar: menu + toggle ──
             _buildTopBar(isOnline, driverState.isLoading),
 
+            // ── Incoming ride pop-in cards (max 2, slide from top) ──
+            if (isOnline && activeRide == null && nearbyRides.isNotEmpty)
+              IncomingRidePopups(
+                rides: nearbyRides,
+                onTap: _showRideDetail,
+                onDismiss: (_) {},
+              ),
+
             // ── My-location FAB ──
             Positioned(
               right: 16,
-              bottom: activeRide != null
-                  ? 240
-                  : (nearbyRides.isNotEmpty && isOnline ? 320 : 100),
+              bottom: activeRide != null ? 240 : 100,
               child: FloatingActionButton.small(
                 heroTag: 'myLoc',
                 backgroundColor: Colors.white,
@@ -216,18 +220,101 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
               ),
             ),
 
+            // ── Accepted-rides FAB (only when we have queued rides) ──
+            if (isOnline && activeRide == null && acceptedRides.isNotEmpty)
+              Positioned(
+                right: 16,
+                bottom: 160,
+                child: _buildAcceptedRidesFab(acceptedRides),
+              ),
+
             // ── Bottom content ──
             if (!isOnline)
               _buildOfflineBanner()
             else if (activeRide != null)
               _buildActiveRideCard(activeRide)
-            else if (nearbyRides.isNotEmpty)
-              _buildNearbyRidesSheet(nearbyRides)
             else
               _buildWaitingIndicator(),
           ],
         ),
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Ride detail bottom sheet (from pop-in tap)
+  // ---------------------------------------------------------------------------
+
+  void _showRideDetail(Map<String, dynamic> ride) {
+    final rideId = (ride['_id'] ?? ride['id'] ?? '').toString();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) =>
+          _RideDetailSheetWrapper(ride: ride, rideId: rideId, ref: ref),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Accepted rides FAB with badge
+  // ---------------------------------------------------------------------------
+
+  Widget _buildAcceptedRidesFab(List<Map<String, dynamic>> acceptedRides) {
+    return GestureDetector(
+      onTap: () => _showAcceptedRidesSheet(acceptedRides),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: AppColors.accent,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accent.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            const Icon(Icons.drive_eta, color: Colors.white, size: 24),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppColors.red400,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '${acceptedRides.length}',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAcceptedRidesSheet(List<Map<String, dynamic>> rides) {
+    AcceptedRidesSheet.show(
+      context,
+      rides: rides,
+      onStart: (ride) {
+        final rideId = (ride['_id'] ?? ride['id'] ?? '').toString();
+        ref.read(driverNotifierProvider.notifier).startAcceptedRide(rideId);
+      },
     );
   }
 
@@ -418,7 +505,9 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(Corners.c20),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(Corners.c20),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.10),
@@ -429,12 +518,17 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.explore_outlined,
                   color: AppColors.accent,
+                  size: 22,
                 ),
               ),
               const Gap(14),
@@ -444,7 +538,7 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Searching for rides...',
+                      'Nearby rides will show here',
                       style: TextStyles.t1.copyWith(
                         fontSize: FontSizes.s16,
                         fontWeight: FontWeight.w600,
@@ -678,331 +772,6 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Nearby rides bottom sheet
-  // ---------------------------------------------------------------------------
-
-  Widget _buildNearbyRidesSheet(List<Map<String, dynamic>> rides) {
-    return DraggableScrollableSheet(
-      controller: _sheetController,
-      initialChildSize: 0.35,
-      minChildSize: 0.15,
-      maxChildSize: 0.70,
-      snap: true,
-      snapSizes: const [0.15, 0.35, 0.70],
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.10),
-                blurRadius: 12,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ── Drag handle + header ──
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  final current = _sheetController.size;
-                  _sheetController.animateTo(
-                    current < 0.30 ? 0.70 : 0.15,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  width: double.infinity,
-                  alignment: Alignment.center,
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.divider,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const Gap(10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Ride Requests',
-                              style: TextStyles.t1.copyWith(
-                                fontSize: FontSizes.s16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const Gap(6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.accent,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${rides.length}',
-                                style: TextStyles.t2.copyWith(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () => context.push(
-                                AppRoutes.driverRideRequestsRoute,
-                              ),
-                              child: Text(
-                                'View All',
-                                style: TextStyles.t2.copyWith(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.accent,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ── Ride cards ──
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                  itemCount: rides.length,
-                  itemBuilder: (context, index) =>
-                      _buildNearbyRideCard(rides[index]),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildNearbyRideCard(Map<String, dynamic> ride) {
-    final rideType = (ride['rideType'] ?? ride['ride_type'] ?? '').toString();
-    final isDelivery = rideType.toLowerCase() == 'delivery';
-    final vehicleType = (ride['vehicleType'] ?? ride['vehicle_type'] ?? '')
-        .toString();
-
-    // Fare
-    final fare = ride['fare'] is Map
-        ? ride['fare'] as Map<String, dynamic>
-        : null;
-    final totalFare =
-        fare?['totalFare'] ?? fare?['total_fare'] ?? ride['totalFare'] ?? 0;
-
-    // Pickup / Dropoff
-    final pickup = ride['pickup'] is Map
-        ? ride['pickup'] as Map<String, dynamic>
-        : <String, dynamic>{};
-    final dropoff = ride['dropoff'] is Map
-        ? ride['dropoff'] as Map<String, dynamic>
-        : <String, dynamic>{};
-    final pickupName = (pickup['name'] ?? pickup['address'] ?? 'Pickup')
-        .toString();
-    final dropoffName = (dropoff['name'] ?? dropoff['address'] ?? 'Dropoff')
-        .toString();
-
-    // Distance & duration
-    final distance =
-        ride['estimatedDistance'] ??
-        ride['estimated_distance'] ??
-        ride['distance'] ??
-        0;
-    final duration =
-        ride['estimatedDuration'] ??
-        ride['estimated_duration'] ??
-        ride['duration'] ??
-        0;
-
-    // Passenger
-    final user = ride['user'] is Map
-        ? ride['user'] as Map<String, dynamic>
-        : null;
-    final passengerName = user != null
-        ? '${user['firstName'] ?? ''} ${user['lastName'] ?? ''}'.trim()
-        : null;
-
-    // Scheduled?
-    final isScheduled = ride['isScheduled'] == true;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(Corners.c20),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(Corners.c20),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Corners.c20),
-          onTap: () {
-            context.push(AppRoutes.rideRequestDetailRoute, extra: ride);
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Top row: badges + fare ──
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        rideType.capitalizeFirstChar(),
-                        style: TextStyles.t2.copyWith(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                    ),
-                    const Gap(6),
-                    Icon(
-                      isDelivery
-                          ? Icons.local_shipping_outlined
-                          : Icons.drive_eta,
-                      size: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                    const Gap(2),
-                    if (vehicleType.isNotEmpty)
-                      Text(
-                        vehicleType.capitalizeFirstChar(),
-                        style: TextStyles.t2.copyWith(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    if (isScheduled) ...[
-                      const Gap(6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.orange50,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.schedule,
-                              size: 10,
-                              color: AppColors.orange400,
-                            ),
-                            const Gap(3),
-                            Text(
-                              'Scheduled',
-                              style: TextStyles.t2.copyWith(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.orange400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    const Spacer(),
-                    Text(
-                      '₦${formatThousand((totalFare is num ? totalFare.toDouble() : 0))}',
-                      style: TextStyles.t1.copyWith(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const Gap(10),
-
-                // ── Route: pickup → dropoff ──
-                _buildRoutePreview(pickupName, dropoffName),
-
-                const Gap(8),
-
-                // ── Footer: distance, duration, passenger ──
-                Row(
-                  children: [
-                    Icon(Icons.call_split, size: 14, color: AppColors.accent),
-                    const Gap(4),
-                    Text(
-                      '${formatDistance((distance is num ? distance.toDouble() : 0))}, '
-                      '${formatDuration(duration is int ? duration : (duration is num ? duration.toInt() : 0))}',
-                      style: TextStyles.t2.copyWith(
-                        fontSize: 11,
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (passengerName != null && passengerName.isNotEmpty) ...[
-                      const Spacer(),
-                      Icon(
-                        Icons.person_outline,
-                        size: 14,
-                        color: AppColors.textLight,
-                      ),
-                      const Gap(3),
-                      Text(
-                        passengerName,
-                        style: TextStyles.t2.copyWith(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ] else
-                      const Spacer(),
-                    const Gap(6),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                      color: AppColors.textLight,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
   // Shared route preview widget
   // ---------------------------------------------------------------------------
 
@@ -1059,7 +828,115 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
   @override
   void dispose() {
     _mapController?.dispose();
-    _sheetController.dispose();
     super.dispose();
+  }
+}
+
+// =============================================================================
+// Stateful wrapper for RideDetailSheet (manages isActioning state)
+// =============================================================================
+
+class _RideDetailSheetWrapper extends StatefulWidget {
+  const _RideDetailSheetWrapper({
+    required this.ride,
+    required this.rideId,
+    required this.ref,
+  });
+
+  final Map<String, dynamic> ride;
+  final String rideId;
+  final WidgetRef ref;
+
+  @override
+  State<_RideDetailSheetWrapper> createState() =>
+      _RideDetailSheetWrapperState();
+}
+
+class _RideDetailSheetWrapperState extends State<_RideDetailSheetWrapper> {
+  bool _isActioning = false;
+
+  Future<void> _handleAccept() async {
+    setState(() => _isActioning = true);
+    final notifier = widget.ref.read(driverNotifierProvider.notifier);
+    final success = await notifier.acceptRide(widget.rideId);
+
+    if (mounted) {
+      setState(() => _isActioning = false);
+      if (success) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Ride accepted!')));
+        Navigator.of(context).pop();
+      } else {
+        final err = widget.ref.read(driverNotifierProvider).errorMessage;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(err ?? 'Failed to accept ride. Try again.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDecline() async {
+    final reason = await _showDeclineDialog();
+    if (reason == null) return;
+
+    setState(() => _isActioning = true);
+    final notifier = widget.ref.read(driverNotifierProvider.notifier);
+    final success = await notifier.declineRide(
+      widget.rideId,
+      reason: reason.isNotEmpty ? reason : null,
+    );
+
+    if (mounted) {
+      setState(() => _isActioning = false);
+      if (success) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Ride declined.')));
+        Navigator.of(context).pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to decline. Try again.')),
+        );
+      }
+    }
+  }
+
+  Future<String?> _showDeclineDialog() async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Decline Ride'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Reason (optional)',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('Decline'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RideDetailSheet(
+      ride: widget.ride,
+      isActioning: _isActioning,
+      onAccept: _handleAccept,
+      onDecline: _handleDecline,
+    );
   }
 }

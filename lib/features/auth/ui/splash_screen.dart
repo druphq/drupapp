@@ -92,8 +92,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
-    // Load user profile early so drawer/UI has the name for all paths
-    await ref.read(userNotifierProvider.notifier).loadUserProfile();
+    // Load driver profile early so drawer/UI has the name for all paths
+    await driverNotifier.loadDriverProfile();
     if (!mounted) return;
 
     if (status == null) {
