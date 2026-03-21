@@ -473,4 +473,13 @@ class DriverRepository {
       accountNumber: accountNumber,
     );
   }
+
+  /// Delete driver account (permanent)
+  Future<ApiResponse<void>> deleteAccount({String? reason}) async {
+    final response = await _driverService.deleteAccount(reason: reason);
+    if (response.success) {
+      await _authRepository.logout();
+    }
+    return response;
+  }
 }

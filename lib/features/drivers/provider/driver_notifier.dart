@@ -1229,6 +1229,30 @@ class DriverNotifier extends StateNotifier<DriverState> {
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }
+
+  /// Delete driver account
+  Future<bool> deleteAccount({String? reason}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final repo = ref.read(driverRepositoryProvider);
+      final response = await repo.deleteAccount(reason: reason);
+
+      if (response.success) {
+        clearState();
+        return true;
+      } else {
+        state = state.copyWith(
+          errorMessage: response.message ?? 'Failed to delete account',
+          isLoading: false,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      return false;
+    }
+  }
 }
 
 // =============================================================================

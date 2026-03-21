@@ -126,6 +126,7 @@ class ApiRoutes {
 
   // ============== DRIVER BANK ACCOUNT ==============
   static const String driverBankAccount = '/drivers/bank-account';
+  static const String deleteDriverAccount = '/drivers/account';
 
   // ============== BANK LIST & VERIFICATION ==============
   static const String bankList = '/payments/banks';

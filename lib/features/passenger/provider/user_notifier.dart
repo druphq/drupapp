@@ -580,12 +580,12 @@ class UserNotifier extends StateNotifier<UserState> {
   }
 
   /// Delete account
-  Future<bool> deleteAccount() async {
+  Future<bool> deleteAccount({String? reason}) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       final userRepository = ref.read(userRepositoryProvider);
-      final response = await userRepository.deleteAccount();
+      final response = await userRepository.deleteAccount(reason: reason);
 
       if (response.success) {
         // Clear state

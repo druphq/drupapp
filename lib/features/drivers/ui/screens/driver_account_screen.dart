@@ -265,8 +265,11 @@ class _DriverAccountScreenState extends ConsumerState<DriverAccountScreen> {
                 context.go(AppRoutes.loginRoute);
               }
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.warning),
-            child: const Text('Logout'),
+            style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+            child: Text(
+              'Logout',
+              style: TextStyles.t2.copyWith(color: AppColors.accent),
+            ),
           ),
         ],
       ),

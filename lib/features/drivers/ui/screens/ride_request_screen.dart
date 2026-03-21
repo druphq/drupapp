@@ -12,14 +12,16 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 /// Displays nearby ride requests available for the driver to accept.
-class RideRequestScreen extends ConsumerStatefulWidget {
-  const RideRequestScreen({super.key});
+class DriverRideRequestScreen extends ConsumerStatefulWidget {
+  const DriverRideRequestScreen({super.key});
 
   @override
-  ConsumerState<RideRequestScreen> createState() => _RideRequestScreenState();
+  ConsumerState<DriverRideRequestScreen> createState() =>
+      _DriverRideRequestScreenState();
 }
 
-class _RideRequestScreenState extends ConsumerState<RideRequestScreen> {
+class _DriverRideRequestScreenState
+    extends ConsumerState<DriverRideRequestScreen> {
   bool _isLoading = true;
 
   @override
@@ -60,16 +62,16 @@ class _RideRequestScreenState extends ConsumerState<RideRequestScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : nearbyRides.isEmpty
-          ? _buildEmpty()
           : RefreshIndicator(
               onRefresh: _fetchNearbyRides,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: nearbyRides.length,
-                itemBuilder: (context, index) =>
-                    _buildRequestCard(nearbyRides[index]),
-              ),
+              child: nearbyRides.isEmpty
+                  ? _buildEmpty()
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: nearbyRides.length,
+                      itemBuilder: (context, index) =>
+                          _buildRequestCard(nearbyRides[index]),
+                    ),
             ),
     );
   }
@@ -79,35 +81,48 @@ class _RideRequestScreenState extends ConsumerState<RideRequestScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.search_off, size: 80, color: AppColors.textLight),
-          const Gap(16),
-          Text(
-            'No ride requests nearby',
-            style: TextStyles.t2.copyWith(
-              fontSize: 16,
-              color: AppColors.textSecondary,
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height * 0.2,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.search_off, size: 80, color: AppColors.textLight),
+                const Gap(16),
+                Text(
+                  'No ride requests nearby',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const Gap(8),
+                Text(
+                  'New requests will appear here when available.',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 14,
+                    color: AppColors.textLight,
+                  ),
+                ),
+                const Gap(12),
+                Text(
+                  'Pull down to refresh',
+                  style: TextStyles.t2.copyWith(
+                    fontSize: 13,
+                    color: AppColors.textLight,
+                  ),
+                ),
+              ],
             ),
           ),
-          const Gap(8),
-          Text(
-            'New requests will appear here when available.',
-            style: TextStyles.t2.copyWith(
-              fontSize: 14,
-              color: AppColors.textLight,
-            ),
-          ),
-          const Gap(24),
-          TextButton.icon(
-            onPressed: _fetchNearbyRides,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Refresh'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

@@ -523,7 +523,7 @@ class AppScreens {
     path: AppRoutes.driverRideRequestsRoute,
     pageBuilder: (context, state) => slideRightTransitionPage(
       key: state.pageKey,
-      child: const driver_requests.RideRequestScreen(),
+      child: const driver_requests.DriverRideRequestScreen(),
     ),
   );
 

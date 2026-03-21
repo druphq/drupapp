@@ -567,10 +567,11 @@ class UserRepository {
   }
 
   /// Delete user account (permanent)
-  Future<ApiResponse<void>> deleteAccount() async {
+  Future<ApiResponse<void>> deleteAccount({String? reason}) async {
     try {
       final response = await _apiService.delete<Map<String, dynamic>>(
         ApiRoutes.deleteAccount,
+        data: reason != null ? {'reason': reason} : null,
       );
 
       if (response.success) {

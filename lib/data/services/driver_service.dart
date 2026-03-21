@@ -1201,8 +1201,18 @@ class DriverService {
       if (response.success && response.data != null) {
         final responseData = response.data!['data'] as Map<String, dynamic>?;
         if (responseData != null) {
+          final bankAccount =
+              responseData['bankAccount'] as Map<String, dynamic>?;
+          if (bankAccount != null) {
+            return ApiResponse.success(
+              data: bankAccount,
+              message: response.message,
+              statusCode: response.statusCode,
+            );
+          }
+          // bankAccount is null — no account saved yet
           return ApiResponse.success(
-            data: responseData,
+            data: null,
             message: response.message,
             statusCode: response.statusCode,
           );
@@ -1315,6 +1325,32 @@ class DriverService {
       );
     } catch (e) {
       debugPrint('Error verifying bank account: $e');
+      return ApiResponse.failure(message: e.toString());
+    }
+  }
+
+  // ===========================================================================
+  // DELETE ACCOUNT
+  // ===========================================================================
+
+  /// Delete driver account (permanent)
+  Future<ApiResponse<void>> deleteAccount({String? reason}) async {
+    try {
+      final response = await _apiService.delete<Map<String, dynamic>>(
+        ApiRoutes.deleteDriverAccount,
+        data: reason != null ? {'reason': reason} : null,
+      );
+
+      if (response.success) {
+        return ApiResponse.success(message: response.message);
+      }
+
+      return ApiResponse.failure(
+        message: response.message ?? 'Failed to delete account',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      debugPrint('Error deleting driver account: $e');
       return ApiResponse.failure(message: e.toString());
     }
   }

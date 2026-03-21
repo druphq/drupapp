@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../di/notifiers.dart';
 import '../../../auth/provider/auth_notifier.dart';
+import '../../../drivers/provider/driver_notifier.dart';
 
 class DeleteAccountScreen extends ConsumerStatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -146,7 +148,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
-            
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -187,9 +189,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.accent,
-                          ),
+                          borderSide: const BorderSide(color: AppColors.accent),
                         ),
                       ),
                     ),
@@ -364,14 +364,30 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 : 'Other'
           : _selectedReason;
 
-      // TODO: Call API to delete account with reason
-      debugPrint('Deleting account with reason: $reason');
+      // Call API to delete account
+      final isDriver = ref.read(isDriverMode);
+      bool success;
+      String? error;
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      if (isDriver) {
+        success = await ref
+            .read(driverNotifierProvider.notifier)
+            .deleteAccount(reason: reason);
+        if (!success) {
+          error = ref.read(driverNotifierProvider).errorMessage;
+        }
+      } else {
+        success = await ref
+            .read(userNotifierProvider.notifier)
+            .deleteAccount(reason: reason);
+        if (!success) {
+          error = ref.read(userNotifierProvider).errorMessage;
+        }
+      }
 
-      // Logout user
-      await ref.read(authNotifierProvider.notifier).logout();
+      if (!success) {
+        throw Exception(error ?? 'Failed to delete account');
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
