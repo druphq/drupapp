@@ -2,6 +2,7 @@ import 'package:drup/features/drivers/ui/widgets/accepted_rides_sheet.dart';
 import 'package:drup/features/drivers/ui/widgets/driver_app_drawer.dart';
 import 'package:drup/features/drivers/ui/widgets/incoming_ride_popup.dart';
 import 'package:drup/features/drivers/ui/widgets/ride_detail_sheet.dart';
+import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -17,6 +18,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../provider/driver_notifier.dart';
 import '../../../../core/utils/map_helper.dart';
+import '../../../../data/services/location_service.dart';
+import '../../../../di/providers.dart';
 
 class DriverHomeScreen extends ConsumerStatefulWidget {
   const DriverHomeScreen({super.key});
@@ -27,19 +30,42 @@ class DriverHomeScreen extends ConsumerStatefulWidget {
 
 class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
   GoogleMapController? _mapController;
+  bool _hasCenteredOnDriver = false;
+  BitmapDescriptor? _myLocationIcon;
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    _animateToDriverLocation();
+  }
 
+  /// Animate to the driver's current location once (first time map + location
+  /// are both available).
+  void _animateToDriverLocation() {
+    if (_hasCenteredOnDriver || _mapController == null) return;
     final loc = ref.read(driverNotifierProvider).currentLocation;
     if (loc != null) {
-      _mapController!.animateCamera(CameraUpdate.newLatLng(loc.latLng));
+      _hasCenteredOnDriver = true;
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: loc.latLng, zoom: 15),
+        ),
+      );
     }
   }
 
   @override
   void initState() {
     super.initState();
+
+    // Load custom location icon
+    BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(31, 48)),
+      AppAssets.pickupIcon,
+    ).then((icon) {
+      if (!mounted) return;
+      setState(() => _myLocationIcon = icon);
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appStatus = ref.read(driverNotifierProvider).applicationStatus;
       final status = appStatus?['status'] as String?;
@@ -51,8 +77,259 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
         if (ref.read(driverNotifierProvider).isOnline) {
           ref.read(driverNotifierProvider.notifier).fetchActiveRide();
         }
+        // Fetch driver's current location (with permission check)
+        _initializeLocation();
       }
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Location Permission
+  // ---------------------------------------------------------------------------
+
+  Future<void> _initializeLocation() async {
+    final locationService = ref.read(locationServiceProvider);
+    final permissionStatus = await locationService.checkPermissionStatus();
+
+    if (!mounted) return;
+
+    switch (permissionStatus) {
+      case LocationPermissionStatus.granted:
+        await _fetchCurrentLocation();
+        break;
+      case LocationPermissionStatus.denied:
+      case LocationPermissionStatus.notDetermined:
+        _showLocationPermissionSheet();
+        break;
+      case LocationPermissionStatus.deniedForever:
+        _showOpenSettingsSheet(isAppSettings: true);
+        break;
+      case LocationPermissionStatus.serviceDisabled:
+        _showOpenSettingsSheet(isAppSettings: false);
+        break;
+    }
+  }
+
+  Future<void> _fetchCurrentLocation() async {
+    try {
+      final locationService = ref.read(locationServiceProvider);
+      final location = await locationService.getCurrentLocation();
+      if (location != null) {
+        ref.read(driverNotifierProvider.notifier).updateLocation(location);
+        _animateToDriverLocation();
+      }
+    } catch (_) {
+      // Silently fail — location will be retried when going online
+    }
+  }
+
+  void _showLocationPermissionSheet() {
+    final locationService = ref.read(locationServiceProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                ),
+                child: const Icon(
+                  Icons.location_on,
+                  size: 40,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Enable Location',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'We need your location to show you on the map and receive nearby ride requests.',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final status = await locationService.requestPermission();
+                    if (!context.mounted) return;
+                    if (status == LocationPermissionStatus.granted) {
+                      Navigator.pop(context);
+                    } else if (status ==
+                        LocationPermissionStatus.deniedForever) {
+                      Navigator.pop(context);
+                      _showOpenSettingsSheet(isAppSettings: true);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Enable Location',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Skip for now',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).then((_) {
+      // After sheet is dismissed, try fetching location
+      _fetchCurrentLocation();
+    });
+  }
+
+  void _showOpenSettingsSheet({required bool isAppSettings}) {
+    final locationService = ref.read(locationServiceProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                ),
+                child: Icon(
+                  isAppSettings ? Icons.settings : Icons.location_off,
+                  size: 40,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                isAppSettings
+                    ? 'Location Permission Required'
+                    : 'Location Services Disabled',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isAppSettings
+                    ? 'Location access was denied. Please enable it in your device settings to use Drup.'
+                    : 'Please enable location services on your device to receive ride requests.',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    if (isAppSettings) {
+                      await locationService.openAppSettings();
+                    } else {
+                      await locationService.openLocationSettings();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Open Settings',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Maybe Later',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -64,8 +341,14 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
 
     // Driver location
     final loc = driverState.currentLocation;
-    if (loc != null) {
-      markers.add(MapHelper.createDriverMarker(loc.latLng, 'current'));
+    if (loc != null && _myLocationIcon != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('driver_location'),
+          position: loc.latLng,
+          icon: _myLocationIcon!,
+        ),
+      );
     }
 
     // Active ride markers
@@ -161,6 +444,11 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
     final nearbyRides = driverState.nearbyRides;
     final acceptedRides = driverState.acceptedRides;
     final loc = driverState.currentLocation;
+
+    // Center on driver once location arrives (if map was ready first)
+    if (!_hasCenteredOnDriver && loc != null) {
+      _animateToDriverLocation();
+    }
     final markers = _buildMarkers(driverState);
 
     return Scaffold(
