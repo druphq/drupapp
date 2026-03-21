@@ -184,7 +184,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
 final isDriverMode = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
   return authState.maybeWhen(
-    data: (user) => user?.userType == UserType.driver,
+    data: (user) => user?.isDriver ?? false,
     orElse: () => false,
   );
 });
@@ -204,7 +204,7 @@ final isLoggedInProvider = Provider<bool>((ref) {
 final isDriverProvider = Provider<bool>((ref) {
   final authState = ref.watch(authNotifierProvider);
   return authState.maybeWhen(
-    data: (user) => user?.userType == UserType.driver,
+    data: (user) => user?.isDriver ?? false,
     orElse: () => false,
   );
 });

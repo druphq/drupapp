@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:drup/core/cache/cache_manager.dart';
-import 'package:drup/di/providers.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/user.dart';
 import '../../../data/api/api_routes.dart';
 import '../../../data/api/api_service.dart';
@@ -27,6 +25,7 @@ class UserRepository {
   /// Storage keys
   static const String userModeKey = 'user_mode';
   static const String onboardingShownKey = 'driver_onboarding_shown';
+  static const String driverApprovalSeenKey = 'driver_approval_seen';
 
   /// Fetch user profile from API and update cache
   /// Returns updated User object
@@ -608,6 +607,11 @@ class UserRepository {
     return await _cacheManager.getPref(onboardingShownKey) ?? false;
   }
 
+  /// Whether the driver has seen the approval congratulations screen
+  Future<bool> getDriverApprovalSeen() async {
+    return await _cacheManager.getPref(driverApprovalSeenKey) ?? false;
+  }
+
   // store data locally
 
   void storeUserMode(String value) async {
@@ -616,5 +620,9 @@ class UserRepository {
 
   void storeOnboardingShown(bool value) async {
     await _cacheManager.storePref(onboardingShownKey, value);
+  }
+
+  void storeDriverApprovalSeen(bool value) async {
+    await _cacheManager.storePref(driverApprovalSeenKey, value);
   }
 }

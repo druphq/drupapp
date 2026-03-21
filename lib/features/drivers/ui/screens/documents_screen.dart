@@ -19,7 +19,9 @@ class DocumentsScreen extends ConsumerStatefulWidget {
 
 class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   bool _isLoading = true;
-  String? _uploadingType;
+
+  /// Tracks which document types are currently being uploaded.
+  final Set<String> _uploadingTypes = {};
 
   final ImagePicker _picker = ImagePicker();
 
@@ -47,13 +49,15 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
     );
     if (picked == null) return;
 
-    setState(() => _uploadingType = type);
+    setState(() => _uploadingTypes.add(type));
 
     final success = await ref
         .read(driverNotifierProvider.notifier)
         .uploadDocument(documentFile: File(picked.path), type: type);
 
     if (mounted) {
+      setState(() => _uploadingTypes.remove(type));
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -66,9 +70,6 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
         ),
       );
     }
-
-    setState(() => _uploadingType = null);
-    if (success) await _loadDocuments();
   }
 
   Future<ImageSource?> _showSourcePicker() async {
@@ -89,7 +90,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.divider,
                   borderRadius: BorderRadius.circular(2),
-                ),
+                ),                                                                  
               ),
               const Gap(16),
               Text(
@@ -377,7 +378,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
   }
 
   Widget _buildDocumentTile({required DriverDocument doc}) {
-    final isUploading = _uploadingType == doc.type;
+    final isUploading = _uploadingTypes.contains(doc.type);
 
     final Color statusColor;
     final String statusText;

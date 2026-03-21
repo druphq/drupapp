@@ -18,11 +18,15 @@ class DriverAppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final driverState = ref.watch(driverNotifierProvider);
+    final driver = driverState.driver;
     final userState = ref.watch(userNotifierProvider);
     final user = userState.user;
-    final userName = (user?.fullName.takeFirst) ?? 'Guest User';
-    final driverState = ref.watch(driverNotifierProvider);
-    final bool isVerified = driverState.driver?.isActive ?? false;
+    final profilePhoto = driver?.profilePhoto ?? user?.profileImage;
+    // Check verification from driver object OR from application status
+    final bool isVerified =
+        (driverState.driver?.isActive ?? false) ||
+        (driverState.applicationStatus?['status'] as String?) == 'active';
 
     return Drawer(
       backgroundColor: AppColors.surface,
@@ -71,16 +75,14 @@ class DriverAppDrawer extends ConsumerWidget {
                                       color: AppColors.accent.withValues(
                                         alpha: 0.1,
                                       ),
-                                      image: user?.profileImage != null
+                                      image: profilePhoto != null
                                           ? DecorationImage(
-                                              image: NetworkImage(
-                                                user!.profileImage!,
-                                              ),
+                                              image: NetworkImage(profilePhoto),
                                               fit: BoxFit.cover,
                                             )
                                           : null,
                                     ),
-                                    child: user?.profileImage == null
+                                    child: profilePhoto == null
                                         ? const Icon(
                                             Icons.person,
                                             size: 28,
@@ -122,7 +124,7 @@ class DriverAppDrawer extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      userName,
+                                      driver?.fullName.takeFirst ?? 'Driver',
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                       style: TextStyles.t1.copyWith(

@@ -703,13 +703,17 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
   // ── Approved ──
 
   Widget _buildApprovedView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
+    final createdAt = _driverProfile?['createdAt'] as String?;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const Gap(16),
+
+          // Hero icon
+          Center(
+            child: Container(
               width: 120,
               height: 120,
               decoration: BoxDecoration(
@@ -722,32 +726,85 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                 color: AppColors.success,
               ),
             ),
-            const Gap(32),
-            Text(
-              'You\'re Approved!',
-              style: TextStyles.h1.copyWith(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+          ),
+
+          const Gap(24),
+
+          Text(
+            'Application Approved!',
+            textAlign: TextAlign.center,
+            style: TextStyles.h1.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
-            const Gap(12),
-            Text(
-              'Your driver application has been approved.\nYou can now start accepting rides.',
-              textAlign: TextAlign.center,
-              style: TextStyles.t2.copyWith(
-                fontSize: 15,
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
+          ),
+
+          const Gap(8),
+
+          Text(
+            'Congratulations! Your driver application has been\napproved. You can now start accepting rides.',
+            textAlign: TextAlign.center,
+            style: TextStyles.t2.copyWith(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              height: 1.5,
             ),
-            const Gap(40),
-            CustomButton(
-              text: 'Go to Driver Home',
-              onPressed: () => context.go(AppRoutes.driverHomeRoute),
+          ),
+
+          const Gap(24),
+
+          // Progress tracker
+          _card(
+            icon: Icons.timeline,
+            title: 'Application Progress',
+            children: [
+              _progressStep(
+                label: 'Application Submitted',
+                isCompleted: true,
+                isActive: false,
+              ),
+              _progressConnector(isCompleted: true),
+              _progressStep(
+                label: 'Documents Verified',
+                isCompleted: true,
+                isActive: false,
+              ),
+              _progressConnector(isCompleted: true),
+              _progressStep(
+                label: 'Approved',
+                isCompleted: true,
+                isActive: false,
+              ),
+            ],
+          ),
+
+          if (createdAt != null) ...[
+            const Gap(16),
+            Center(
+              child: Text(
+                'Applied on ${formatShortDate(createdAt)}',
+                style: TextStyles.t2.copyWith(
+                  fontSize: 13,
+                  color: AppColors.textLight,
+                ),
+              ),
             ),
           ],
-        ),
+
+          const Gap(32),
+
+          CustomButton(
+            text: 'Continue',
+            onPressed: () {
+              // Mark as seen so next launch goes straight to driver home
+              ref.read(userRepositoryProvider).storeDriverApprovalSeen(true);
+              context.go(AppRoutes.driverHomeRoute);
+            },
+          ),
+
+          const Gap(32),
+        ],
       ),
     );
   }

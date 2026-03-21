@@ -30,7 +30,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _initialize() async {
     await Future.delayed(const Duration(seconds: 1));
-    
+
     if (!mounted) return;
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
     // Fetch driver application status
@@ -92,6 +92,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
+    // Load user profile early so drawer/UI has the name for all paths
+    await ref.read(userNotifierProvider.notifier).loadUserProfile();
+    if (!mounted) return;
+
     if (status == null) {
       final hasSeenOnboarding = await userRepo.getDriverOnboardingShown();
       if (!mounted) return;
@@ -108,7 +112,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (!mounted) return;
 
     if (switched) {
+      // If the driver is approved/active and hasn't seen the congrats screen,
+      // route them to verify screen which shows the approval view.
+      if (status == DriverApplicationStatus.approved ||
+          status == DriverApplicationStatus.active) {
+        final hasSeenApproval = await userRepo.getDriverApprovalSeen();
+        if (!hasSeenApproval) {
+          if (mounted) context.go(AppRoutes.verifyDriverRoute);
+          return;
+        }
+      }
+      if (!mounted) return;
       context.go(AppRoutes.driverHomeRoute);
+      ////////////////
     } else {
       // Switch failed (suspended/banned) — fall back to passenger
       ScaffoldMessenger.of(context).showSnackBar(

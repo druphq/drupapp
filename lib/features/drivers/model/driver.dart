@@ -103,6 +103,7 @@ enum DriverApplicationStatus {
   pending('pending'),
   underReview('under_review'),
   approved('approved'),
+  active('active'),
   rejected('rejected'),
   expired('expired'),
   pendingVerification('pending_verification'),
