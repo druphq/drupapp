@@ -5,7 +5,6 @@ import 'package:drup/theme/app_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import '../../provider/user_notifier.dart';
 
 class LocationPermissionBottomSheet extends ConsumerStatefulWidget {
   const LocationPermissionBottomSheet({super.key});
