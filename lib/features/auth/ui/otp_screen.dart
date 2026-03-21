@@ -13,7 +13,6 @@ import 'package:otp_pin_field/otp_pin_field.dart';
 import '../repository/auth_repository.dart';
 import '../model/auth.dart';
 import '../provider/auth_notifier.dart';
-import '../../passenger/provider/user_notifier.dart';
 import '../../../theme/app_colors.dart';
 
 class OTPScreen extends ConsumerStatefulWidget {
