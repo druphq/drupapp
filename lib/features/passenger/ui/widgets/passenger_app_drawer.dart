@@ -174,25 +174,6 @@ class PassengerAppDrawer extends ConsumerWidget {
                               context.push(AppRoutes.aboutRoute);
                             },
                           ),
-                          // _buildDrawerItem(
-                          //   icon: AppAssets.exitIcon,
-                          //   title: 'Logout',
-                          //   onTap: () {
-                          //     // Capture auth notifier before closing drawer
-                          //     final authNotifier = ref.read(
-                          //       authNotifierProvider.notifier,
-                          //     );
-                          //   },
-                          // ),
-                          // _buildDrawerItem(
-                          //   icon: AppAssets.deleteIcon,
-                          //   title: 'Delete Account',
-                          //   textColor: Colors.red[300],
-                          //   onTap: () {
-                          //     Navigator.pop(context);
-                          //     _showDeleteAccountDialog(context);
-                          //   },
-                          // ),
                         ],
                       ),
                     ),

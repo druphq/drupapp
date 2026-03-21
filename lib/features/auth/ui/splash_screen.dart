@@ -29,12 +29,37 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initialize() async {
+    await Future.delayed(const Duration(seconds: 1));
+    
     if (!mounted) return;
-
-    final currentUser = ref.read(currentUserProvider);
-    final isLoggedIn = ref.read(isLoggedInProvider);
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    // Fetch driver application status
+    await driverNotifier.fetchApplicationStatus();
     final userRepo = ref.read(userRepositoryProvider);
     final userMode = await userRepo.getUserMode();
+
+    final appStatus = ref.read(driverNotifierProvider).applicationStatus;
+    final rawStatus = appStatus?['status'] as String?;
+    final status = DriverApplicationStatus.fromString(rawStatus);
+
+    // Route based on stored user mode
+    if (userMode == AppStrings.driverMode) {
+      await _handleDriverNavigation(status);
+    } else {
+      await _handlePassengerNavigation(status);
+    }
+
+    print(
+      '======> userMode: $userMode, applicationStatus: $status',
+    ); // Debug log
+  }
+
+  /// Passenger flow: switch role to 'user' and navigate home.
+  Future<void> _handlePassengerNavigation(
+    DriverApplicationStatus? status,
+  ) async {
+    final currentUser = ref.read(currentUserProvider);
+    final isLoggedIn = ref.read(isLoggedInProvider);
 
     // Not logged in → login screen
     if (!isLoggedIn || currentUser == null) {
@@ -54,25 +79,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return;
     }
 
-    final driverNotifier = ref.read(driverNotifierProvider.notifier);
-    // Fetch driver application status
-    await driverNotifier.fetchApplicationStatus();
-    final appStatus = ref.read(driverNotifierProvider).applicationStatus;
-    final rawStatus = appStatus?['status'] as String?;
-    final status = DriverApplicationStatus.fromString(rawStatus);
-
-    // Route based on stored user mode
-    if (userMode == AppStrings.driverMode) {
-      await _handleDriverNavigation(status);
-    } else {
-      await _handlePassengerNavigation(status);
-    }
-  }
-
-  /// Passenger flow: switch role to 'user' and navigate home.
-  Future<void> _handlePassengerNavigation(
-    DriverApplicationStatus? status,
-  ) async {
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
     if (status != null) {
       await driverNotifier.switchRole(AppStrings.passengerRole);

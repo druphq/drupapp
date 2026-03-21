@@ -21,7 +21,9 @@ class DriverRepository {
   // ===========================================================================
 
   /// Apply to become a driver
-  /// Creates a driver profile with `pending_verification` status
+  /// Creates a driver profile with `pending_verification` status.
+  /// After this succeeds, call [switchRole] to obtain the driver-scoped
+  /// token needed for `/drivers/*` endpoints.
   Future<ApiResponse<Map<String, dynamic>>> applyAsDriver({
     String? firstName,
     String? lastName,

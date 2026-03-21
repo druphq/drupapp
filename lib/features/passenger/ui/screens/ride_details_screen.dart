@@ -9,6 +9,7 @@ import 'package:drup/theme/app_style.dart';
 import 'package:drup/utils/convert_util.dart';
 import 'package:drup/utils/extension.dart';
 import 'package:drup/utils/util_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -696,6 +697,20 @@ class _RideDetailsScreenState extends ConsumerState<RideDetailsScreen> {
                   ],
                 ),
               ),
+            if (_isExpired && kDebugMode) ...[
+              const Gap(10),
+              CustomButton(
+                text: 'Cancel Expired Ride (DEV)',
+                isLoading: _isCancelling,
+                backgroundColor: AppColors.red50,
+                textStyle: TextStyles.t2.copyWith(
+                  fontSize: FontSizes.s16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.red400,
+                ),
+                onPressed: _handleCancel,
+              ),
+            ],
             if (!_isExpired && _isPending)
               CustomButton(text: 'Make Payment', onPressed: _handlePayment),
             if (!_isExpired && _isPending && _canCancel) const Gap(10),

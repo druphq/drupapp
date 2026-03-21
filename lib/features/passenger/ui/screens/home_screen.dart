@@ -486,7 +486,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           icon: const Icon(Icons.close, size: 24.0),
                           color: AppColors.onAccent,
                           onPressed: () {
-                            _clearRoute(context);
+                            _showClearRoute(context);
                             _clearMapMarkers();
                           },
                         ),
@@ -645,19 +645,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
-  void _clearRoute(BuildContext context) async {
+  void _showClearRoute(BuildContext context) async {
+    final rideState = ref.read(rideNotifierProvider);
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          'Cancel Ride',
+          'Cancel ${rideState.rideType == RideType.delivery ? 'Delivery' : 'Ride'}',
           style: TextStyles.t3.copyWith(
             fontSize: FontSizes.s20,
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
-          'Are you sure you want to cancel the ride?',
+          'Are you sure you want to cancel the ${rideState.rideType == RideType.delivery ? 'delivery' : 'ride'}?',
           style: TextStyles.h3.copyWith(
             fontSize: FontSizes.s14,
             color: AppColors.surface500,

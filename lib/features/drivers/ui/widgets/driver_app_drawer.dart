@@ -354,6 +354,7 @@ class DriverAppDrawer extends ConsumerWidget {
 
     return ListTile(
       leading: ImageIcon(AssetImage(icon), color: effectiveColor, size: 18),
+      contentPadding: EdgeInsets.zero,
       title: Text(
         title,
         style: TextStyles.h3.copyWith(

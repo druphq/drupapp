@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:drup/core/widgets/custom_button.dart';
-import 'package:drup/features/drivers/model/driver.dart';
 import 'package:drup/features/drivers/provider/driver_notifier.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -10,10 +8,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 /// Screen for submitting a driver application.
-/// Collects personal info + optional vehicle details.
+/// Collects personal info + vehicle details only.
+/// Documents are uploaded separately via the Documents screen
+/// after the application is submitted and a driver token is obtained.
 class ApplyDriverScreen extends ConsumerStatefulWidget {
   const ApplyDriverScreen({super.key});
 
@@ -39,11 +38,6 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
   String? _selectedVehicleType;
   bool _isSubmitting = false;
 
-  final ImagePicker _picker = ImagePicker();
-
-  /// Tracks which document types are currently being uploaded.
-  final Map<String, bool> _uploadingDocs = {};
-
   static const _vehicleTypes = [
     ('sedan', 'Sedan'),
     ('suv', 'SUV'),
@@ -57,7 +51,6 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _prefillFromProfile();
-      ref.read(driverNotifierProvider.notifier).fetchDocuments();
     });
   }
 
@@ -172,7 +165,9 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
     setState(() => _isSubmitting = false);
 
     if (success) {
-      // Pop back to verify screen which will refresh and show pending status
+      // Pop back to verify screen which will refresh and show pending status.
+      // The notifier already called switchRole('driver') to obtain the driver
+      // token, so document endpoints are now accessible.
       if (mounted) context.pop(true);
       return;
     } else {
@@ -199,13 +194,7 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'Apply as Driver',
-          style: TextStyles.h2.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Text('Apply as Driver', style: TextStyles.t1),
         centerTitle: true,
       ),
       body: Form(
@@ -364,56 +353,6 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
               ],
             ),
 
-            // ── Documents Card ──
-            const Gap(16),
-            _card(
-              title: 'Documents',
-              children: [
-                Text(
-                  'Upload your documents to speed up verification.',
-                  style: TextStyles.t2.copyWith(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const Gap(12),
-                Builder(
-                  builder: (_) {
-                    final docs = ref.watch(driverNotifierProvider).documents;
-                    if (docs.isEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        child: Center(
-                          child: Text(
-                            'Loading documents…',
-                            style: TextStyles.t2.copyWith(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return Column(
-                      children: List.generate(docs.length, (i) {
-                        final doc = docs[i];
-                        return Column(
-                          children: [
-                            if (i > 0)
-                              const Divider(
-                                height: 1,
-                                color: AppColors.divider,
-                              ),
-                            _buildDocumentPickTile(doc: doc),
-                          ],
-                        );
-                      }),
-                    );
-                  },
-                ),
-              ],
-            ),
-
             const Gap(32),
 
             // ── Submit ──
@@ -522,256 +461,5 @@ class _ApplyDriverScreenState extends ConsumerState<ApplyDriverScreen> {
         borderSide: const BorderSide(color: AppColors.error, width: 1.5),
       ),
     );
-  }
-
-  // ── Document Pick Tile ──
-
-  /// Icon for a document type.
-  IconData _docIcon(String type) {
-    switch (type) {
-      case 'profile_photo':
-        return Icons.person;
-      case 'drivers_license':
-        return Icons.badge;
-      case 'national_id':
-        return Icons.credit_card;
-      case 'vehicle_registration':
-        return Icons.description;
-      case 'vehicle_photo_external':
-        return Icons.directions_car;
-      case 'vehicle_photo_internal':
-        return Icons.airline_seat_recline_normal;
-      case 'insurance':
-        return Icons.shield;
-      case 'vehicle_inspection':
-        return Icons.fact_check;
-      default:
-        return Icons.insert_drive_file;
-    }
-  }
-
-  /// Status badge colors.
-  Color _statusColor(DriverDocument doc) {
-    if (doc.isApproved) return AppColors.success;
-    if (doc.isPending) return AppColors.warning;
-    if (doc.isRejected) return AppColors.error;
-    return AppColors.textSecondary;
-  }
-
-  String _statusLabel(DriverDocument doc) {
-    if (doc.isApproved) return 'Approved';
-    if (doc.isPending) return 'Pending';
-    if (doc.isRejected) return 'Rejected';
-    return 'Not uploaded';
-  }
-
-  Widget _buildDocumentPickTile({required DriverDocument doc}) {
-    final isUploading = _uploadingDocs[doc.type] ?? false;
-    final icon = _docIcon(doc.type);
-
-    // Determine leading icon appearance
-    final Color iconBgColor;
-    final Color iconFgColor;
-    final IconData leadingIcon;
-
-    if (doc.isApproved) {
-      iconBgColor = AppColors.success.withValues(alpha: 0.1);
-      iconFgColor = AppColors.success;
-      leadingIcon = Icons.check_circle;
-    } else if (doc.isPending) {
-      iconBgColor = AppColors.warning.withValues(alpha: 0.1);
-      iconFgColor = AppColors.warning;
-      leadingIcon = Icons.hourglass_top;
-    } else if (doc.isRejected) {
-      iconBgColor = AppColors.error.withValues(alpha: 0.1);
-      iconFgColor = AppColors.error;
-      leadingIcon = Icons.error_outline;
-    } else {
-      iconBgColor = AppColors.accent.withValues(alpha: 0.1);
-      iconFgColor = AppColors.accent;
-      leadingIcon = icon;
-    }
-
-    return InkWell(
-      onTap: (doc.canUpload && !isUploading)
-          ? () => _pickAndUpload(doc.type)
-          : null,
-      borderRadius: BorderRadius.circular(Corners.c8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            // Leading icon
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                borderRadius: BorderRadius.circular(Corners.c8),
-              ),
-              child: Icon(leadingIcon, color: iconFgColor, size: 20),
-            ),
-            const Gap(14),
-
-            // Text area
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          doc.name,
-                          style: TextStyles.t1.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      if (doc.required) ...[
-                        const Gap(4),
-                        Text(
-                          '*',
-                          style: TextStyles.t1.copyWith(
-                            fontSize: 14,
-                            color: AppColors.error,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const Gap(2),
-                  // Subtitle: status or description
-                  if (doc.isRejected && doc.rejectionReason != null)
-                    Text(
-                      doc.rejectionReason!,
-                      style: TextStyles.t2.copyWith(
-                        fontSize: 12,
-                        color: AppColors.error,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  else
-                    Text(
-                      _statusLabel(doc),
-                      style: TextStyles.t2.copyWith(
-                        fontSize: 12,
-                        color: _statusColor(doc),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // Trailing action
-            if (isUploading)
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.accent,
-                ),
-              )
-            else if (doc.canUpload)
-              Icon(
-                doc.isRejected ? Icons.refresh : Icons.cloud_upload_outlined,
-                color: doc.isRejected ? AppColors.error : AppColors.accent,
-                size: 20,
-              )
-            else
-              Icon(Icons.check_circle, color: _statusColor(doc), size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Pick an image and immediately upload it for the given [type].
-  Future<void> _pickAndUpload(String type) async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(Corners.c20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const Gap(16),
-              Text(
-                'Select Source',
-                style: TextStyles.t1.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Gap(16),
-              ListTile(
-                leading: const Icon(
-                  Icons.photo_library,
-                  color: AppColors.accent,
-                ),
-                title: Text(
-                  'Gallery',
-                  style: TextStyles.t1.copyWith(fontSize: 16),
-                ),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-              ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt, color: AppColors.accent),
-                title: Text(
-                  'Camera',
-                  style: TextStyles.t1.copyWith(fontSize: 16),
-                ),
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (source == null) return;
-
-    final XFile? picked = await _picker.pickImage(
-      source: source,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      imageQuality: 85,
-    );
-    if (picked == null) return;
-
-    // Mark uploading
-    setState(() => _uploadingDocs[type] = true);
-
-    final success = await ref
-        .read(driverNotifierProvider.notifier)
-        .uploadDocument(documentFile: File(picked.path), type: type);
-
-    if (mounted) {
-      setState(() => _uploadingDocs[type] = false);
-
-      if (!success) {
-        final error = ref.read(driverNotifierProvider).errorMessage;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? 'Failed to upload document'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
   }
 }

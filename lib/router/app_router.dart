@@ -56,13 +56,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Redirect to complete profile if profile is incomplete
-      // But skip this check if navigating to verification sscreens
+      // Skip this check for auth screens, driver-mode screens, and when
+      // the user is currently operating in driver mode.
       if (isLoggedIn &&
+          !isDriver &&
           user != null &&
           !user.isProfileComplete &&
           currentPath != AppRoutes.completeProfileRoute &&
           currentPath != AppRoutes.otpRoute &&
-          currentPath != AppRoutes.emailVerificationRoute) {
+          currentPath != AppRoutes.emailVerificationRoute &&
+          !currentPath.startsWith('/driver') &&
+          currentPath != AppRoutes.verifyDriverRoute &&
+          currentPath != AppRoutes.applyDriverRoute &&
+          currentPath != AppRoutes.documentsRoute &&
+          currentPath != AppRoutes.vehicleInfoRoute) {
         return AppRoutes.completeProfileRoute;
       }
 

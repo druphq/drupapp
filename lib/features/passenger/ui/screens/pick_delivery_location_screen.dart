@@ -339,6 +339,10 @@ class _PickDeliveryLocationScreenState
                     });
                     _onSearchChanged(value);
                   },
+                  autocorrect: false,
+                  keyboardType: TextInputType.streetAddress,
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(Corners.c20),

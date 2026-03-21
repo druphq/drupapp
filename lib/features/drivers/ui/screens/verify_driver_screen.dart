@@ -7,6 +7,7 @@ import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
 import 'package:drup/theme/app_style.dart';
+import 'package:drup/utils/util_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -297,7 +298,7 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                 'All rides are tracked and insured for your protection.',
           ),
 
-          const Gap(40),
+          const Gap(30),
 
           CustomButton(
             text: 'Apply Now',
@@ -413,8 +414,6 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
 
   Widget _buildPendingView() {
     final isUnderReview = _status == 'under_review';
-    final vehicle = _driverProfile?['vehicle'] as Map<String, dynamic>?;
-    final documents = _driverProfile?['documents'] as List<dynamic>? ?? [];
     final createdAt = _driverProfile?['createdAt'] as String?;
 
     return RefreshIndicator(
@@ -471,29 +470,33 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             ),
           ),
 
-          const Gap(32),
+          const Gap(24),
 
-          // Status badge
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: (isUnderReview ? AppColors.accent : AppColors.warning)
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(Corners.c50),
+          // Quick action buttons
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _actionCard(
+                icon: Icons.upload_file,
+                label: 'Upload Documents',
+                onTap: () async {
+                  await context.push(AppRoutes.documentsRoute);
+                  _fetchStatus();
+                },
               ),
-              child: Text(
-                _formatStatus(_status),
-                style: TextStyles.t1.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isUnderReview ? AppColors.accent : AppColors.warning,
-                ),
+              const Gap(12),
+              _actionCard(
+                icon: Icons.directions_car,
+                label: 'Vehicle Info',
+                onTap: () async {
+                  await context.push(AppRoutes.vehicleInfoRoute);
+                  _fetchStatus();
+                },
               ),
-            ),
+            ],
           ),
-
-          const Gap(32),
+          const Gap(20),
 
           // Progress tracker
           _card(
@@ -520,83 +523,11 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
             ],
           ),
 
-          const Gap(16),
-
-          // Vehicle info
-          if (vehicle != null) ...[
-            _card(
-              icon: Icons.directions_car,
-              title: 'Vehicle',
-              children: [
-                _infoRow(
-                  'Type',
-                  _capitalize(vehicle['type'] as String? ?? '—'),
-                ),
-                _infoRow(
-                  'Vehicle',
-                  '${vehicle['make'] ?? ''} ${vehicle['model'] ?? ''}'.trim(),
-                ),
-                _infoRow('Year', '${vehicle['year'] ?? '—'}'),
-                _infoRow('Color', vehicle['color'] as String? ?? '—'),
-                _infoRow(
-                  'License Plate',
-                  vehicle['licensePlate'] as String? ?? '—',
-                ),
-                _infoRow(
-                  'Verified',
-                  (vehicle['isVerified'] as bool? ?? false) ? 'Yes' : 'No',
-                ),
-              ],
-            ),
-            const Gap(16),
-          ],
-
-          // Documents summary
-          _card(
-            icon: Icons.description_outlined,
-            title: 'Documents',
-            children: [
-              if (documents.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'No documents uploaded yet.',
-                    style: TextStyles.t2.copyWith(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                )
-              else
-                ...documents.map(
-                  (d) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.insert_drive_file_outlined,
-                          size: 18,
-                          color: AppColors.accent,
-                        ),
-                        const Gap(8),
-                        Expanded(
-                          child: Text(
-                            d.toString(),
-                            style: TextStyles.t2.copyWith(fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
           if (createdAt != null) ...[
             const Gap(16),
             Center(
               child: Text(
-                'Applied on ${_formatDate(createdAt)}',
+                'Applied on ${formatShortDate(createdAt)}',
                 style: TextStyles.t2.copyWith(
                   fontSize: 13,
                   color: AppColors.textLight,
@@ -604,28 +535,6 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
               ),
             ),
           ],
-
-          const Gap(32),
-
-          // Refresh hint
-          Center(
-            child: TextButton.icon(
-              icon: const Icon(
-                Icons.refresh,
-                size: 18,
-                color: AppColors.accent,
-              ),
-              label: Text(
-                'Pull down to refresh status',
-                style: TextStyles.t2.copyWith(
-                  fontSize: 13,
-                  color: AppColors.accent,
-                ),
-              ),
-              onPressed: _fetchStatus,
-            ),
-          ),
-
           const Gap(32),
         ],
       ),
@@ -783,28 +692,6 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
                 _fetchStatus();
               }
             },
-          ),
-
-          const Gap(12),
-
-          // Upload documents button
-          Center(
-            child: TextButton.icon(
-              icon: const Icon(
-                Icons.upload_file,
-                size: 18,
-                color: AppColors.accent,
-              ),
-              label: Text(
-                'Upload / Fix Documents',
-                style: TextStyles.t2.copyWith(
-                  fontSize: 14,
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              onPressed: () => context.push(AppRoutes.documentsRoute),
-            ),
           ),
 
           const Gap(32),
@@ -1004,28 +891,45 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyles.t2.copyWith(
-              fontSize: 14,
-              color: AppColors.textSecondary,
+  /// Small tappable card used for quick-action navigation (e.g. documents,
+  /// vehicle info).
+  Widget _actionCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(Corners.c10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Corners.c10),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: AppColors.accent, size: 22),
             ),
-          ),
-          Text(
-            value,
-            style: TextStyles.t1.copyWith(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+            const Gap(8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyles.t1.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1101,25 +1005,5 @@ class _VerifyDriverScreenState extends ConsumerState<VerifyDriverScreen> {
   String _capitalize(String s) {
     if (s.isEmpty) return s;
     return '${s[0].toUpperCase()}${s.substring(1)}';
-  }
-
-  String _formatDate(String iso) {
-    final dt = DateTime.tryParse(iso);
-    if (dt == null) return iso;
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 }

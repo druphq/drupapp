@@ -138,7 +138,12 @@ class DriverNotifier extends StateNotifier<DriverState> {
   // 1. DRIVER APPLICATION
   // ===========================================================================
 
-  /// Apply as a driver
+  /// Apply as a driver.
+  ///
+  /// On success the API returns a driver-scoped token (stored by the
+  /// repository) so that `/drivers/*` endpoints become accessible.
+  /// We also refresh [applicationStatus] and [documents] so the UI can
+  /// immediately transition to the documents-upload phase.
   Future<bool> applyAsDriver({
     String? firstName,
     String? lastName,
@@ -165,6 +170,14 @@ class DriverNotifier extends StateNotifier<DriverState> {
         } else {
           state = state.copyWith(isLoading: false);
         }
+
+        // Switch to driver role to obtain the driver-scoped token.
+        // This makes `/drivers/*` endpoints (documents, etc.) accessible.
+        await switchRole('driver');
+
+        // Refresh application status so the verify screen shows updated info
+        await fetchApplicationStatus();
+
         return true;
       }
       state = state.copyWith(

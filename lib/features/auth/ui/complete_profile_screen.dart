@@ -82,103 +82,115 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
       body: SafeArea(
         bottom: false,
         top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(left: 16, right: 16, top: 10.0),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Text(
-                    AppStrings.informationMsg,
-                    style: TextStyles.caption,
-                  ),
-                ),
-                const Gap(5.0),
-                CustomTextField(
-                  controller: _firstnameController,
-                  hintText: AppStrings.firstNameTxt,
-                  style: TextStyles.h4.copyWith(
-                    color: Colors.black,
-                    fontSize: FontSizes.s16,
-                  ),
-                  validator: FieldValidator.required(
-                    message: AppStrings.firstNameErrorMsg,
-                  ),
-                ),
-                const Gap(10.0),
-                CustomTextField(
-                  controller: _lastnameController,
-                  hintText: AppStrings.lastNameTxt,
-                  style: TextStyles.h4.copyWith(
-                    color: Colors.black,
-                    fontSize: FontSizes.s16,
-                  ),
-                  validator: FieldValidator.required(
-                    message: AppStrings.lastNameErrorMsg,
-                  ),
-                ),
-                const Gap(10.0),
-                if (!_isEmailVerified)
-                  CustomTextField(
-                    controller: _emailController,
-                    hintText: AppStrings.emailHintTXt,
-                    style: TextStyles.h4.copyWith(
-                      color: Colors.black,
-                      fontSize: FontSizes.s16,
-                    ),
-                    validator: FieldValidator.required(
-                      message: AppStrings.emailAddressErrorMsg,
-                    ),
-                  ),
-                if (!_isPhoneVerified)
-                  AppPhoneField(
-                    hint: 'Phone Number',
-                    borderRadius: Corners.c10,
-                    controller: _phoneController,
-                    style: TextStyles.h3.copyWith(
-                      color: Colors.black,
-                      fontSize: FontSizes.s18,
-                    ),
-                    validator: FieldValidator.minLength(
-                      11,
-                      message: AppStrings.phoneErrorMessage,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              AppStrings.noticeErrorMsg,
-              style: TextStyles.caption.copyWith(
-                fontSize: FontSizes.s12,
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(left: 16, right: 16, top: 10.0),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Text(
+                          AppStrings.informationMsg,
+                          style: TextStyles.caption,
+                        ),
+                      ),
+                      const Gap(5.0),
+                      CustomTextField(
+                        controller: _firstnameController,
+                        hintText: AppStrings.firstNameTxt,
+                        style: TextStyles.h4.copyWith(
+                          color: Colors.black,
+                          fontSize: FontSizes.s16,
+                        ),
+                        validator: FieldValidator.required(
+                          message: AppStrings.firstNameErrorMsg,
+                        ),
+                      ),
+                      const Gap(10.0),
+                      CustomTextField(
+                        controller: _lastnameController,
+                        hintText: AppStrings.lastNameTxt,
+                        style: TextStyles.h4.copyWith(
+                          color: Colors.black,
+                          fontSize: FontSizes.s16,
+                        ),
+                        validator: FieldValidator.required(
+                          message: AppStrings.lastNameErrorMsg,
+                        ),
+                      ),
+                      const Gap(10.0),
+                      if (!_isEmailVerified)
+                        CustomTextField(
+                          controller: _emailController,
+                          hintText: AppStrings.emailHintTXt,
+                          style: TextStyles.h4.copyWith(
+                            color: Colors.black,
+                            fontSize: FontSizes.s16,
+                          ),
+                          validator: FieldValidator.required(
+                            message: AppStrings.emailAddressErrorMsg,
+                          ),
+                        ),
+                      if (!_isPhoneVerified) ...[
+                        Gap(10.0),
+
+                        AppPhoneField(
+                          hint: 'Phone Number',
+                          borderRadius: Corners.c10,
+                          controller: _phoneController,
+                          style: TextStyles.h3.copyWith(
+                            color: Colors.black,
+                            fontSize: FontSizes.s18,
+                          ),
+                          validator: FieldValidator.minLength(
+                            11,
+                            message: AppStrings.phoneErrorMessage,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
-            const Gap(5.0),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: Sizes.btnHeightMd,
-                minWidth: Sizes.btnWidthMd,
-              ),
-              child: CustomButton(
-                text: AppStrings.continueTxt,
-                isLoading: _isLoading,
-                onPressed: _handleSubmit,
-                textStyle: TextStyles.btnStyle.copyWith(
-                  color: Colors.white,
-                  fontSize: 16.0,
-                ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppStrings.noticeErrorMsg,
+                    style: TextStyles.caption.copyWith(
+                      fontSize: FontSizes.s12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Gap(5.0),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: Sizes.btnHeightMd,
+                      minWidth: Sizes.btnWidthMd,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: CustomButton(
+                        text: AppStrings.continueTxt,
+                        isLoading: _isLoading,
+                        onPressed: _handleSubmit,
+                        textStyle: TextStyles.btnStyle.copyWith(
+                          color: Colors.white,
+                          fontSize: 16.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
