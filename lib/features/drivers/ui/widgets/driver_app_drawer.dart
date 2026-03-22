@@ -1,6 +1,6 @@
 import 'package:drup/core/widgets/custom_button.dart';
-import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
+import 'package:drup/features/drivers/model/driver.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
@@ -20,13 +20,19 @@ class DriverAppDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final driverState = ref.watch(driverNotifierProvider);
     final driver = driverState.driver;
-    final userState = ref.watch(userNotifierProvider);
-    final user = userState.user;
-    final profilePhoto = driver?.profilePhoto ?? user?.profileImage;
+    // final userState = ref.watch(userNotifierProvider);
+    // final user = userState.user;
+    final profilePhoto = driver?.profilePhoto;
+    final String fullName = driver?.fullName ?? 'Driver';
+
+    final appStatus = ref.read(driverNotifierProvider).applicationStatus;
+    final rawStatus = appStatus?['status'] as String?;
+    final status = DriverApplicationStatus.fromString(rawStatus);
+
     // Check verification from driver object OR from application status
     final bool isVerified =
-        (driverState.driver?.isActive ?? false) ||
-        (driverState.applicationStatus?['status'] as String?) == 'active';
+        status == DriverApplicationStatus.approved ||
+        status == DriverApplicationStatus.active;
 
     return Drawer(
       backgroundColor: AppColors.surface,
@@ -124,7 +130,7 @@ class DriverAppDrawer extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      driver?.fullName.takeFirst ?? 'Driver',
+                                      fullName.takeFirst,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                       style: TextStyles.t1.copyWith(

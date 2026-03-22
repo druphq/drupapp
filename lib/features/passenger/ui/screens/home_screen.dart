@@ -265,7 +265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final name = details['name'];
 
     setState(() {
-      _pickedAddress = address;
+      _pickedAddress = name;
       _isGeocodingCenter = false;
     });
 
@@ -507,10 +507,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             width: _isDraggingMap ? 12 : 6,
-                            height: _isDraggingMap ? 4 : 2,
+                            height: _isDraggingMap ? 12 : 6,
                             decoration: BoxDecoration(
                               color: Colors.black38,
-                              borderRadius: BorderRadius.circular(6),
+                              shape: BoxShape.circle,
                             ),
                           ),
                         ],

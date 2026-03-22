@@ -176,14 +176,19 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final status = await locationService.requestPermission();
+                    final granted = await locationService.requestPermission();
                     if (!context.mounted) return;
-                    if (status == LocationPermissionStatus.granted) {
+                    if (granted) {
                       Navigator.pop(context);
-                    } else if (status ==
-                        LocationPermissionStatus.deniedForever) {
-                      Navigator.pop(context);
-                      _showOpenSettingsSheet(isAppSettings: true);
+                    } else {
+                      final permStatus = await locationService
+                          .checkPermissionStatus();
+                      if (!context.mounted) return;
+                      if (permStatus ==
+                          LocationPermissionStatus.deniedForever) {
+                        Navigator.pop(context);
+                        _showOpenSettingsSheet(isAppSettings: true);
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -700,7 +705,7 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
     return Positioned(
       left: 16,
       right: 16,
-      bottom: 0,
+      bottom: 20,
       child: SafeArea(
         child: Container(
           padding: const EdgeInsets.all(20),

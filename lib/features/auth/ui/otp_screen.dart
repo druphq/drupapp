@@ -119,9 +119,6 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     }
 
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
-
-    // Switch to driver role
-    // final switched = await driverNotifier.switchRole(AppStrings.driverRole);
     if (!mounted) return;
 
     userRepo.storeUserMode(AppStrings.driverMode);
@@ -129,21 +126,10 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
     if (status == DriverApplicationStatus.approved ||
         status == DriverApplicationStatus.active) {
       await driverNotifier.loadDriverProfile();
+      await Future.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
-
-      // If approved/active but hasn't seen approval screen
-      // if (status == DriverApplicationStatus.approved ||
-      //     status == DriverApplicationStatus.active) {
-      //   final hasSeenApproval = await userRepo.getDriverApprovalSeen();
-      //   if (!hasSeenApproval) {
-      //     if (mounted) context.go(AppRoutes.verifyDriverRoute);
-      //     return;
-      //   }
-      // }
-
-      if (mounted) context.go(AppRoutes.driverHomeRoute);
+      context.go(AppRoutes.driverHomeRoute);
     } else {
-      // Driver switch failed — fallback to passenger
       if (mounted) context.go(AppRoutes.verifyDriverRoute);
     }
   }
