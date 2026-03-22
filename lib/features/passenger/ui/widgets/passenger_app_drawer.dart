@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:drup/utils/extension.dart';
 
 class PassengerAppDrawer extends ConsumerWidget {
   const PassengerAppDrawer({super.key});
@@ -18,7 +17,7 @@ class PassengerAppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userNotifierProvider);
-    final userName = (userState.user?.fullName.takeFirst) ?? 'Guest User';
+    final userName = (userState.user?.firstName) ?? 'Guest User';
 
     return Drawer(
       backgroundColor: AppColors.surface,
