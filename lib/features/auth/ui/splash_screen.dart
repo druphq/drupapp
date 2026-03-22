@@ -32,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     await Future.delayed(const Duration(seconds: 1));
     final currentUser = ref.read(currentUserProvider);
     final isLoggedIn = ref.read(isLoggedInProvider);
-    
+
     // Not logged in → login screen
     if (!isLoggedIn || currentUser == null) {
       if (mounted) context.go(AppRoutes.loginRoute);
@@ -131,9 +131,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           if (mounted) context.go(AppRoutes.verifyDriverRoute);
           return;
         }
+        if (!mounted) return;
+        context.go(AppRoutes.driverHomeRoute);
+        return;
       }
-      if (!mounted) return;
-      context.go(AppRoutes.driverHomeRoute);
+      return context.go(AppRoutes.verifyDriverRoute);
       ////////////////
     } else {
       // Switch failed (suspended/banned) — fall back to passenger
