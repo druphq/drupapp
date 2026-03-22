@@ -104,11 +104,23 @@ class GoogleMapsService {
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
           final result = data['results'][0];
 
-          // Get the name (first address component or point of interest)
+          // Get a meaningful name by finding the first non-numeric
           String? name;
           if (result['address_components'] != null &&
               result['address_components'].isNotEmpty) {
-            name = result['address_components'][0]['long_name'];
+            for (final component in result['address_components']) {
+              final types = List<String>.from(component['types'] ?? []);
+              // Skip street_number and postal_code
+              if (types.contains('street_number') ||
+                  types.contains('postal_code') ||
+                  types.contains('plus_code')) {
+                continue;
+              }
+              name = component['long_name'];
+              break;
+            }
+            // Fallback to first component if all were skipped
+            name ??= result['address_components'][0]['long_name'];
           }
 
           // Get formatted address

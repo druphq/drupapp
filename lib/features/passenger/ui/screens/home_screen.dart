@@ -1,4 +1,5 @@
 import 'package:drup/di/notifiers.dart';
+import 'package:drup/features/passenger/ui/widgets/location_dot_widget.dart';
 import 'package:drup/resources/app_assets.dart';
 import 'package:drup/router/app_routes.dart';
 import 'package:drup/theme/app_colors.dart';
@@ -87,7 +88,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
       currentLocation = loc;
 
-      if (_mapController != null && _isAtUserLocation) {
+      // Only re-center if the location update came from GPS (not from pin picker)
+      // and user hasn't panned away
+      if (_mapController != null &&
+          _isAtUserLocation &&
+          prev?.currentLocation?.latLng != next.currentLocation?.latLng &&
+          !_locationReady) {
         _animateCameraToUserLocation();
       }
 
@@ -540,10 +546,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.location_on_outlined,
+                      LocationDotWidget(
+                        bgColor: AppColors.green400,
+                        isActive: true,
                         size: 20,
-                        color: AppColors.primary,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
