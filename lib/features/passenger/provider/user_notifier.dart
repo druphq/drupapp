@@ -618,7 +618,7 @@ class UserNotifier extends StateNotifier<UserState> {
     );
   }
 
-  /// Update user location
+  /// Update user location from GPS
   Future<void> updateUserLocation() async {
     try {
       final locationService = ref.read(locationServiceProvider);
@@ -630,5 +630,10 @@ class UserNotifier extends StateNotifier<UserState> {
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }
+  }
+
+  /// Set current location manually (e.g. from map pin picker)
+  void setCurrentLocation(LocationModel location) {
+    state = state.copyWith(currentLocation: location);
   }
 }

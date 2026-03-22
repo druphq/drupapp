@@ -27,8 +27,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  BitmapDescriptor? _myLocationIcon;
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final GlobalKey _bottomSheetKey = GlobalKey();
   GoogleMapController? _mapController;
   ProviderSubscription<RideState>? _rideSub;
@@ -42,21 +42,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   double _bottomSheetHeight = 0;
 
+  // Center pin state
+  bool _isDraggingMap = false;
+  String? _pickedAddress;
+  bool _isGeocodingCenter = false;
+  LatLng? _lastCameraTarget;
+  bool _locationReady = false;
+  bool _isProgrammaticMove = false;
+  late AnimationController _pinAnimController;
+  late Animation<double> _pinTranslation;
+
+  bool get _showCenterPin {
+    final rideState = ref.read(rideNotifierProvider);
+    return rideState.pickupLocation == null &&
+        rideState.dropoffLocation == null;
+  }
+
   @override
   void initState() {
     super.initState();
 
-    // Load custom location icon
-    BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(31, 48)),
-      AppAssets.pickupIcon,
-    ).then((icon) {
-      if (!mounted) return;
-      setState(() => _myLocationIcon = icon);
-
-      final rideState = ref.read(rideNotifierProvider);
-      _updateMapOverlays(rideState, allowCameraUpdate: false);
-    });
+    // Pin lift/drop animation
+    _pinAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _pinTranslation = Tween<double>(begin: 0, end: -16).animate(
+      CurvedAnimation(parent: _pinAnimController, curve: Curves.easeOut),
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLocation();
@@ -145,8 +158,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (userState.currentLocation != null) {
       currentLocation = userState.currentLocation;
-      if (mounted) setState(() {});
-      _animateCameraToUserLocation();
+      _lastCameraTarget = userState.currentLocation!.latLng;
+      if (mounted) {
+        setState(() {
+          _pickedAddress = userState.currentLocation!.address;
+        });
+      }
+      await _animateCameraToUserLocation();
+      _locationReady = true;
     }
   }
 
@@ -154,14 +173,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final userState = ref.read(userNotifierProvider);
     if (userState.currentLocation == null || _mapController == null) return;
 
+    _isProgrammaticMove = true;
     await _mapController!.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: userState.currentLocation!.latLng,
-          zoom: AppConstants.defaultCameraZoom, // your idle zoom baseline
+          zoom: AppConstants.defaultCameraZoom,
         ),
       ),
     );
+    _isProgrammaticMove = false;
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -176,6 +197,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _onCameraMove(CameraPosition position) {
+    _lastCameraTarget = position.target;
+
     final userState = ref.read(userNotifierProvider);
     final loc = userState.currentLocation;
     if (loc == null) return;
@@ -193,6 +216,62 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_isAtUserLocation != isNearUser && mounted) {
       setState(() => _isAtUserLocation = isNearUser);
     }
+  }
+
+  void _onCameraMoveStarted() {
+    if (!_showCenterPin || !_locationReady) return;
+    if (_isProgrammaticMove) return;
+    _pinAnimController.forward();
+    if (!_isDraggingMap && mounted) {
+      setState(() {
+        _isDraggingMap = true;
+        _pickedAddress = null;
+      });
+    }
+  }
+
+  Future<void> _onCameraIdle() async {
+    if (!_showCenterPin || !_locationReady) return;
+    if (_isProgrammaticMove) return;
+    _pinAnimController.reverse();
+
+    if (mounted) {
+      setState(() => _isDraggingMap = false);
+    }
+
+    // Reverse-geocode the map center
+    final center = _lastCameraTarget;
+    if (center == null) return;
+
+    setState(() => _isGeocodingCenter = true);
+
+    final loc = LocationModel(
+      latitude: center.latitude,
+      longitude: center.longitude,
+    );
+
+    final mapsService = ref.read(googleMapsServiceProvider);
+    final details = await mapsService.getLocationDetails(loc);
+
+    if (!mounted) return;
+
+    final address = details['address'];
+    final name = details['name'];
+
+    setState(() {
+      _pickedAddress = address;
+      _isGeocodingCenter = false;
+    });
+
+    // Update user's current location with the picked position
+    final updatedLocation = LocationModel(
+      latitude: center.latitude,
+      longitude: center.longitude,
+      name: name,
+      address: address,
+    );
+    currentLocation = updatedLocation;
+    ref.read(userNotifierProvider.notifier).setCurrentLocation(updatedLocation);
   }
 
   double _calculateDistance(
@@ -255,11 +334,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _setZoom(double zoom, LatLng target) async {
     if (_mapController == null) return;
+    _isProgrammaticMove = true;
     await _mapController!.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(target: target, zoom: zoom),
       ),
     );
+    _isProgrammaticMove = false;
   }
 
   Future<void> _fitTwoPoints(LatLng a, LatLng b) async {
@@ -313,17 +394,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final routePoints = rideState.routePoints;
 
     final newMarkers = <Marker>{};
-
-    // user's location marker
-    if (currentLocation != null && _myLocationIcon != null) {
-      newMarkers.add(
-        Marker(
-          markerId: const MarkerId('my_location'),
-          position: currentLocation!.latLng,
-          icon: _myLocationIcon!,
-        ),
-      );
-    }
 
     // pickup marker
     if (pickupLocation != null) {
@@ -384,7 +454,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mapType: MapType.normal,
                 padding: EdgeInsets.only(bottom: _bottomSheetHeight * 0.9),
                 onMapCreated: _onMapCreated,
+                onCameraMoveStarted: _onCameraMoveStarted,
                 onCameraMove: _onCameraMove,
+                onCameraIdle: _onCameraIdle,
                 initialCameraPosition: CameraPosition(
                   target:
                       currentLocation?.latLng ??
@@ -399,10 +471,103 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
 
+            // ── Center pin overlay (idle mode only) ──
+            if (_showCenterPin)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: _bottomSheetHeight * 0.9,
+                child: IgnorePointer(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 48),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _pinTranslation,
+                            builder: (context, child) => Transform.translate(
+                              offset: Offset(0, _pinTranslation.value),
+                              child: child,
+                            ),
+                            child: Image.asset(
+                              AppAssets.pickupIcon,
+                              width: 31,
+                              height: 48,
+                            ),
+                          ),
+                          // Shadow dot
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: _isDraggingMap ? 12 : 6,
+                            height: _isDraggingMap ? 4 : 2,
+                            decoration: BoxDecoration(
+                              color: Colors.black38,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // ── Address label (shown after pin drop) ──
+            if (_showCenterPin &&
+                (_pickedAddress != null) &&
+                !_isGeocodingCenter)
+              Positioned(
+                left: 32,
+                right: 32,
+                bottom: _bottomSheetHeight + 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _pickedAddress ?? '',
+                          style: TextStyles.h2.copyWith(fontSize: 13),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             if (!_isAtUserLocation)
               Positioned(
                 right: 16,
-                bottom: _bottomSheetHeight + 16,
+                bottom:
+                    _bottomSheetHeight +
+                    (_showCenterPin &&
+                            (_pickedAddress != null || _isGeocodingCenter)
+                        ? 64
+                        : 16),
                 child: FloatingActionButton(
                   mini: true,
                   backgroundColor: Colors.white,
@@ -697,6 +862,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    _pinAnimController.dispose();
     _rideSub?.close();
     _userSub?.close();
     _mapController?.dispose();

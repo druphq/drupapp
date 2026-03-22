@@ -67,19 +67,13 @@ class _DriverHomeScreenState extends ConsumerState<DriverHomeScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appStatus = ref.read(driverNotifierProvider).applicationStatus;
-      final status = appStatus?['status'] as String?;
-      if (status != 'active' && mounted) {
-        context.push(AppRoutes.verifyDriverRoute);
-      } else {
-        ref.read(driverNotifierProvider.notifier).registerDeviceToken();
-        // If already online, fetch active ride
-        if (ref.read(driverNotifierProvider).isOnline) {
-          ref.read(driverNotifierProvider.notifier).fetchActiveRide();
-        }
-        // Fetch driver's current location (with permission check)
-        _initializeLocation();
+      ref.read(driverNotifierProvider.notifier).registerDeviceToken();
+      // If already online, fetch active ride
+      if (ref.read(driverNotifierProvider).isOnline) {
+        ref.read(driverNotifierProvider.notifier).fetchActiveRide();
       }
+      // Fetch driver's current location (with permission check)
+      _initializeLocation();
     });
   }
 

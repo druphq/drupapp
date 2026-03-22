@@ -3,7 +3,6 @@ import 'package:drup/di/notifiers.dart';
 import 'package:drup/di/providers.dart';
 import 'package:drup/features/drivers/model/driver.dart';
 import 'package:drup/features/drivers/provider/driver_notifier.dart';
-import 'package:drup/features/passenger/model/user.dart';
 import 'package:drup/resources/app_dimen.dart';
 import 'package:drup/resources/app_strings.dart';
 import 'package:drup/router/app_routes.dart';
