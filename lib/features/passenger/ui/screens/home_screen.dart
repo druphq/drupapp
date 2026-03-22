@@ -572,8 +572,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     _bottomSheetHeight +
                     (_showCenterPin &&
                             (_pickedAddress != null || _isGeocodingCenter)
-                        ? 64
-                        : 16),
+                        ? 72
+                        : 24),
                 child: FloatingActionButton(
                   mini: true,
                   backgroundColor: Colors.white,
