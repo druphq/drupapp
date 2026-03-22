@@ -83,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             AppPhoneField(
               hint: 'Phone Number',
               controller: phoneController,
-              borderRadius: Corners.c10,
+              borderRadius: Corners.c20,
             ),
           ],
         ),
@@ -259,82 +259,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const Gap(20.0),
                   // Divider with "or" text
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: Colors.grey.shade300,
-                          thickness: 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          'or',
-                          style: TextStyles.body2.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          color: Colors.grey.shade300,
-                          thickness: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Gap(20.0),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: Divider(
+                  //         color: Colors.grey.shade300,
+                  //         thickness: 1,
+                  //       ),
+                  //     ),
+                  //     Padding(
+                  //       padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  //       child: Text(
+                  //         'or',
+                  //         style: TextStyles.body2.copyWith(
+                  //           color: Colors.grey.shade600,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //     Expanded(
+                  //       child: Divider(
+                  //         color: Colors.grey.shade300,
+                  //         thickness: 1,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // const Gap(20.0),
                   // Google Sign-In Button
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: Sizes.btnWidthMd,
-                            minHeight: Sizes.btnHeightMd,
-                          ),
-                          child: OutlinedButton(
-                            onPressed: _isGoogleLoading
-                                ? null
-                                : _handleGoogleSignIn,
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.grey.shade300),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  Corners.c50,
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14.0,
-                              ),
-                            ),
-                            child: _isGoogleLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Continue with Google',
-                                        style: TextStyles.btnStyle.copyWith(
-                                          color: Colors.grey.shade800,
-                                          fontSize: 16.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(flex: 1),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: ConstrainedBox(
+                  //         constraints: BoxConstraints(
+                  //           maxWidth: Sizes.btnWidthMd,
+                  //           minHeight: Sizes.btnHeightMd,
+                  //         ),
+                  //         child: OutlinedButton(
+                  //           onPressed: _isGoogleLoading
+                  //               ? null
+                  //               : _handleGoogleSignIn,
+                  //           style: OutlinedButton.styleFrom(
+                  //             side: BorderSide(color: Colors.grey.shade300),
+                  //             shape: RoundedRectangleBorder(
+                  //               borderRadius: BorderRadius.circular(
+                  //                 Corners.c50,
+                  //               ),
+                  //             ),
+                  //             padding: const EdgeInsets.symmetric(
+                  //               vertical: 14.0,
+                  //             ),
+                  //           ),
+                  //           child: _isGoogleLoading
+                  //               ? const SizedBox(
+                  //                   height: 20,
+                  //                   width: 20,
+                  //                   child: CircularProgressIndicator(
+                  //                     strokeWidth: 2,
+                  //                   ),
+                  //                 )
+                  //               : Row(
+                  //                   mainAxisAlignment: MainAxisAlignment.center,
+                  //                   children: [
+                  //                     Text(
+                  //                       'Continue with Google',
+                  //                       style: TextStyles.btnStyle.copyWith(
+                  //                         color: Colors.grey.shade800,
+                  //                         fontSize: 16.0,
+                  //                       ),
+                  //                     ),
+                  //                   ],
+                  //                 ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // const Spacer(flex: 1),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: Sizes.sm),
                     child: RichText(

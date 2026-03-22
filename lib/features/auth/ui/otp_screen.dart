@@ -64,19 +64,19 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
           .read(authNotifierProvider.notifier)
           .verifyOTP(widget.phoneNumber, otp);
 
+      if (!success) return;
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      final driverNotifier = ref.read(driverNotifierProvider.notifier);
+      await driverNotifier.fetchApplicationStatus();
+
       if (success && mounted) {
-        // Get the authenticated user from state
-        final user = ref.read(authNotifierProvider).value;
-
-        if (user != null) {
-          if (!user.isProfileComplete) {
-            if (mounted) context.go(AppRoutes.completeProfileRoute);
-            return;
-          }
-
-          // Fetch application status to determine driver/passenger
-          await _navigateByRole(user);
-        }
+        final appStatus = ref.read(driverNotifierProvider).applicationStatus;
+        final rawStatus = appStatus?['status'] as String?;
+        final status = DriverApplicationStatus.fromString(rawStatus);
+        // Fetch application status to determine driver/passenger
+        await _navigateByRole(status);
+        //////////////////////////////
       } else if (mounted) {
         final error = ref.read(authNotifierProvider).error;
         _showError(error?.toString() ?? 'OTP verification failed');
@@ -93,58 +93,59 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   }
 
   /// Navigate based on user role — mirrors splash screen logic.
-  Future<void> _navigateByRole(User user) async {
-    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+  Future<void> _navigateByRole(DriverApplicationStatus? status) async {
     final userRepo = ref.read(userRepositoryProvider);
+    final isPassenger = status == null;
 
-    // Fetch driver application status
-    await driverNotifier.fetchApplicationStatus();
+    if (isPassenger) {
+      await ref.read(userNotifierProvider.notifier).loadUserProfile();
+      if (!mounted) return;
+
+      // cache user mode
+      userRepo.storeUserMode(AppStrings.passengerMode);
+      // Get the authenticated user from state
+      final user = ref.read(authNotifierProvider).value;
+
+      if (user != null) {
+        if (!user.isProfileComplete) {
+          if (mounted) context.go(AppRoutes.completeProfileRoute);
+          return;
+        }
+      }
+
+      if (mounted) {
+        context.go(AppRoutes.homeRoute);
+      }
+      return;
+    }
+
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
+
+    // Switch to driver role
+    // final switched = await driverNotifier.switchRole(AppStrings.driverRole);
     if (!mounted) return;
 
-    final appStatus = ref.read(driverNotifierProvider).applicationStatus;
-    final rawStatus = appStatus?['status'] as String?;
-    final status = DriverApplicationStatus.fromString(rawStatus);
+    userRepo.storeUserMode(AppStrings.driverMode);
 
-    // Check if user is a driver
-    if (user.isDriver) {
-      // Switch to driver role
-      final switched = await driverNotifier.switchRole(AppStrings.driverRole);
+    if (status == DriverApplicationStatus.approved ||
+        status == DriverApplicationStatus.active) {
+      await driverNotifier.loadDriverProfile();
       if (!mounted) return;
 
-      if (switched) {
-        userRepo.storeUserMode(AppStrings.driverMode);
-        await driverNotifier.loadDriverProfile();
-        if (!mounted) return;
+      // If approved/active but hasn't seen approval screen
+      // if (status == DriverApplicationStatus.approved ||
+      //     status == DriverApplicationStatus.active) {
+      //   final hasSeenApproval = await userRepo.getDriverApprovalSeen();
+      //   if (!hasSeenApproval) {
+      //     if (mounted) context.go(AppRoutes.verifyDriverRoute);
+      //     return;
+      //   }
+      // }
 
-        // If approved/active but hasn't seen approval screen
-        if (status == DriverApplicationStatus.approved ||
-            status == DriverApplicationStatus.active) {
-          final hasSeenApproval = await userRepo.getDriverApprovalSeen();
-          if (!hasSeenApproval) {
-            if (mounted) context.go(AppRoutes.verifyDriverRoute);
-            return;
-          }
-        }
-
-        if (mounted) context.go(AppRoutes.driverHomeRoute);
-      } else {
-        // Driver switch failed — fallback to passenger
-        if (mounted) context.go(AppRoutes.homeRoute);
-      }
+      if (mounted) context.go(AppRoutes.driverHomeRoute);
     } else {
-      // Passenger flow
-      final switched = await driverNotifier.switchRole(
-        AppStrings.passengerRole,
-      );
-      if (!mounted) return;
-
-      if (switched) {
-        userRepo.storeUserMode(AppStrings.passengerMode);
-        await ref.read(userNotifierProvider.notifier).loadUserProfile();
-        if (mounted) context.go(AppRoutes.homeRoute);
-      } else {
-        if (mounted) context.go(AppRoutes.homeRoute);
-      }
+      // Driver switch failed — fallback to passenger
+      if (mounted) context.go(AppRoutes.verifyDriverRoute);
     }
   }
 
